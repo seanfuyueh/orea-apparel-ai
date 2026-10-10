@@ -5,26 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orea Apparel AI</title>
     <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#111827">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AI 後台">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
     <style>
-      /* 全域防止水平超出與跑版 */
+      /* 安全防跑版與限制水平溢位 */
       html, body {
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
         box-sizing: border-box;
-        margin: 0;
-        padding: 0;
       }
-
       *, *:before, *:after {
         box-sizing: inherit;
       }
-
       div, section, main, header, footer, form, .container {
         max-width: 100%;
         box-sizing: border-box;
       }
-
       .button-group, .action-container, .btn-wrapper {
         display: flex;
         flex-wrap: wrap;
@@ -32,7 +34,6 @@
         max-width: 100%;
         align-items: center;
       }
-
       button, .btn, input[type="button"], input[type="submit"] {
         max-width: 100%;
         white-space: nowrap;
@@ -41,7 +42,7 @@
 </head>
 <body>
     <div class="container">
-        <!-- 您的網頁主要內容與按鈕請放在這裡 -->
+        <!-- 您的網頁主要內容與按鈕維持在此處 -->
     </div>
 </body>
 </html>
