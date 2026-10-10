@@ -11,7 +11,7 @@
         html, body { width: 100%; max-width: 100%; overflow-x: hidden; box-sizing: border-box; margin: 0; padding: 0; }
         *, *:before, *:after { box-sizing: inherit; }
     </style>
-    <!-- 強制註銷舊版 Service Worker 快取，避免載入舊程式碼 -->
+    <!-- 強制註銷舊版 Service Worker 快取 -->
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -55,7 +55,7 @@
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
             <div class="text-sm text-gray-400 text-center">
-                LovelyByKorea Admin v3.31
+                LovelyByKorea Admin v3.33
             </div>
         </div>
     </aside>
@@ -380,17 +380,20 @@
         </div>
     </div>
 
-    <!-- ================= 一般腳本區 (完全全域，安全無誤) ================= -->
+    <!-- ================= 一般腳本區 (全域安全) ================= -->
     <script>
         const GEMINI_API_KEY = "AQ.Ab8RN6LIg802JhTMdGRTv-91JiAdJ5vunLR1zt0bNLNkw5t7kQ";
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
         let currentUploadedVideoBlobUrl = null;
         let currentUploadedVideoFilename = null;
-        let globalHistoryRecords = []; // 暫存歷史紀錄供彈窗檢視
+        let globalHistoryRecords = [];
 
-        // 預留 Firebase 全域介面，避免非同步載入時拋出例外
-        window.saveToHistory = async function() { console.warn("Firebase 初始化中..."); };
+        // 追蹤各模組是否已生成過
+        let hasGeneratedMap = { img: false, gen: false, vid: false };
+
+        // 預留 Firebase 全域介面
+        window.saveToHistory = async function() {};
         window.loadHistoryFromCloud = async function() { return []; };
         window.deleteRecord = async function() {};
         window.savePromptToCloud = async function() {};
@@ -444,7 +447,7 @@
             if (saveState) localStorage.setItem('active_tab', tab);
         };
 
-        // 2. 彈窗檢視功能 (恢復完整閱讀與縮圖)
+        // 2. 彈窗檢視
         window.closeModal = function() {
             document.getElementById('expand-modal').classList.add('hidden');
         };
@@ -469,7 +472,7 @@
             document.getElementById('expand-modal').classList.remove('hidden');
         };
 
-        // 3. 匯率與價格試算器
+        // 3. 匯率與價格試算
         window.fetchBankRate = async function() {
             const rateInput = document.getElementById('calc-rate');
             const rateSource = document.getElementById('rate-source');
@@ -556,7 +559,10 @@
             }
         };
 
+        // 重置模組 (還原按鈕預設名稱)
         window.resetModule = function(mode) {
+            hasGeneratedMap[mode] = false;
+
             if (mode === 'img') {
                 document.getElementById('image-file').value = '';
                 document.getElementById('image-preview').src = '';
@@ -646,7 +652,6 @@
             }
         };
 
-        // 4. 動態備用 AI 提示邏輯
         function getDynamicMockResult(type, query = '', filename = '') {
             const hint = query ? `特別訴求：${query}` : (filename ? `分析品項：${filename}` : '東大門本季熱銷精選');
             if (type.includes('image') || type.includes('圖片')) {
@@ -660,7 +665,6 @@
             }
         }
 
-        // 5. 高品質 Gemini API 呼叫
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
             const isVid = prompt.includes('短影音') || prompt.includes('腳本');
             const isGen = prompt.includes('主題');
@@ -701,7 +705,7 @@
             }
         };
 
-        // 6. 各模組生成邏輯 (復原高質感 Prompt)
+        // 4. 生成邏輯 (按鈕更新為簡單的「重新生成」)
         window.generateImageText = async function() {
             const fileInput = document.getElementById('image-file');
             const promptText = document.getElementById('prompt-text-img').value;
@@ -709,16 +713,23 @@
             const submitBtn = document.getElementById('submit-btn-img');
             if (fileInput.files.length === 0 && !currentUploadedImageBase64) { alert('請先上傳圖片！'); return; }
 
-            submitBtn.disabled = true; submitBtn.innerText = 'Gemini 3.5 生成中...';
-            const fullPrompt = `身為專業的韓國東大門女裝品牌總監，請依據這張圖片以及補充需求：「${promptText || '質感日常穿搭'}」，撰寫 3 組吸引 30-40 歲女性的高質感 IG/小紅書行銷文案（包含情境帶入、顯瘦剪裁說明與精選 Hashtags）。`;
-            
+            const isRegen = hasGeneratedMap.img;
+            submitBtn.disabled = true; 
+            submitBtn.innerText = isRegen ? '🎲 正在重新生成不同創意...' : 'Gemini 3.5 生成中...';
+
+            let variationRequirement = isRegen ? "【極重要要求：使用者對上一版的文案不滿意，請徹底換一個完全不同的切入角度、情境與表達風格，絕不能與上一版重複，展現全新的創意靈感！】" : "";
+            const fullPrompt = `身為專業的韓國東大門女裝品牌總監，請依據這張圖片以及補充需求：「${promptText || '質感日常穿搭'}」，撰寫 3 組吸引 30-40 歲女性的高質感 IG/小紅書行銷文案（包含情境帶入、顯瘦剪裁說明與精選 Hashtags）。${variationRequirement}`;
+
             const resText = await window.callGeminiAPI(fullPrompt, currentUploadedImageBase64);
             resultBox.innerText = resText;
 
             if (typeof window.saveToHistory === 'function') {
-                window.saveToHistory('image', promptText || '圖片生成文案', resText, currentUploadedImageBase64);
+                window.saveToHistory('image', (promptText || '圖片生成文案') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedImageBase64);
             }
-            submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
+
+            hasGeneratedMap.img = true;
+            submitBtn.disabled = false; 
+            submitBtn.innerText = '重新生成';
         };
 
         window.generateTextOnly = async function() {
@@ -728,16 +739,23 @@
             const submitBtn = document.getElementById('submit-btn-gen');
             if (!topic) { alert('請輸入商品主題！'); return; }
 
-            submitBtn.disabled = true; submitBtn.innerText = 'Gemini 3.5 生成中...';
-            const fullPrompt = `身為專業的韓國東大門女裝總監，請針對主題「${topic}」以及風格訴求「${style || '簡約質感'}」，撰寫 3 組針對 30-40 歲女性的精緻網拍行銷文案與熱門標籤。`;
+            const isRegen = hasGeneratedMap.gen;
+            submitBtn.disabled = true; 
+            submitBtn.innerText = isRegen ? '🎲 正在重新生成不同創意...' : 'Gemini 3.5 生成中...';
+
+            let variationRequirement = isRegen ? "【極重要要求：使用者對上一版的文案不滿意，請徹底換一個完全不同的切入角度、情境與表達風格，絕不能與上一版重複，展現全新的創意靈感！】" : "";
+            const fullPrompt = `身為專業的韓國東大門女裝總監，請針對主題「${topic}」以及風格訴求「${style || '簡約質感'}」，撰寫 3 組針對 30-40 歲女性的精緻網拍行銷文案與熱門標籤。${variationRequirement}`;
 
             const resText = await window.callGeminiAPI(fullPrompt);
             resultBox.innerText = resText;
 
             if (typeof window.saveToHistory === 'function') {
-                window.saveToHistory('text', topic, resText, null);
+                window.saveToHistory('text', topic + (isRegen ? ' (重新生成)' : ''), resText, null);
             }
-            submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
+
+            hasGeneratedMap.gen = true;
+            submitBtn.disabled = false; 
+            submitBtn.innerText = '重新生成';
         };
 
         window.generateVideoText = async function() {
@@ -747,16 +765,23 @@
             const submitBtn = document.getElementById('submit-btn-vid');
             if (fileInput.files.length === 0 && !currentUploadedVideoBlobUrl) { alert('請先上傳影片！'); return; }
 
-            submitBtn.disabled = true; submitBtn.innerText = 'Gemini 3.5 生成中...';
-            const fullPrompt = `身為專業的短影音編導，請針對韓國女裝 Reels 影片需求「${promptText || '穿搭質感細節展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。`;
+            const isRegen = hasGeneratedMap.vid;
+            submitBtn.disabled = true; 
+            submitBtn.innerText = isRegen ? '🎲 正在重新生成不同創意...' : 'Gemini 3.5 生成中...';
+
+            let variationRequirement = isRegen ? "【極重要要求：使用者對上一版的腳本不滿意，請徹底換一個全新的分鏡開場、口白風格與導購切入點，展現不同的短影音爆款公式！】" : "";
+            const fullPrompt = `身為專業的短影音編導，請針對韓國女裝 Reels 影片需求「${promptText || '穿搭質感細節展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}`;
 
             const resText = await window.callGeminiAPI(fullPrompt);
             resultBox.innerText = resText;
 
             if (typeof window.saveToHistory === 'function') {
-                window.saveToHistory('video', promptText || 'Reels 腳本企劃', resText, currentUploadedVideoBlobUrl);
+                window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedVideoBlobUrl);
             }
-            submitBtn.disabled = false; submitBtn.innerText = '🎬 生成 Reels 專屬腳本';
+
+            hasGeneratedMap.vid = true;
+            submitBtn.disabled = false; 
+            submitBtn.innerText = '重新生成';
         };
 
         window.fetchTrend = async function() {
@@ -774,7 +799,7 @@
             trendBtn.disabled = false; trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
         };
 
-        // 7. 渲染歷史紀錄清單 (完整縮圖、關鍵字搜尋與大視窗檢視)
+        // 5. 渲染歷史紀錄清單
         window.renderHistory = async function() {
             const container = document.getElementById('history-list-container');
             if (!container) return;
@@ -782,7 +807,6 @@
             container.innerHTML = '<div class="text-center text-gray-400 py-12">正在讀取雲端歷史紀錄...</div>';
             let records = await window.loadHistoryFromCloud();
 
-            // 排序與過濾
             const sortOrder = document.getElementById('sort-date')?.value || 'desc';
             const filterType = document.getElementById('filter-type')?.value || 'all';
             const searchKeyword = document.getElementById('search-keyword')?.value.toLowerCase().trim() || '';
@@ -795,7 +819,7 @@
             }
             records.sort((a, b) => sortOrder === 'asc' ? (a.timestamp - b.timestamp) : (b.timestamp - a.timestamp));
 
-            globalHistoryRecords = records; // 存入全域陣列供 openModal 檢視
+            globalHistoryRecords = records;
 
             if (records.length === 0) {
                 container.innerHTML = '<div class="bg-white p-8 rounded-2xl border border-gray-200 text-center text-gray-400">目前沒有符合條件的歷史紀錄。</div>';
@@ -846,7 +870,7 @@
         });
     </script>
 
-    <!-- ================= 模組腳本區 (Firebase 數據庫雲端接合) ================= -->
+    <!-- ================= 模組腳本區 (Firebase 數據庫) ================= -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -861,7 +885,6 @@
         });
         const db = getFirestore(app);
 
-        // 覆蓋並接合全域 Firebase 寫入/讀取/刪除邏輯
         window.saveToHistory = async function(type, title, content, mediaSrc = null) {
             try {
                 const now = new Date();
