@@ -22,26 +22,26 @@
                 <p class="text-sm text-gray-400 mt-1">韓國女裝智慧管理後台</p>
             </div>
             <nav class="p-4 space-y-1.5">
-                <button type="button" onclick="window.switchTab('copywriting')" id="desktop-nav-copywriting" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
+                <button type="button" id="desktop-nav-copywriting" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>📄</span> 文案生成
                 </button>
-                <button type="button" onclick="window.switchTab('image-copy')" id="desktop-nav-image-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left cursor-pointer">
+                <button type="button" id="desktop-nav-image-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left cursor-pointer">
                     <span>🖼️</span> 圖片生成文案
                 </button>
-                <button type="button" onclick="window.switchTab('video-copy')" id="desktop-nav-video-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
+                <button type="button" id="desktop-nav-video-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>🎬</span> 影片生成文案
                 </button>
-                <button type="button" onclick="window.switchTab('trend')" id="desktop-nav-trend" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
+                <button type="button" id="desktop-nav-trend" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>📊</span> 韓國東大門流行女裝趨勢
                 </button>
-                <button type="button" onclick="window.switchTab('pricing')" id="desktop-nav-pricing" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
+                <button type="button" id="desktop-nav-pricing" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>💰</span> 價格試算器
                 </button>
             </nav>
         </div>
 
         <div class="p-4 border-t border-gray-100 space-y-3">
-            <button type="button" onclick="window.switchTab('history')" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2 cursor-pointer">
+            <button type="button" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2 cursor-pointer">
                 <span>📂</span> 歷史紀錄
             </button>
             <div class="text-sm text-gray-400 text-center">
@@ -64,7 +64,7 @@
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
                     <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
                         <h3 class="font-bold text-gray-900 text-base md:text-lg">🖼️ 圖片生成文案設定</h3>
-                        <button type="button" onclick="window.resetModule('img')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
+                        <button type="button" onclick="resetModule('img')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                         <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
@@ -91,11 +91,11 @@
                                 </div>
                                 <div class="flex flex-col md:flex-row gap-2">
                                     <input type="text" id="prompt-text-img" placeholder="或直接在此輸入新的補充說明..." class="w-full md:flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
-                                    <button type="button" onclick="window.saveCustomPrompt('img')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
+                                    <button type="button" onclick="saveCustomPrompt('img')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3 pt-1">
-                                <button type="button" onclick="window.generateImageText()" id="submit-btn-img" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer">
+                                <button type="button" onclick="generateImageText()" id="submit-btn-img" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer">
                                     ✨ 生成 3 組專屬文案
                                 </button>
                                 <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
@@ -117,7 +117,7 @@
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
                     <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
                         <h3 class="font-bold text-gray-900 text-base md:text-lg">📄 純文字文案生成設定</h3>
-                        <button type="button" onclick="window.resetModule('gen')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
+                        <button type="button" onclick="resetModule('gen')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
                     <div class="space-y-5">
                         <div>
@@ -136,11 +136,11 @@
                             </div>
                             <div class="flex flex-col md:flex-row gap-2">
                                 <input type="text" id="gen-style" placeholder="或直接在此輸入新的風格要求與訴求..." class="w-full md:flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
-                                <button type="button" onclick="window.saveCustomPrompt('gen')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
+                                <button type="button" onclick="saveCustomPrompt('gen')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3 pt-1">
-                            <button type="button" onclick="window.generateTextOnly()" id="submit-btn-gen" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer">
+                            <button type="button" onclick="generateTextOnly()" id="submit-btn-gen" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer">
                                 ✨ 生成 3 組專屬文案
                             </button>
                             <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
@@ -161,7 +161,7 @@
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
                     <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
                         <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 影片生成文案設定</h3>
-                        <button type="button" onclick="window.resetModule('vid')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
+                        <button type="button" onclick="resetModule('vid')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                         <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
@@ -188,11 +188,11 @@
                                 </div>
                                 <div class="flex flex-col md:flex-row gap-2">
                                     <input type="text" id="prompt-text-vid" placeholder="或直接在此輸入新的補充說明..." class="w-full md:flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
-                                    <button type="button" onclick="window.saveCustomPrompt('vid')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
+                                    <button type="button" onclick="saveCustomPrompt('vid')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3 pt-1">
-                                <button type="button" onclick="window.generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer">
+                                <button type="button" onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer">
                                     🎬 生成 Reels 專屬腳本
                                 </button>
                                 <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
@@ -217,10 +217,10 @@
                         <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行聯網分析與真實網拍連結對照。</p>
                     </div>
                     <div class="flex gap-2.5 w-full md:w-auto">
-                        <button type="button" onclick="window.fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
+                        <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
                             📊 分析最新趨勢與網拍範例
                         </button>
-                        <button type="button" onclick="window.resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap cursor-pointer">
+                        <button type="button" onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap cursor-pointer">
                             🔄 重置
                         </button>
                     </div>
@@ -240,8 +240,8 @@
                             <p class="text-sm text-gray-500 mt-1">所有數值皆可自由編輯，即時計算台幣成本、實際成本與利潤。</p>
                         </div>
                         <div class="flex gap-2.5">
-                            <button type="button" onclick="window.fetchBankRate()" id="fetch-rate-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors cursor-pointer">🔄 同步台銀即時匯率</button>
-                            <button type="button" onclick="window.resetPricing()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 cursor-pointer">🔄 恢復預設值</button>
+                            <button type="button" onclick="fetchBankRate()" id="fetch-rate-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors cursor-pointer">🔄 同步台銀即時匯率</button>
+                            <button type="button" onclick="resetPricing()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 cursor-pointer">🔄 恢復預設值</button>
                         </div>
                     </div>
 
@@ -264,161 +264,4 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-600 mb-1.5">代付貨款抽成 (韓幣金額)</label>
                                 <input type="number" step="0.01" id="calc-commission-rate" value="0.02" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
-                                <div class="text-xs text-gray-400 mt-1.5">= 抽成金額: <span id="res-commission-krw">800</span> ₩ (<span id="res-commission-twd">18</span> 元)</div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-1.5">公斤數費用 (固定金額台幣)</label>
-                                <input type="number" id="calc-shipping" value="60" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
-                            </div>
-                            <div class="pt-2 border-t border-gray-200">
-                                <div class="text-sm font-bold text-gray-800">台幣成本價 (小計): <span id="res-subtotal" class="text-blue-600 text-base">990</span> 元</div>
-                            </div>
-                        </div>
-
-                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
-                            <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 3. 定價與利潤試算</h4>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-1.5">批發商抽成</label>
-                                <input type="number" step="0.01" id="calc-boss-multiplier" value="1.05" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
-                            </div>
-                            <div class="pt-2 border-t border-gray-200 bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-1">
-                                <div class="text-sm font-bold text-gray-900">實際成本: <span id="res-boss-cost" class="text-amber-600 font-bold text-lg">1,040</span> 元</div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-1.5">小賣價係數</label>
-                                <input type="number" step="0.01" id="calc-retail-multiplier" value="2.8" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
-                            </div>
-                            <div class="pt-2 border-t border-gray-200 bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-1">
-                                <div class="text-sm font-bold text-gray-900">終端售價: <span id="res-retail-price" class="text-amber-600 font-bold text-lg">2,912</span> 元</div>
-                            </div>
-                            <div class="pt-2 border-t border-gray-200 bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-1">
-                                <div class="text-sm font-bold text-gray-900">預估利潤: <span id="res-profit" class="text-green-600 font-bold text-lg">1,872</span> 元</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 6. 歷史紀錄查詢 -->
-            <div id="tab-history" class="hidden space-y-6 pt-2">
-                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-5">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">📅 依日期排序</label>
-                            <select id="sort-date" onchange="renderHistory()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:outline-none">
-                                <option value="desc">由近到遠 (最新優先)</option>
-                                <option value="asc">由遠到近 (最舊優先)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">📁 依檔案類型查詢</label>
-                            <select id="filter-type" onchange="renderHistory()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:outline-none">
-                                <option value="all">全部類型</option>
-                                <option value="image">🖼️ 圖片文案</option>
-                                <option value="video">🎬 影片腳本</option>
-                                <option value="text">📄 純文字</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">🔍 搜尋關鍵字</label>
-                            <input type="text" id="search-keyword" oninput="renderHistory()" placeholder="輸入關鍵字..." class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:outline-none">
-                        </div>
-                    </div>
-                </div>
-                <div class="space-y-4" id="history-list-container"></div>
-            </div>
-
-        </div>
-    </main>
-
-    <!-- 手機底部導航列 -->
-    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-1 py-2.5 flex justify-around items-center shrink-0 z-30 shadow-lg">
-        <button type="button" onclick="window.switchTab('copywriting')" id="mobile-nav-copywriting" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
-            <span class="text-lg">📄</span>
-            <span class="text-xs font-medium">文案</span>
-        </button>
-        <button type="button" onclick="window.switchTab('image-copy')" id="mobile-nav-image-copy" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer">
-            <span class="text-lg">🖼️</span>
-            <span class="text-xs font-medium">圖片</span>
-        </button>
-        <button type="button" onclick="window.switchTab('video-copy')" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
-            <span class="text-lg">🎬</span>
-            <span class="text-xs font-medium">影片</span>
-        </button>
-        <button type="button" onclick="window.switchTab('trend')" id="mobile-nav-trend" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
-            <span class="text-lg">📊</span>
-            <span class="text-xs font-medium">趨勢</span>
-        </button>
-        <button type="button" onclick="window.switchTab('pricing')" id="mobile-nav-pricing" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
-            <span class="text-lg">💰</span>
-            <span class="text-xs font-medium">試算</span>
-        </button>
-        <button type="button" onclick="window.switchTab('history')" id="mobile-nav-history" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
-            <span class="text-lg">📂</span>
-            <span class="text-xs font-medium">紀錄</span>
-        </button>
-    </nav>
-
-    <!-- 滿版大尺寸彈跳視窗 -->
-    <div id="expand-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div id="modal-content-box" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[90vh]">
-            <div class="px-6 py-4 bg-gray-900 text-white flex justify-between items-center shrink-0">
-                <div id="modal-title" class="font-semibold text-base md:text-lg flex items-center gap-2">🔍 紀錄檢視</div>
-                <button type="button" onclick="window.closeModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl text-sm font-medium border border-gray-700 cursor-pointer">❌ 關閉視窗</button>
-            </div>
-            <div id="modal-body" class="p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50"></div>
-        </div>
-    </div>
-
-    <!-- JavaScript 邏輯 (強制掛載至 window 實體) -->
-    <script>
-        let currentUploadedImageBase64 = null;
-        let currentUploadedImageFilename = null;
-        let currentUploadedVideoBlobUrl = null;
-        let currentUploadedVideoFilename = null;
-
-        window.addEventListener('DOMContentLoaded', () => { 
-            loadSavedPrompts('img'); 
-            loadSavedPrompts('vid'); 
-            loadSavedPrompts('gen'); 
-            fetchBankRate();
-            const lastTab = localStorage.getItem('active_tab') || 'image-copy';
-            window.switchTab(lastTab, false);
-        });
-
-        async function fetchBankRate() {
-            const rateInput = document.getElementById('calc-rate');
-            const rateSource = document.getElementById('rate-source');
-            if(rateSource) rateSource.innerText = "(同步中...)";
-
-            try {
-                const response = await fetch('https://open.er-api.com/v6/latest/KRW');
-                const data = await response.json();
-                if (data && data.rates && data.rates.TWD) {
-                    const fetchedRate = parseFloat(data.rates.TWD).toFixed(4);
-                    if(rateInput) rateInput.value = fetchedRate;
-                    if(rateSource) rateSource.innerText = "(已同步即時匯率)";
-                    calculatePrice();
-                    return;
-                }
-            } catch (e) {
-                console.log('網路同步匯率失敗，使用預設值');
-            }
-            if(rateSource) rateSource.innerText = "(使用預設匯率)";
-            calculatePrice();
-        }
-
-        window.switchTab = function(tab, saveState = true) {
-            console.log('Switching tab to:', tab);
-            ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.classList.add('hidden');
-            });
-
-            ['desktop-nav-image-copy', 'desktop-nav-copywriting', 'desktop-nav-video-copy', 'desktop-nav-trend', 'desktop-nav-pricing', 'desktop-nav-history'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer';
-            });
-            ['mobile-nav-image-copy', 'mobile-nav-copywriting', 'mobile-nav-video-copy', 'mobile-nav-trend', 'mobile-nav-pricing', 'mobile-nav-history'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el
+                                <div class="text-xs text-gray-400 mt-1.5">= 抽成金額: <span id
