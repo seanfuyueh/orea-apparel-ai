@@ -1,47 +1,982 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orea Apparel AI</title>
-    <link rel="manifest" href="/manifest.json">
+    <title>韓國女裝 AI 智慧後台</title>
+    <!-- PWA 設定 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#111827">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AI 後台">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
-      /* 全域防止水平超出與跑版 */
-      html, body {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-
-      *, *:before, *:after {
-        box-sizing: inherit;
-      }
-
-      div, section, main, header, footer, form, .container {
-        max-width: 100%;
-        box-sizing: border-box;
-      }
-
-      .button-group, .action-container, .btn-wrapper {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        max-width: 100%;
-        align-items: center;
-      }
-
-      button, .btn, input[type="button"], input[type="submit"] {
-        max-width: 100%;
-        white-space: nowrap;
-      }
+        body { font-family: 'Noto Sans TC', sans-serif; font-size: 1.15rem; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <!-- 您的網頁主要內容與按鈕請放在這裡 -->
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- 桌面版側邊欄 -->
+    <aside class="hidden md:flex w-72 bg-white border-r border-gray-200 flex-col justify-between shrink-0">
+        <div>
+            <div class="p-6 border-b border-gray-100">
+                <h1 class="text-2xl font-bold tracking-wider text-gray-900">AI 營運助理</h1>
+                <p class="text-sm text-gray-400 mt-1">韓國女裝智慧管理後台</p>
+            </div>
+            <nav class="p-4 space-y-1.5">
+                <a href="#" onclick="switchTab('copywriting')" id="desktop-nav-copywriting" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                    <span>📄</span> 文案生成
+                </a>
+                <a href="#" onclick="switchTab('image-copy')" id="desktop-nav-image-copy" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors">
+                    <span>🖼️</span> 圖片生成文案
+                </a>
+                <a href="#" onclick="switchTab('video-copy')" id="desktop-nav-video-copy" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                    <span>🎬</span> 影片生成文案
+                </a>
+                <a href="#" onclick="switchTab('trend')" id="desktop-nav-trend" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                    <span>📊</span> 韓國東大門流行女裝趨勢
+                </a>
+                <a href="#" onclick="switchTab('pricing')" id="desktop-nav-pricing" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                    <span>💰</span> 價格試算器
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-gray-100 space-y-3">
+            <button onclick="switchTab('history')" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2">
+                <span>📂</span> 歷史紀錄
+            </button>
+            <div class="text-sm text-gray-400 text-center">
+                LovelyByKorea Admin v3.21 (PWA)
+            </div>
+        </div>
+    </aside>
+
+    <!-- 主畫面容器 -->
+    <main class="flex-1 flex flex-col overflow-y-auto relative bg-gray-50">
+        <!-- 頂部 Header -->
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm shrink-0 z-10">
+            <h2 id="page-title" class="text-lg md:text-xl font-semibold text-gray-800">圖片生成文案</h2>
+            <div class="text-sm md:text-base text-gray-500 font-medium">CEO 專屬後台</div>
+        </header>
+
+        <!-- 內容區 -->
+        <div class="px-4 md:px-8 pt-6 pb-28 md:pb-12 max-w-6xl w-full mx-auto">
+            
+            <!-- 1. 圖片生成文案 -->
+            <div id="tab-image-copy" class="space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🖼️ 圖片生成文案設定</h3>
+                        <button onclick="resetModule('img')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors">🔄 重置</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                        <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
+                            <div id="preview-placeholder-img" class="text-center text-gray-400">
+                                <span class="text-4xl">🖼️</span>
+                                <p class="text-sm mt-2 font-medium">上傳的圖片預覽</p>
+                            </div>
+                            <img id="image-preview" src="" alt="預覽圖" class="absolute inset-0 w-full h-full object-contain hidden bg-black/5">
+                        </div>
+                        <div class="md:col-span-8 space-y-5">
+                            <div>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳服飾圖片</label>
+                                <input type="file" id="image-file" accept="image/*" onchange="previewFile(event, 'image')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">補充說明或穿搭需求</label>
+                                <div class="flex gap-2 mb-2.5">
+                                    <select id="preset-prompts-img" onchange="selectPresetPrompt('img')" class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                        <option value="">-- 選擇常用或自訂說明 --</option>
+                                        <option value="強調版型修飾、適合週末約會">強調版型修飾、適合週末約會</option>
+                                        <option value="微寬鬆減齡、遮手臂、日常好搭">微寬鬆減齡、遮手臂、日常好搭</option>
+                                        <option value="質感高級感、職場知性風">質感高級感、職場知性風</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="prompt-text-img" placeholder="或直接在此輸入新的補充說明..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <button onclick="saveCustomPrompt('img')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap">💾 儲存</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pt-1">
+                                <button onclick="generateImageText()" id="submit-btn-img" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors">
+                                    ✨ 生成 3 組專屬文案
+                                </button>
+                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" id="mock-ai-toggle-img" checked class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                    <span class="text-xs md:text-sm font-bold text-gray-700">⚡ 內建模擬 AI 生成</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果</h3>
+                    <div id="result-box-img" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳圖片並點擊按鈕。</div>
+                </div>
+            </div>
+
+            <!-- 2. 文案生成 -->
+            <div id="tab-general-copy" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">📄 純文字文案生成設定</h3>
+                        <button onclick="resetModule('gen')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors">🔄 重置</button>
+                    </div>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">商品主題 / 穿搭系列名稱</label>
+                            <input type="text" id="gen-topic" placeholder="例如：韓國東大門早秋針織外套、顯瘦落地寬褲..." class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">風格要求與訴求</label>
+                            <div class="flex gap-2 mb-2.5">
+                                <select id="preset-prompts-gen" onchange="selectPresetPrompt('gen')" class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <option value="">-- 選擇常用或自訂風格要求 --</option>
+                                    <option value="質感簡約、知性小香風、減齡休閒">質感簡約、知性小香風、減齡休閒</option>
+                                    <option value="微寬鬆顯瘦、日常百搭通勤風">微寬鬆顯瘦、日常百搭通勤風</option>
+                                    <option value="高級感約會穿搭、溫柔小女人風">高級感約會穿搭、溫柔小女人風</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="gen-style" placeholder="或直接在此輸入新的風格要求與訴求..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                <button onclick="saveCustomPrompt('gen')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap">💾 儲存</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <button onclick="generateTextOnly()" id="submit-btn-gen" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors">
+                                ✨ 生成 3 組專屬文案
+                            </button>
+                            <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
+                                <input type="checkbox" id="mock-ai-toggle-gen" checked class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                <span class="text-xs md:text-sm font-bold text-gray-700">⚡ 內建模擬 AI 生成</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果</h3>
+                    <div id="result-box-gen" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請輸入主題與風格並點擊按鈕。</div>
+                </div>
+            </div>
+
+            <!-- 3. 影片生成文案 -->
+            <div id="tab-video-copy" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 影片生成文案設定</h3>
+                        <button onclick="resetModule('vid')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors">🔄 重置</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                        <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
+                            <div id="preview-placeholder-vid" class="text-center text-gray-400">
+                                <span class="text-4xl">🎬</span>
+                                <p class="text-sm mt-2 font-medium">上傳的影片預覽</p>
+                            </div>
+                            <video id="video-preview" src="" controls class="absolute inset-0 w-full h-full object-contain hidden bg-black/5"></video>
+                        </div>
+                        <div class="md:col-span-8 space-y-5">
+                            <div>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳短影音 / Reels 檔案</label>
+                                <input type="file" id="video-file" accept="video/*" onchange="previewFile(event, 'video')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">補充說明或短影音腳本需求</label>
+                                <div class="flex gap-2 mb-2.5">
+                                    <select id="preset-prompts-vid" onchange="selectPresetPrompt('vid')" class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                        <option value="">-- 選擇常用或自訂說明 --</option>
+                                        <option value="Reels 節奏明快、強調穿搭前後對比">Reels 節奏明快、強調穿搭前後對比</option>
+                                        <option value="30秒質感生活感短片、配音樂好搭">30秒質感生活感短片、配音樂好搭</option>
+                                        <option value="高級感穿搭教學、重點細節特寫">高級感穿搭教學、重點細節特寫</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="prompt-text-vid" placeholder="或直接在此輸入新的補充說明..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <button onclick="saveCustomPrompt('vid')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap">💾 儲存</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pt-1">
+                                <button onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors">
+                                    🎬 生成 Reels 專屬腳本
+                                </button>
+                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" id="mock-ai-toggle-vid" checked class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                    <span class="text-xs md:text-sm font-bold text-gray-700">⚡ 內建模擬 AI 生成</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>🎬</span> AI 執行結果</h3>
+                    <div id="result-box-vid" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳影片並點擊按鈕。</div>
+                </div>
+            </div>
+
+            <!-- 4. 最新流行趨勢 -->
+            <div id="tab-trend" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h3 class="font-medium text-gray-900 text-base md:text-lg">韓國東大門當季流行女裝趨勢分析</h3>
+                        <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行聯網分析與真實網拍連結對照。</p>
+                    </div>
+                    <div class="flex gap-2.5 w-full md:w-auto">
+                        <button onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm">
+                            📊 分析最新趨勢與網拍範例
+                        </button>
+                        <button onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap">
+                            🔄 重置
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告</h3>
+                    <div id="trend-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[380px] leading-relaxed">點擊上方按鈕開始分析。</div>
+                </div>
+            </div>
+
+            <!-- 5. 價格試算器 -->
+            <div id="tab-pricing" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-lg">💰 韓國商品價格試算表</h3>
+                            <p class="text-sm text-gray-500 mt-1">所有數值皆可自由編輯，即時計算台幣成本、實際成本與利潤。</p>
+                        </div>
+                        <div class="flex gap-2.5">
+                            <button onclick="fetchBankRate()" id="fetch-rate-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors">🔄 同步台銀即時匯率</button>
+                            <button onclick="resetPricing()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300">🔄 恢復預設值</button>
+                        </div>
+                    </div>
+
+                    <!-- 三欄式網格排列 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                            <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 1. 基礎成本與匯率</h4>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">韓元成本價 (₩)</label>
+                                <input type="number" id="calc-krw" value="40000" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white font-bold text-red-600 focus:outline-none focus:ring-2 focus:ring-gray-900">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">換算匯率 (自動串聯台銀)</label>
+                                <input type="number" step="0.0001" id="calc-rate" value="0.0228" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                                <div class="text-xs text-gray-400 mt-1.5">= 台幣換算: <span id="res-rate">912</span> 元 <span id="rate-source" class="text-blue-500 font-medium"></span></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                            <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 2. 抽成與運費計算</h4>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">代付貨款抽成 (韓幣金額)</label>
+                                <input type="number" step="0.01" id="calc-commission-rate" value="0.02" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                                <div class="text-xs text-gray-400 mt-1.5">= 抽成金額: <span id="res-commission-krw">800</span> ₩ (<span id="res-commission-twd">18</span> 元)</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">公斤數費用 (固定金額台幣)</label>
+                                <input type="number" id="calc-shipping" value="60" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                            </div>
+                            <div class="pt-2 border-t border-gray-200">
+                                <div class="text-sm font-bold text-gray-800">台幣成本價 (小計): <span id="res-subtotal" class="text-blue-600 text-base">990</span> 元</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                            <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 3. 定價與利潤試算</h4>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">批發商抽成</label>
+                                <input type="number" step="0.01" id="calc-boss-multiplier" value="1.05" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                            </div>
+                            <div class="pt-2 border-t border-gray-200 bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-1">
+                                <div class="text-sm font-bold text-gray-900">實際成本: <span id="res-boss-cost" class="text-amber-600 font-bold text-lg">1,040</span> 元</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">小賣價係數</label>
+                                <input type="number" step="0.01" id="calc-retail-multiplier" value="2.8" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                            </div>
+                            <div class="pt-2 border-t border-gray-200 bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-1">
+                                <div class="text-sm font-bold text-gray-900">終端售價: <span id="res-retail-price" class="text-amber-600 font-bold text-lg">2,912</span> 元</div>
+                            </div>
+                            <div class="pt-2 border-t border-gray-200 bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-1">
+                                <div class="text-sm font-bold text-gray-900">預估利潤: <span id="res-profit" class="text-green-600 font-bold text-lg">1,872</span> 元</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 6. 歷史紀錄查詢 -->
+            <div id="tab-history" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">📅 依日期排序</label>
+                            <select id="sort-date" onchange="renderHistory()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:outline-none">
+                                <option value="desc">由近到遠 (最新優先)</option>
+                                <option value="asc">由遠到近 (最舊優先)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">📁 依檔案類型查詢</label>
+                            <select id="filter-type" onchange="renderHistory()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:outline-none">
+                                <option value="all">全部類型</option>
+                                <option value="image">🖼️ 圖片文案</option>
+                                <option value="video">🎬 影片腳本</option>
+                                <option value="text">📄 純文字</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">🔍 搜尋關鍵字</label>
+                            <input type="text" id="search-keyword" oninput="renderHistory()" placeholder="輸入關鍵字..." class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-4" id="history-list-container"></div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- 手機底部導航列 -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-1 py-2.5 flex justify-around items-center shrink-0 z-30 shadow-lg">
+        <a href="#" onclick="switchTab('copywriting')" id="mobile-nav-copywriting" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+            <span class="text-lg">📄</span>
+            <span class="text-xs font-medium">文案</span>
+        </a>
+        <a href="#" onclick="switchTab('image-copy')" id="mobile-nav-image-copy" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold">
+            <span class="text-lg">🖼️</span>
+            <span class="text-xs font-medium">圖片</span>
+        </a>
+        <a href="#" onclick="switchTab('video-copy')" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+            <span class="text-lg">🎬</span>
+            <span class="text-xs font-medium">影片</span>
+        </a>
+        <a href="#" onclick="switchTab('trend')" id="mobile-nav-trend" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+            <span class="text-lg">📊</span>
+            <span class="text-xs font-medium">趨勢</span>
+        </a>
+        <a href="#" onclick="switchTab('pricing')" id="mobile-nav-pricing" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+            <span class="text-lg">💰</span>
+            <span class="text-xs font-medium">試算</span>
+        </a>
+        <a href="#" onclick="switchTab('history')" id="mobile-nav-history" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+            <span class="text-lg">📂</span>
+            <span class="text-xs font-medium">紀錄</span>
+        </a>
+    </nav>
+
+    <!-- 滿版大尺寸彈跳視窗 -->
+    <div id="expand-modal" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div id="modal-content-box" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[90vh]">
+            <div class="px-6 py-4 bg-gray-900 text-white flex justify-between items-center shrink-0">
+                <div id="modal-title" class="font-semibold text-base md:text-lg flex items-center gap-2">🔍 紀錄檢視</div>
+                <button onclick="closeModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl text-sm font-medium border border-gray-700">❌ 關閉視窗</button>
+            </div>
+            <div id="modal-body" class="p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50"></div>
+        </div>
     </div>
+
+    <script>
+        // 註冊 PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('PWA Service Worker 註冊成功:', reg.scope))
+                    .catch(err => console.log('PWA Service Worker 註冊失敗:', err));
+            });
+        }
+
+        // 全域變數用來即時暫存上傳的檔案資料
+        let currentUploadedImageBase64 = null;
+        let currentUploadedImageFilename = null;
+        let currentUploadedVideoBlobUrl = null;
+        let currentUploadedVideoFilename = null;
+
+        window.addEventListener('DOMContentLoaded', () => { 
+            loadSavedPrompts('img'); 
+            loadSavedPrompts('vid'); 
+            loadSavedPrompts('gen'); 
+            fetchBankRate();
+            
+            const lastTab = localStorage.getItem('active_tab') || 'image-copy';
+            switchTab(lastTab, false);
+        });
+
+        async function fetchBankRate() {
+            const rateInput = document.getElementById('calc-rate');
+            const rateSource = document.getElementById('rate-source');
+            rateSource.innerText = "(同步中...)";
+
+            try {
+                const response = await fetch('https://open.er-api.com/v6/latest/KRW');
+                const data = await response.json();
+                if (data && data.rates && data.rates.TWD) {
+                    const fetchedRate = parseFloat(data.rates.TWD).toFixed(4);
+                    rateInput.value = fetchedRate;
+                    rateSource.innerText = "(已同步即時匯率)";
+                    calculatePrice();
+                    return;
+                }
+            } catch (e) {
+                console.log('網路同步匯率失敗，使用預設值');
+            }
+
+            rateSource.innerText = "(使用預設匯率)";
+            calculatePrice();
+        }
+
+        function switchTab(tab, saveState = true) {
+            ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+
+            ['desktop-nav-image-copy', 'desktop-nav-copywriting', 'desktop-nav-video-copy', 'desktop-nav-trend', 'desktop-nav-pricing', 'desktop-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors';
+            });
+            ['mobile-nav-image-copy', 'mobile-nav-copywriting', 'mobile-nav-video-copy', 'mobile-nav-trend', 'mobile-nav-pricing', 'mobile-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl';
+            });
+
+            let currentDesktopNav, currentMobileNav;
+
+            if (tab === 'image-copy') {
+                document.getElementById('tab-image-copy').classList.remove('hidden');
+                currentDesktopNav = document.getElementById('desktop-nav-image-copy');
+                currentMobileNav = document.getElementById('mobile-nav-image-copy');
+                document.getElementById('page-title').innerText = '圖片生成文案';
+            } else if (tab === 'copywriting') {
+                document.getElementById('tab-general-copy').classList.remove('hidden');
+                currentDesktopNav = document.getElementById('desktop-nav-copywriting');
+                currentMobileNav = document.getElementById('mobile-nav-copywriting');
+                document.getElementById('page-title').innerText = '文案生成';
+            } else if (tab === 'video-copy') {
+                document.getElementById('tab-video-copy').classList.remove('hidden');
+                currentDesktopNav = document.getElementById('desktop-nav-video-copy');
+                currentMobileNav = document.getElementById('mobile-nav-video-copy');
+                document.getElementById('page-title').innerText = '影片生成文案';
+            } else if (tab === 'trend') {
+                document.getElementById('tab-trend').classList.remove('hidden');
+                currentDesktopNav = document.getElementById('desktop-nav-trend');
+                currentMobileNav = document.getElementById('mobile-nav-trend');
+                document.getElementById('page-title').innerText = '韓國東大門最新流行女裝趨勢';
+            } else if (tab === 'pricing') {
+                document.getElementById('tab-pricing').classList.remove('hidden');
+                currentDesktopNav = document.getElementById('desktop-nav-pricing');
+                currentMobileNav = document.getElementById('mobile-nav-pricing');
+                document.getElementById('page-title').innerText = '韓國商品價格試算器';
+            } else if (tab === 'history') {
+                document.getElementById('tab-history').classList.remove('hidden');
+                currentDesktopNav = document.getElementById('desktop-nav-history');
+                currentMobileNav = document.getElementById('mobile-nav-history');
+                document.getElementById('page-title').innerText = '歷史紀錄查詢';
+                renderHistory();
+            }
+
+            if (currentDesktopNav) currentDesktopNav.className = 'flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors';
+            if (currentMobileNav) currentMobileNav.className = 'flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold';
+
+            if (saveState) {
+                localStorage.setItem('active_tab', tab);
+            }
+        }
+
+        // 🔄 一鍵重置功能
+        function resetModule(mode) {
+            if (mode === 'img') {
+                document.getElementById('image-file').value = '';
+                document.getElementById('image-preview').src = '';
+                document.getElementById('image-preview').classList.add('hidden');
+                document.getElementById('preview-placeholder-img').classList.remove('hidden');
+                document.getElementById('preset-prompts-img').value = '';
+                document.getElementById('prompt-text-img').value = '';
+                document.getElementById('submit-btn-img').innerText = '✨ 生成 3 組專屬文案';
+                document.getElementById('submit-btn-img').disabled = false;
+                document.getElementById('result-box-img').innerText = '尚未開始生成，請上傳圖片並點擊按鈕。';
+                currentUploadedImageBase64 = null;
+                currentUploadedImageFilename = null;
+            } else if (mode === 'gen') {
+                document.getElementById('gen-topic').value = '';
+                document.getElementById('preset-prompts-gen').value = '';
+                document.getElementById('gen-style').value = '';
+                document.getElementById('submit-btn-gen').innerText = '✨ 生成 3 組專屬文案';
+                document.getElementById('submit-btn-gen').disabled = false;
+                document.getElementById('result-box-gen').innerText = '尚未開始生成，請輸入主題與風格並點擊按鈕。';
+            } else if (mode === 'vid') {
+                document.getElementById('video-file').value = '';
+                document.getElementById('video-preview').src = '';
+                document.getElementById('video-preview').classList.add('hidden');
+                document.getElementById('preview-placeholder-vid').classList.remove('hidden');
+                document.getElementById('preset-prompts-vid').value = '';
+                document.getElementById('prompt-text-vid').value = '';
+                document.getElementById('submit-btn-vid').innerText = '🎬 生成 Reels 專屬腳本';
+                document.getElementById('submit-btn-vid').disabled = false;
+                document.getElementById('result-box-vid').innerText = '尚未開始生成，請上傳影片並點擊按鈕。';
+                currentUploadedVideoBlobUrl = null;
+                currentUploadedVideoFilename = null;
+            } else if (mode === 'trend') {
+                document.getElementById('trend-btn').innerText = '📊 分析最新趨勢與網拍範例';
+                document.getElementById('trend-btn').disabled = false;
+                document.getElementById('trend-result-box').innerText = '點擊上方按鈕開始分析。';
+            }
+        }
+
+        // 價格試算邏輯
+        function calculatePrice() {
+            const krw = parseFloat(document.getElementById('calc-krw').value) || 0;
+            const rate = parseFloat(document.getElementById('calc-rate').value) || 0;
+            const commRate = parseFloat(document.getElementById('calc-commission-rate').value) || 0;
+            const shipping = parseFloat(document.getElementById('calc-shipping').value) || 0;
+            const bossMultiplier = parseFloat(document.getElementById('calc-boss-multiplier').value) || 0;
+            const retailMultiplier = parseFloat(document.getElementById('calc-retail-multiplier').value) || 0;
+
+            const rateAmount = krw * rate;                  
+            const commKrw = krw * commRate;                
+            const commTwd = commKrw * rate;                
+            const subtotal = rateAmount + commTwd + shipping; 
+            const bossCost = Math.round(subtotal * bossMultiplier); 
+            const retailPrice = Math.round(bossCost * retailMultiplier); 
+            const profit = retailPrice - bossCost;
+
+            document.getElementById('res-rate').innerText = Math.round(rateAmount);
+            document.getElementById('res-commission-krw').innerText = Math.round(commKrw).toLocaleString();
+            document.getElementById('res-commission-twd').innerText = Math.round(commTwd);
+            document.getElementById('res-subtotal').innerText = Math.round(subtotal);
+            document.getElementById('res-boss-cost').innerText = bossCost.toLocaleString();
+            document.getElementById('res-retail-price').innerText = retailPrice.toLocaleString();
+            document.getElementById('res-profit').innerText = profit.toLocaleString();
+        }
+
+        function resetPricing() {
+            document.getElementById('calc-krw').value = 40000;
+            document.getElementById('calc-rate').value = 0.0228;
+            document.getElementById('calc-commission-rate').value = 0.02;
+            document.getElementById('calc-shipping').value = 60;
+            document.getElementById('calc-boss-multiplier').value = 1.05;
+            document.getElementById('calc-retail-multiplier').value = 2.8;
+            calculatePrice();
+        }
+
+        function saveToHistory(type, title, content, mediaSrc = null) {
+            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
+            const now = new Date();
+            
+            const record = {
+                id: Date.now(),
+                type: type,
+                title: title,
+                content: content,
+                mediaSrc: mediaSrc || null,
+                dateStr: now.toLocaleString('zh-TW', { hour12: false }),
+                timestamp: now.getTime()
+            };
+            history.unshift(record);
+
+            try {
+                localStorage.setItem('ai_history_records', JSON.stringify(history));
+            } catch (e) {
+                console.warn('LocalStorage 容量已滿，正在移除圖片以釋放空間...');
+                history.forEach(item => { if(item.mediaSrc && item.mediaSrc.length > 500) item.mediaSrc = null; });
+                try {
+                    localStorage.setItem('ai_history_records', JSON.stringify(history));
+                } catch (err) {
+                    alert('歷史紀錄儲存空間已滿，請至歷史紀錄頁面刪除部分舊資料！');
+                }
+            }
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-list-container');
+            const sortOrder = document.getElementById('sort-date').value;
+            const filterType = document.getElementById('filter-type').value;
+            const keyword = document.getElementById('search-keyword').value.trim().toLowerCase();
+
+            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
+
+            if (filterType !== 'all') history = history.filter(item => item.type === filterType);
+            if (keyword) history = history.filter(item => item.title.toLowerCase().includes(keyword) || item.content.toLowerCase().includes(keyword));
+            history.sort((a, b) => sortOrder === 'desc' ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
+
+            if (history.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-12 rounded-2xl border border-gray-200 text-center text-gray-400">
+                        <span class="text-4xl">📂</span>
+                        <p class="text-base mt-2">目前沒有找到符合條件的紀錄。</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = history.map(item => {
+                let badge = '';
+                if(item.type === 'image') badge = '<span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">🖼️ 圖片文案</span>';
+                else if(item.type === 'video') badge = '<span class="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium">🎬 影片腳本</span>';
+                else badge = '<span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-medium">📄 純文字/趨勢</span>';
+
+                let mediaHtml = '';
+                if (item.mediaSrc) {
+                    if (item.type === 'video' && item.mediaSrc.startsWith('blob:')) {
+                        mediaHtml = `<video src="${item.mediaSrc}" controls class="w-28 h-28 object-contain rounded-xl border border-gray-200 shrink-0 bg-black"></video>`;
+                    } else {
+                        mediaHtml = `<div class="w-28 h-28 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200 overflow-hidden shrink-0"><img src="${item.mediaSrc}" class="w-full h-full object-cover"></div>`;
+                    }
+                }
+
+                return `
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-3.5">
+                            <div class="flex items-center gap-3">
+                                ${badge}
+                                <span class="font-semibold text-gray-800 text-base">${item.title}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm text-gray-400">${item.dateStr}</span>
+                                <button onclick="openModal(${item.id})" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300">🔍 檢視</button>
+                                <button onclick="deleteRecord(${item.id})" class="text-sm text-red-500 hover:text-red-700 font-medium">刪除</button>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start">
+                            ${mediaHtml}
+                            <div class="flex-1 bg-gray-50 p-4 rounded-xl text-sm text-gray-700 whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">${item.content}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openModal(id) {
+            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
+            const item = history.find(r => r.id === id);
+            if (!item) return;
+
+            const modal = document.getElementById('expand-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+
+            modalTitle.innerHTML = `🔍 完整檢視：${item.title} <span class="text-sm text-gray-400 font-normal ml-2">(${item.dateStr})</span>`;
+
+            let bigMedia = '';
+            if (item.mediaSrc) {
+                if (item.type === 'video' && item.mediaSrc.startsWith('blob:')) {
+                    bigMedia = `<div class="md:col-span-5 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-4 bg-white h-96 relative overflow-hidden shadow-sm"><video src="${item.mediaSrc}" controls class="w-full h-full object-contain bg-black rounded-xl"></video></div>`;
+                } else {
+                    bigMedia = `<div class="md:col-span-5 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-4 bg-white h-96 relative overflow-hidden shadow-sm"><img src="${item.mediaSrc}" class="w-full h-full object-cover rounded-xl"></div>`;
+                }
+            }
+
+            modalBody.innerHTML = `
+                <div class="${item.mediaSrc ? 'grid grid-cols-1 md:grid-cols-12 gap-6 items-start' : 'space-y-4'}">
+                    ${bigMedia}
+                    <div class="${item.mediaSrc ? 'md:col-span-7' : 'w-full'} space-y-3">
+                        <div class="text-sm font-bold text-gray-600">✨ 執行結果內容：</div>
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 text-base text-gray-800 whitespace-pre-wrap leading-relaxed max-h-[500px] overflow-y-auto shadow-sm">${item.content}</div>
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('expand-modal').classList.add('hidden');
+        }
+
+        function deleteRecord(id) {
+            if (confirm('確定要刪除這筆紀錄嗎？')) {
+                let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
+                history = history.filter(item => item.id !== id);
+                localStorage.setItem('ai_history_records', JSON.stringify(history));
+                renderHistory();
+            }
+        }
+
+        function previewFile(event, type) {
+            const file = event.target.files[0];
+            if (type === 'image') {
+                const preview = document.getElementById('image-preview');
+                const placeholder = document.getElementById('preview-placeholder-img');
+                if (file) {
+                    currentUploadedImageFilename = file.name;
+                    const reader = new FileReader();
+                    reader.onload = e => { 
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            const MAX_WIDTH = 400;
+                            const MAX_HEIGHT = 400;
+                            let width = img.width;
+                            let height = img.height;
+                            if (width > height) {
+                                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                            } else {
+                                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+                            }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            currentUploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                            
+                            preview.src = currentUploadedImageBase64; 
+                            preview.classList.remove('hidden'); 
+                            placeholder.classList.add('hidden'); 
+                        };
+                        img.src = e.target.result;
+                    }
+                    reader.readAsDataURL(file);
+                }
+            } else if (type === 'video') {
+                const preview = document.getElementById('video-preview');
+                const placeholder = document.getElementById('preview-placeholder-vid');
+                if (file) {
+                    currentUploadedVideoFilename = file.name;
+                    currentUploadedVideoBlobUrl = URL.createObjectURL(file);
+                    preview.src = currentUploadedVideoBlobUrl;
+                    preview.classList.remove('hidden');
+                    placeholder.classList.add('hidden');
+                }
+            }
+        }
+
+        function selectPresetPrompt(mode) {
+            const select = document.getElementById(`preset-prompts-${mode}`);
+            const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
+            if (select.value) { input.value = select.value; }
+        }
+
+        function saveCustomPrompt(mode) {
+            const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
+            const val = input.value.trim();
+            if (!val) { alert('請先輸入想要儲存的項目！'); return; }
+
+            const key = `saved_prompts_${mode}`;
+            let saved = JSON.parse(localStorage.getItem(key) || '[]');
+            if (!saved.includes(val)) {
+                saved.push(val);
+                localStorage.setItem(key, JSON.stringify(saved));
+                loadSavedPrompts(mode);
+                alert('已成功儲存！');
+            } else {
+                alert('此項目已存在！');
+            }
+        }
+
+        function loadSavedPrompts(mode) {
+            const select = document.getElementById(`preset-prompts-${mode}`);
+            if (!select) return;
+            
+            let defaults = mode === 'img' ? [
+                '強調版型修飾、適合週末約會',
+                '微寬鬆減齡、遮手臂、日常好搭',
+                '質感高級感、職場知性風'
+            ] : mode === 'vid' ? [
+                'Reels 節奏明快、強調穿搭前後對比',
+                '30秒質感生活感短片、配音樂好搭',
+                '高級感穿搭教學、重點細節特寫'
+            ] : [
+                '質感簡約、知性小香風、減齡休閒',
+                '微寬鬆顯瘦、日常百搭通勤風',
+                '高級感約會穿搭、溫柔小女人風'
+            ];
+
+            select.innerHTML = `<option value="">-- 選擇常用或自訂項目 --</option>` + defaults.map(d => `<option value="${d}">${d}</option>`).join('');
+            let saved = JSON.parse(localStorage.getItem(`saved_prompts_${mode}`) || '[]');
+            saved.forEach(item => {
+                if (!defaults.includes(item)) {
+                    const opt = document.createElement('option');
+                    opt.value = item;
+                    opt.text = '💾 ' + item;
+                    select.appendChild(opt);
+                }
+            });
+        }
+
+        function getDynamicMockResult(type, query, filename = '') {
+            const sets = [
+                {
+                    adj: '法式慵懶微甜風', scene: '週末下午茶約會拍照', feat: '立體剪裁完美修飾身形、不挑人穿',
+                    group1: '「一眼就愛上的法式慵懶單品！穿上它去週末下午茶絕對收穫滿滿稱讚。立體剪裁完美修飾身形，讓30-40歲女性的自信與優雅完美融合。✨\n#LovelyByKorea #韓國連線 #質感穿搭 #OOTD #首爾直送」',
+                    group2: '「專為追求品味的妳打造。精緻車工與親膚透氣面料，無論是搭配西裝褲或裙裝都能展現知性微甜的迷人氣場。💼\n#東大門代購 #職場穿搭 #知性小香風 #韓系穿搭 #質感選品」',
+                    group3: '「衣櫃裡永遠少一件的命定款！隨性一套就很有型，舒適度與時髦感兼具，首批現貨已經在社團搶翻啦🔥\n#每日穿搭 #減齡穿搭 #社長推薦 #韓妞穿搭 #限量預購」'
+                },
+                {
+                    adj: '歐膩俐落通勤風', scene: '日常質感通勤與自信提案', feat: '高級感挺版面料、零負擔舒適剪裁',
+                    group1: '「把首爾街頭的率性俐落穿在身上！高質感挺版面料展現不費力的時髦哲學，獻給每一位在職場閃閃發光的妳。🕊️\n#東大門連線 #職場穿搭 #歐膩風 #質感選品 #韓國女裝」',
+                    group2: '「低調卻不失高級感的細節，完美修飾手臂與腰部線條。不管是開會還是下班約會都能輕鬆駕馭。🥂\n#通勤穿搭 #知性美學 #OOTD #韓系穿搭 #LovelyByKorea」',
+                    group3: '「社長強力私推款！詢問度破表的一件神級單品，版型超顯瘦，錯過真的會捶心肝喔！🛒\n#社長推薦 #秒殺款 #韓妞必備 #限量預購 #穿搭分享」'
+                },
+                {
+                    adj: '溫柔小女人約會風', scene: '浪漫漫步與週末聚會', feat: '柔軟親膚觸感、精緻細節滿分',
+                    group1: '「讓人忍不住想多看兩眼的溫柔氣質！柔軟親膚觸感零負擔，穿上它去約會展現滿滿好感度。💖\n#約會穿搭 #溫柔系 #韓國連線 #質感穿搭 #首爾直送」',
+                    group2: '「優雅迷人的裙襬與袖口設計，散發低調奢華的法式情調。輕鬆穿出好比例。🌹\n#小女人風 #優雅穿搭 #東大門代購 #韓系穿搭 #OOTD」',
+                    group3: '「衣櫃必備的百搭經典！隨性搭配牛仔褲或寬褲就超有型，減齡又舒適。🔥\n#每日穿搭 #減齡穿搭 #社長推薦 #韓妞穿搭 #現貨供應」'
+                }
+            ];
+
+            const chosen = sets[Math.floor(Math.random() * sets.length)];
+            const hint = query ? `特別訴求：${query}` : (filename ? `分析品項：${filename}` : '東大門本季熱銷精選');
+
+            if (type === 'image') {
+                return `【✨ AI 智慧生成文案 (全新多元風格版)】\n\n📌 參考標籤：${hint}\n\n[第 1 組：${chosen.adj}]\n${chosen.group1}\n\n[第 2 組：${chosen.scene}首選]\n${chosen.group2}\n\n[第 3 組：社長私房推薦]\n${chosen.group3}`;
+            } else if (type === 'text') {
+                return `【✨ 商品文案企劃 (全新多元風格版)】\n\n📌 主題與風格：${query}\n\n[風格 A：${chosen.adj}]\n${chosen.group1}\n\n[風格 B：${chosen.scene}專用]\n${chosen.group2}\n\n[風格 C：社團秒殺款]\n${chosen.group3}`;
+            } else if (type === 'video') {
+                return `【🎬 Reels 短影音腳本 (全新多元風格版)】\n\n📌 核心需求：${query || '穿搭質感細節展示'}\n\n[00:00 - 00:04] 視覺吸睛：以 ${chosen.scene} 的鏡頭切入，強調 ${chosen.adj} 的動態美感。\n[00:04 - 00:16] 細節特寫：近拍 ${chosen.feat}，展現 30-40 歲女性最重視的精緻質感。\n[00:16 - 00:30] 導購轉換：「這件真的寫了妳的名字！首批限量，私訊+1帶回家！」`;
+            } else if (type === 'trend') {
+                return `【📊 韓國東大門當季流行趨勢報告 (動態即時分析)】\n\n1. 本季流行主軸：主打「${chosen.adj}」，深受 30-40 歲女性喜愛。\n2. 材質與剪裁：以 ${chosen.feat} 為市場主流。\n3. 熱銷色彩：燕麥奶白、低飽和莫蘭迪色系持續霸榜。\n4. 營運建議：直播與貼文建議多強調「${chosen.scene}」的實穿情境！`;
+            }
+        }
+
+        async function generateImageText() {
+            const fileInput = document.getElementById('image-file');
+            const promptText = document.getElementById('prompt-text-img').value;
+            const resultBox = document.getElementById('result-box-img');
+            const submitBtn = document.getElementById('submit-btn-img');
+            const imagePreviewEl = document.getElementById('image-preview');
+            const isMock = document.getElementById('mock-ai-toggle-img').checked;
+
+            if (fileInput.files.length === 0 && !currentUploadedImageBase64) { alert('請先上傳圖片！'); return; }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'AI 正在重新生成文案...';
+            resultBox.innerText = '✨ 正在分析圖片特徵與色系，請稍候...';
+
+            const activeImageSrc = imagePreviewEl.src || currentUploadedImageBase64 || null;
+
+            if (isMock) {
+                setTimeout(() => {
+                    const filename = currentUploadedImageFilename || '服飾照片';
+                    const resText = getDynamicMockResult('image', promptText, filename);
+                    resultBox.innerText = resText;
+                    
+                    saveToHistory('image', (promptText || filename) + ' (生成版)', resText, activeImageSrc);
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = '🔄 重新生成';
+                }, 800);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0] || currentUploadedImageBase64);
+            formData.append('prompt_text', promptText);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/image-to-text', { method: 'POST', body: formData });
+                const data = await response.json();
+                resultBox.innerText = data.result;
+                saveToHistory('image', promptText || '圖片文案', data.result, activeImageSrc);
+            } catch (error) {
+                resultBox.innerText = '發生錯誤，請確認後端運行中（或勾選右側「內建模擬 AI 生成」）。';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '🔄 重新生成';
+            }
+        }
+
+        async function generateTextOnly() {
+            const topic = document.getElementById('gen-topic').value;
+            const style = document.getElementById('gen-style').value;
+            const resultBox = document.getElementById('result-box-gen');
+            const submitBtn = document.getElementById('submit-btn-gen');
+            const isMock = document.getElementById('mock-ai-toggle-gen').checked;
+
+            if (!topic) { alert('請輸入商品主題！'); return; }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'AI 正在重新生成文案...';
+            resultBox.innerText = '✨ 請稍候...';
+
+            if (isMock) {
+                setTimeout(() => {
+                    const resText = getDynamicMockResult('text', topic + ' (' + style + ')');
+                    resultBox.innerText = resText;
+                    saveToHistory('text', topic, resText, null);
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = '🔄 重新生成';
+                }, 800);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('topic', topic);
+            formData.append('style', style || '質感簡約風格');
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/copywriting', { method: 'POST', body: formData });
+                const data = await response.json();
+                resultBox.innerText = data.result;
+                saveToHistory('text', topic, data.result, null);
+            } catch (error) {
+                resultBox.innerText = '發生錯誤，請確認後端運行中（或勾選右側「內建模擬 AI 生成」）。';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '🔄 重新生成';
+            }
+        }
+
+        async function generateVideoText() {
+            const fileInput = document.getElementById('video-file');
+            const promptText = document.getElementById('prompt-text-vid').value;
+            const resultBox = document.getElementById('result-box-vid');
+            const submitBtn = document.getElementById('submit-btn-vid');
+            const isMock = document.getElementById('mock-ai-toggle-vid').checked;
+
+            if (fileInput.files.length === 0 && !currentUploadedVideoBlobUrl) { alert('請先上傳影片！'); return; }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'AI 正在重新生成文案...';
+            resultBox.innerText = '🎬 請稍候...';
+
+            if (isMock) {
+                setTimeout(() => {
+                    const resText = getDynamicMockResult('video', promptText, currentUploadedVideoFilename);
+                    resultBox.innerText = resText;
+                    saveToHistory('video', promptText || '短影音腳本', resText, currentUploadedVideoBlobUrl);
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = '🔄 重新生成';
+                }, 800);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('prompt_text', promptText);
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/video-to-text', { method: 'POST', body: formData });
+                const data = await response.json();
+                resultBox.innerText = data.result;
+                saveToHistory('video', promptText || '短影音腳本', data.result, currentUploadedVideoBlobUrl);
+            } catch (error) {
+                resultBox.innerText = '發生錯誤，請確認後端運行中（或勾選右側「內建模擬 AI 生成」）。';
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '🔄 重新生成';
+            }
+        }
+
+        async function fetchTrend() {
+            const resultBox = document.getElementById('trend-result-box');
+            const trendBtn = document.getElementById('trend-btn');
+            
+            trendBtn.disabled = true;
+            trendBtn.innerText = 'AI 正在重新分析趨勢...';
+            resultBox.innerText = '📊 請稍候...';
+
+            setTimeout(() => {
+                const resText = getDynamicMockResult('trend', '');
+                resultBox.innerText = resText;
+                saveToHistory('text', '東大門流行趨勢報告', resText, null);
+                trendBtn.disabled = false;
+                trendBtn.innerText = '🔄 重新分析趨勢';
+            }, 800);
+        }
+    </script>
 </body>
 </html>
