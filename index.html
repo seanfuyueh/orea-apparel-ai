@@ -42,10 +42,10 @@
 
         <div class="p-4 border-t border-gray-100 space-y-3">
             <button type="button" onclick="switchTab('history')" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2 cursor-pointer">
-                <span>📂</span> 歷史紀錄
+                <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
             <div class="text-sm text-gray-400 text-center">
-                LovelyByKorea Admin v3.21 (PWA)
+                LovelyByKorea Admin v3.22 (Cloud)
             </div>
         </div>
     </aside>
@@ -370,7 +370,131 @@
         </div>
     </div>
 
-    <!-- JavaScript 完整核心邏輯 -->
+    <!-- Firebase SDK 與 雲端同步邏輯 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC3hF7AJgPZnb9RZdRGFo8UOnOBDVPTahM",
+            authDomain: "orea-apparel-ai.firebaseapp.com",
+            projectId: "orea-apparel-ai",
+            storageBucket: "orea-apparel-ai.firebasestorage.app",
+            messagingSenderId: "628052479735",
+            appId: "1:628052479735:web:e9ff155bffd211123acdf2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 將重要函式掛載到全域讓 HTML 按鈕可以調用
+        window.db = db;
+        window.saveToHistory = async function(type, title, content, mediaSrc = null) {
+            const now = new Date();
+            const record = {
+                type: type,
+                title: title,
+                content: content,
+                mediaSrc: (mediaSrc && mediaSrc.length < 500000) ? mediaSrc : null,
+                dateStr: now.toLocaleString('zh-TW', { hour12: false }),
+                timestamp: now.getTime()
+            };
+            try {
+                await addDoc(collection(db, "ai_history_records"), record);
+                renderHistory();
+            } catch (e) {
+                console.error("雲端寫入失敗: ", e);
+            }
+        };
+
+        window.loadHistoryFromCloud = async function() {
+            try {
+                const q = query(collection(db, "ai_history_records"), orderBy("timestamp", "desc"));
+                const querySnapshot = await getDocs(q);
+                let records = [];
+                querySnapshot.forEach((docSnap) => {
+                    records.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                return records;
+            } catch (e) {
+                console.error("雲端讀取失敗: ", e);
+                return [];
+            }
+        };
+
+        window.deleteRecord = async function(id) {
+            if (confirm('確定要從雲端刪除這筆紀錄嗎？')) {
+                try {
+                    await deleteDoc(doc(db, "ai_history_records", id));
+                    renderHistory();
+                } catch (e) {
+                    console.error("雲端刪除失敗: ", e);
+                }
+            }
+        };
+
+        window.openModal = async function(id) {
+            const records = await window.loadHistoryFromCloud();
+            const item = records.find(r => r.id === id);
+            if (!item) return;
+
+            document.getElementById('modal-title').innerHTML = `🔍 完整檢視：${item.title} <span class="text-sm text-gray-400 font-normal ml-2">(${item.dateStr})</span>`;
+            let bigMedia = item.mediaSrc ? `<div class="md:col-span-5 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-4 bg-white h-96 relative overflow-hidden shadow-sm">${item.type === 'video' && item.mediaSrc.startsWith('blob:') ? `<video src="${item.mediaSrc}" controls class="w-full h-full object-contain bg-black rounded-xl"></video>` : `<img src="${item.mediaSrc}" class="w-full h-full object-cover rounded-xl">`}</div>` : '';
+
+            document.getElementById('modal-body').innerHTML = `
+                <div class="${item.mediaSrc ? 'grid grid-cols-1 md:grid-cols-12 gap-6 items-start' : 'space-y-4'}">
+                    ${bigMedia}
+                    <div class="${item.mediaSrc ? 'md:col-span-7' : 'w-full'} space-y-3">
+                        <div class="text-sm font-bold text-gray-600">✨ 執行結果內容：</div>
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 text-base text-gray-800 whitespace-pre-wrap leading-relaxed max-h-[500px] overflow-y-auto shadow-sm">${item.content}</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('expand-modal').classList.remove('hidden');
+        };
+
+        window.renderHistory = async function() {
+            const container = document.getElementById('history-list-container');
+            if(!container) return;
+            container.innerHTML = `<div class="bg-white p-12 rounded-2xl border border-gray-200 text-center text-gray-400"><p class="text-base">正在從雲端同步歷史紀錄...</p></div>`;
+            
+            const sortOrder = document.getElementById('sort-date').value;
+            const filterType = document.getElementById('filter-type').value;
+            const keyword = document.getElementById('search-keyword').value.trim().toLowerCase();
+
+            let history = await window.loadHistoryFromCloud();
+            if (filterType !== 'all') history = history.filter(item => item.type === filterType);
+            if (keyword) history = history.filter(item => item.title.toLowerCase().includes(keyword) || item.content.toLowerCase().includes(keyword));
+            
+            history.sort((a, b) => sortOrder === 'desc' ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
+
+            if (history.length === 0) {
+                container.innerHTML = `<div class="bg-white p-12 rounded-2xl border border-gray-200 text-center text-gray-400"><span class="text-4xl">📂</span><p class="text-base mt-2">目前雲端沒有找到符合條件的紀錄。</p></div>`;
+                return;
+            }
+
+            container.innerHTML = history.map(item => {
+                let badge = item.type === 'image' ? '<span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">🖼️ 圖片文案</span>' : item.type === 'video' ? '<span class="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium">🎬 影片腳本</span>' : '<span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-medium">📄 純文字/趨勢</span>';
+                let mediaHtml = item.mediaSrc ? (item.type === 'video' && item.mediaSrc.startsWith('blob:') ? `<video src="${item.mediaSrc}" controls class="w-28 h-28 object-contain rounded-xl border border-gray-200 shrink-0 bg-black"></video>` : `<div class="w-28 h-28 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200 overflow-hidden shrink-0"><img src="${item.mediaSrc}" class="w-full h-full object-cover"></div>`) : '';
+
+                return `
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-3.5">
+                            <div class="flex items-center gap-3">${badge}<span class="font-semibold text-gray-800 text-base">${item.title}</span></div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm text-gray-400">${item.dateStr}</span>
+                                <button type="button" onclick="openModal('${item.id}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 cursor-pointer">🔍 檢視</button>
+                                <button type="button" onclick="deleteRecord('${item.id}')" class="text-sm text-red-500 hover:text-red-700 font-medium cursor-pointer">刪除</button>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start">${mediaHtml}<div class="flex-1 bg-gray-50 p-4 rounded-xl text-sm text-gray-700 whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">${item.content}</div></div>
+                    </div>
+                `;
+            }).join('');
+        };
+    </script>
+
+    <!-- 一般業務邏輯 -->
     <script>
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
@@ -455,7 +579,7 @@
                 currentDesktopNav = document.getElementById('desktop-nav-history');
                 currentMobileNav = document.getElementById('mobile-nav-history');
                 document.getElementById('page-title').innerText = '歷史紀錄查詢';
-                renderHistory();
+                if (typeof window.renderHistory === 'function') window.renderHistory();
             }
 
             if (currentDesktopNav) currentDesktopNav.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left cursor-pointer';
@@ -540,93 +664,7 @@
             calculatePrice();
         }
 
-        function saveToHistory(type, title, content, mediaSrc = null) {
-            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
-            const now = new Date();
-            const record = {
-                id: Date.now(),
-                type: type,
-                title: title,
-                content: content,
-                mediaSrc: mediaSrc || null,
-                dateStr: now.toLocaleString('zh-TW', { hour12: false }),
-                timestamp: now.getTime()
-            };
-            history.unshift(record);
-            try {
-                localStorage.setItem('ai_history_records', JSON.stringify(history));
-            } catch (e) {
-                history.forEach(item => { if(item.mediaSrc && item.mediaSrc.length > 500) item.mediaSrc = null; });
-                try { localStorage.setItem('ai_history_records', JSON.stringify(history)); } catch (err) {}
-            }
-        }
-
-        function renderHistory() {
-            const container = document.getElementById('history-list-container');
-            if(!container) return;
-            const sortOrder = document.getElementById('sort-date').value;
-            const filterType = document.getElementById('filter-type').value;
-            const keyword = document.getElementById('search-keyword').value.trim().toLowerCase();
-
-            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
-            if (filterType !== 'all') history = history.filter(item => item.type === filterType);
-            if (keyword) history = history.filter(item => item.title.toLowerCase().includes(keyword) || item.content.toLowerCase().includes(keyword));
-            history.sort((a, b) => sortOrder === 'desc' ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
-
-            if (history.length === 0) {
-                container.innerHTML = `<div class="bg-white p-12 rounded-2xl border border-gray-200 text-center text-gray-400"><span class="text-4xl">📂</span><p class="text-base mt-2">目前沒有找到符合條件的紀錄。</p></div>`;
-                return;
-            }
-
-            container.innerHTML = history.map(item => {
-                let badge = item.type === 'image' ? '<span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">🖼️ 圖片文案</span>' : item.type === 'video' ? '<span class="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium">🎬 影片腳本</span>' : '<span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-medium">📄 純文字/趨勢</span>';
-                let mediaHtml = item.mediaSrc ? (item.type === 'video' && item.mediaSrc.startsWith('blob:') ? `<video src="${item.mediaSrc}" controls class="w-28 h-28 object-contain rounded-xl border border-gray-200 shrink-0 bg-black"></video>` : `<div class="w-28 h-28 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200 overflow-hidden shrink-0"><img src="${item.mediaSrc}" class="w-full h-full object-cover"></div>`) : '';
-
-                return `
-                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-3.5">
-                            <div class="flex items-center gap-3">${badge}<span class="font-semibold text-gray-800 text-base">${item.title}</span></div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-sm text-gray-400">${item.dateStr}</span>
-                                <button type="button" onclick="openModal(${item.id})" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 cursor-pointer">🔍 檢視</button>
-                                <button type="button" onclick="deleteRecord(${item.id})" class="text-sm text-red-500 hover:text-red-700 font-medium cursor-pointer">刪除</button>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-start">${mediaHtml}<div class="flex-1 bg-gray-50 p-4 rounded-xl text-sm text-gray-700 whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">${item.content}</div></div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function openModal(id) {
-            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
-            const item = history.find(r => r.id === id);
-            if (!item) return;
-
-            document.getElementById('modal-title').innerHTML = `🔍 完整檢視：${item.title} <span class="text-sm text-gray-400 font-normal ml-2">(${item.dateStr})</span>`;
-            let bigMedia = item.mediaSrc ? `<div class="md:col-span-5 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-4 bg-white h-96 relative overflow-hidden shadow-sm">${item.type === 'video' && item.mediaSrc.startsWith('blob:') ? `<video src="${item.mediaSrc}" controls class="w-full h-full object-contain bg-black rounded-xl"></video>` : `<img src="${item.mediaSrc}" class="w-full h-full object-cover rounded-xl">`}</div>` : '';
-
-            document.getElementById('modal-body').innerHTML = `
-                <div class="${item.mediaSrc ? 'grid grid-cols-1 md:grid-cols-12 gap-6 items-start' : 'space-y-4'}">
-                    ${bigMedia}
-                    <div class="${item.mediaSrc ? 'md:col-span-7' : 'w-full'} space-y-3">
-                        <div class="text-sm font-bold text-gray-600">✨ 執行結果內容：</div>
-                        <div class="bg-white border border-gray-200 rounded-2xl p-6 text-base text-gray-800 whitespace-pre-wrap leading-relaxed max-h-[500px] overflow-y-auto shadow-sm">${item.content}</div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('expand-modal').classList.remove('hidden');
-        }
-
         function closeModal() { document.getElementById('expand-modal').classList.add('hidden'); }
-        function deleteRecord(id) {
-            if (confirm('確定要刪除這筆紀錄嗎？')) {
-                let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
-                history = history.filter(item => item.id !== id);
-                localStorage.setItem('ai_history_records', JSON.stringify(history));
-                renderHistory();
-            }
-        }
 
         function previewFile(event, type) {
             const file = event.target.files[0];
@@ -714,7 +752,9 @@
             setTimeout(() => {
                 const resText = getDynamicMockResult('image', promptText, currentUploadedImageFilename || '服飾');
                 resultBox.innerText = resText;
-                saveToHistory('image', promptText || '圖片文案', resText, document.getElementById('image-preview').src);
+                if (typeof window.saveToHistory === 'function') {
+                    window.saveToHistory('image', promptText || '圖片文案', resText, document.getElementById('image-preview').src);
+                }
                 submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
             }, 600);
         }
@@ -729,7 +769,9 @@
             setTimeout(() => {
                 const resText = getDynamicMockResult('text', topic + ' (' + style + ')');
                 resultBox.innerText = resText;
-                saveToHistory('text', topic, resText, null);
+                if (typeof window.saveToHistory === 'function') {
+                    window.saveToHistory('text', topic, resText, null);
+                }
                 submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
             }, 600);
         }
@@ -744,7 +786,9 @@
             setTimeout(() => {
                 const resText = getDynamicMockResult('video', promptText, currentUploadedVideoFilename);
                 resultBox.innerText = resText;
-                saveToHistory('video', promptText || '短影音腳本', resText, currentUploadedVideoBlobUrl);
+                if (typeof window.saveToHistory === 'function') {
+                    window.saveToHistory('video', promptText || '短影音腳本', resText, currentUploadedVideoBlobUrl);
+                }
                 submitBtn.disabled = false; submitBtn.innerText = '🎬 生成 Reels 專屬腳本';
             }, 600);
         }
@@ -756,7 +800,9 @@
             setTimeout(() => {
                 const resText = getDynamicMockResult('trend', '');
                 resultBox.innerText = resText;
-                saveToHistory('text', '東大門流行趨勢報告', resText, null);
+                if (typeof window.saveToHistory === 'function') {
+                    window.saveToHistory('text', '東大門流行趨勢報告', resText, null);
+                }
                 trendBtn.disabled = false; trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
             }, 600);
         }
