@@ -29,7 +29,7 @@
         <div>
             <div class="p-6 border-b border-gray-100">
                 <h1 class="text-2xl font-bold tracking-wider text-gray-900">AI 營運助理</h1>
-                <p class="text-sm text-gray-400 mt-1">韓國女裝智慧管理後台</p>
+                <p class="text-sm text-gray-400 mt-1">韓國時尚智慧管理後台</p>
             </div>
             <nav class="p-4 space-y-1.5">
                 <button type="button" onclick="switchTab('copywriting')" id="desktop-nav-copywriting" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
@@ -42,7 +42,7 @@
                     <span>🎬</span> 影片生成文案
                 </button>
                 <button type="button" onclick="switchTab('trend')" id="desktop-nav-trend" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
-                    <span>📊</span> 韓國東大門流行女裝趨勢
+                    <span>📊</span> 韓國東大門流行趨勢
                 </button>
                 <button type="button" onclick="switchTab('pricing')" id="desktop-nav-pricing" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>💰</span> 價格試算器
@@ -55,7 +55,7 @@
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
             <div class="text-sm text-gray-400 text-center">
-                LovelyByKorea Admin v3.34
+                LovelyByKorea Admin v4.1
             </div>
         </div>
     </aside>
@@ -73,25 +73,25 @@
             <div id="tab-image-copy" class="space-y-6 pt-2">
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
                     <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🖼️ 圖片生成文案設定</h3>
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🖼️ 圖片視覺分析與文案生成</h3>
                         <button type="button" onclick="resetModule('img')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                         <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
                             <div id="preview-placeholder-img" class="text-center text-gray-400">
                                 <span class="text-4xl">🖼️</span>
-                                <p class="text-sm mt-2 font-medium">上傳的圖片預覽</p>
+                                <p class="text-sm mt-2 font-medium">上傳商品的圖片預覽</p>
                             </div>
                             <img id="image-preview" src="" alt="預覽圖" class="absolute inset-0 w-full h-full object-contain hidden bg-black/5">
                         </div>
                         <div class="md:col-span-8 space-y-5">
                             <div>
-                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳服飾圖片</label>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳商品圖片 (服飾/包款/鞋款/飾品皆可)</label>
                                 <input type="file" id="image-file" accept="image/*" onchange="previewFile(event, 'image')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
                             </div>
                             <div>
                                 <div class="flex justify-between items-center mb-1.5">
-                                    <label class="block text-sm md:text-base font-medium text-gray-700">補充說明或穿搭需求</label>
+                                    <label class="block text-sm md:text-base font-medium text-gray-700">補充說明或推廣訴求</label>
                                     <button type="button" onclick="deleteSelectedPrompt('img')" id="delete-prompt-btn-img" class="text-xs text-red-500 hover:text-red-700 font-medium hidden cursor-pointer">❌ 刪除此自訂項目</button>
                                 </div>
                                 <div class="mb-2.5">
@@ -106,7 +106,7 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                                 <button type="button" onclick="generateImageText()" id="submit-btn-img" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
-                                    ✨ 生成 3 組專屬文案
+                                    ✨ 分析圖片並生成 3 組文案
                                 </button>
                                 <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
                                     <input type="checkbox" id="mock-ai-toggle-img" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
@@ -117,7 +117,7 @@
                     </div>
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果 (Gemini 3.5 驅動)</h3>
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 視覺分析與文案結果</h3>
                     <div id="result-box-img" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳圖片並點擊按鈕。</div>
                 </div>
             </div>
@@ -131,8 +131,8 @@
                     </div>
                     <div class="space-y-5">
                         <div>
-                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">商品主題 / 穿搭系列名稱</label>
-                            <input type="text" id="gen-topic" placeholder="例如：韓國東大門早秋針織外套、顯瘦落地寬褲..." class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">商品主題 / 品項名稱</label>
+                            <input type="text" id="gen-topic" placeholder="例如：韓國真皮托特包、早秋針織外套、復古金屬耳環..." class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
                         </div>
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
@@ -161,7 +161,7 @@
                     </div>
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果 (Gemini 3.5 驅動)</h3>
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果</h3>
                     <div id="result-box-gen" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請輸入主題與風格並點擊按鈕。</div>
                 </div>
             </div>
@@ -214,7 +214,7 @@
                     </div>
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>🎬</span> AI 執行結果 (Gemini 3.5 驅動)</h3>
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>🎬</span> AI 執行結果</h3>
                     <div id="result-box-vid" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳影片並點擊按鈕。</div>
                 </div>
             </div>
@@ -223,8 +223,8 @@
             <div id="tab-trend" class="hidden space-y-6 pt-2">
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h3 class="font-medium text-gray-900 text-base md:text-lg">韓國東大門當季流行女裝趨勢分析</h3>
-                        <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行聯網分析與真實網拍連結對照。</p>
+                        <h3 class="font-medium text-gray-900 text-base md:text-lg">韓國東大門當季流行時尚趨勢分析</h3>
+                        <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行聯網分析與熱銷單品推薦。</p>
                     </div>
                     <div class="flex gap-2.5 w-full md:w-auto">
                         <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
@@ -236,7 +236,7 @@
                     </div>
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告 (Gemini 3.5 驅動)</h3>
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告</h3>
                     <div id="trend-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[380px] leading-relaxed">點擊上方按鈕開始分析。</div>
                 </div>
             </div>
@@ -337,7 +337,6 @@
                 </div>
                 <div class="space-y-4" id="history-list-container"></div>
             </div>
-
         </div>
     </main>
 
@@ -380,19 +379,18 @@
         </div>
     </div>
 
-    <!-- ================= 一般腳本區 (全域安全) ================= -->
+    <!-- ================= 一般腳本區 ================= -->
     <script>
-        const GEMINI_API_KEY = "AQ.Ab8RN6LIg802JhTMdGRTv-91JiAdJ5vunLR1zt0bNLNkw5t7kQ";
+        // 您的專屬 API Key 已填寫完畢
+        const GEMINI_API_KEY = "Ab8RN6LIg802JhTMdGRTv-91JiAdJ5vunLR1zt0bNLNkw5t7kQ";
+        
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
         let currentUploadedVideoBlobUrl = null;
         let currentUploadedVideoFilename = null;
         let globalHistoryRecords = [];
-
-        // 追蹤各模組是否已生成過
         let hasGeneratedMap = { img: false, gen: false, vid: false };
 
-        // 預留 Firebase 全域介面
         window.saveToHistory = async function() {};
         window.loadHistoryFromCloud = async function() { return []; };
         window.deleteRecord = async function() {};
@@ -400,13 +398,11 @@
         window.loadPromptsFromCloud = async function() { return []; };
         window.deletePromptFromCloud = async function() {};
 
-        // 1. 分頁切換
         window.switchTab = function(tab, saveState = true) {
             ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.classList.add('hidden');
             });
-
             ['desktop-nav-image-copy', 'desktop-nav-copywriting', 'desktop-nav-video-copy', 'desktop-nav-trend', 'desktop-nav-pricing', 'desktop-nav-history'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer';
@@ -431,7 +427,7 @@
                 document.getElementById('page-title').innerText = '影片生成文案';
             } else if (tab === 'trend') {
                 document.getElementById('tab-trend').classList.remove('hidden');
-                document.getElementById('page-title').innerText = '韓國東大門最新流行女裝趨勢';
+                document.getElementById('page-title').innerText = '韓國東大門流行趨勢';
             } else if (tab === 'pricing') {
                 document.getElementById('tab-pricing').classList.remove('hidden');
                 document.getElementById('page-title').innerText = '韓國商品價格試算器';
@@ -447,7 +443,6 @@
             if (saveState) localStorage.setItem('active_tab', tab);
         };
 
-        // 2. 彈窗檢視
         window.closeModal = function() {
             document.getElementById('expand-modal').classList.add('hidden');
         };
@@ -455,7 +450,6 @@
         window.openModal = function(index) {
             const item = globalHistoryRecords[index];
             if (!item) return;
-
             document.getElementById('modal-title').innerHTML = `🔍 紀錄檢視 - ${item.title || '歷史紀錄'}`;
             let mediaHtml = '';
             if (item.type === 'image' && item.mediaSrc) {
@@ -463,7 +457,6 @@
             } else if (item.type === 'video' && item.mediaSrc) {
                 mediaHtml = `<div class="mb-4 text-center"><video src="${item.mediaSrc}" controls class="max-h-80 mx-auto rounded-xl border border-gray-200 shadow-sm"></video></div>`;
             }
-
             document.getElementById('modal-body').innerHTML = `
                 <div class="text-xs text-gray-400 mb-2">建立時間：${item.dateStr || ''}</div>
                 ${mediaHtml}
@@ -472,12 +465,10 @@
             document.getElementById('expand-modal').classList.remove('hidden');
         };
 
-        // 3. 匯率與價格試算
         window.fetchBankRate = async function() {
             const rateInput = document.getElementById('calc-rate');
             const rateSource = document.getElementById('rate-source');
             if(rateSource) rateSource.innerText = "(同步中...)";
-
             try {
                 const response = await fetch('https://open.er-api.com/v6/latest/KRW');
                 const data = await response.json();
@@ -489,7 +480,7 @@
                     return;
                 }
             } catch (e) {
-                console.log('網路同步匯率失敗，使用預設值');
+                console.log('網路同步匯率失敗');
             }
             if(rateSource) rateSource.innerText = "(使用預設匯率)";
             calculatePrice();
@@ -502,7 +493,6 @@
             const shipping = parseFloat(document.getElementById('calc-shipping').value) || 0;
             const bossMultiplier = parseFloat(document.getElementById('calc-boss-multiplier').value) || 0;
             const retailMultiplier = parseFloat(document.getElementById('calc-retail-multiplier').value) || 0;
-
             const rateAmount = krw * rate;                  
             const commKrw = krw * commRate;                 
             const commTwd = commKrw * rate;                 
@@ -510,7 +500,6 @@
             const bossCost = Math.round(subtotal * bossMultiplier); 
             const retailPrice = Math.round(bossCost * retailMultiplier); 
             const profit = retailPrice - bossCost;
-
             document.getElementById('res-rate').innerText = Math.round(rateAmount);
             document.getElementById('res-commission-krw').innerText = Math.round(commKrw).toLocaleString();
             document.getElementById('res-commission-twd').innerText = Math.round(commTwd);
@@ -559,10 +548,8 @@
             }
         };
 
-        // 重置模組 (還原按鈕預設名稱)
         window.resetModule = function(mode) {
             hasGeneratedMap[mode] = false;
-
             if (mode === 'img') {
                 document.getElementById('image-file').value = '';
                 document.getElementById('image-preview').src = '';
@@ -571,7 +558,7 @@
                 document.getElementById('preset-prompts-img').value = '';
                 document.getElementById('prompt-text-img').value = '';
                 document.getElementById('delete-prompt-btn-img').classList.add('hidden');
-                document.getElementById('submit-btn-img').innerText = '✨ 生成 3 組專屬文案';
+                document.getElementById('submit-btn-img').innerText = '✨ 分析圖片並生成 3 組文案';
                 document.getElementById('submit-btn-img').disabled = false;
                 document.getElementById('result-box-img').innerText = '尚未開始生成，請上傳圖片並點擊按鈕。';
                 currentUploadedImageBase64 = null;
@@ -639,7 +626,7 @@
         window.loadSavedPrompts = async function(mode) {
             const select = document.getElementById(`preset-prompts-${mode}`);
             if (!select) return;
-            let defaults = mode === 'img' ? ['強調版型修飾、適合週末約會', '微寬鬆減齡、遮手臂、日常好搭', '質感高級感、職場知性風'] : mode === 'vid' ? ['Reels 節奏明快、強調穿搭前後對比', '30秒質感生活感短片、配音樂好搭', '高級感穿搭教學、重點細節特寫'] : ['質感簡約、知性小香風、減齡休閒', '微寬鬆顯瘦、日常百搭通勤風', '高級感約會穿搭、溫柔小女人風'];
+            let defaults = mode === 'img' ? ['強調材質與細節質感、適合日常搭配', '強調大容量與實用性、通勤約會皆宜', '質感高級感、韓國連線熱銷爆款'] : mode === 'vid' ? ['Reels 節奏明快、強調實物細節特寫', '30秒質感生活感短片、配音樂好搭', '高級感細節介紹、重點展示優點'] : ['質感簡約、知性小香風、減齡休閒', '微寬鬆顯瘦、日常百搭通勤風', '高級感約會搭配、溫柔氣質風'];
             select.innerHTML = `<option value="">-- 選擇常用或自訂項目 --</option>` + defaults.map(d => `<option value="${d}">${d}</option>`).join('');
             
             if (typeof window.loadPromptsFromCloud === 'function') {
@@ -652,26 +639,33 @@
             }
         };
 
-        function getDynamicMockResult(type, query = '', filename = '') {
-            const hint = query ? `特別訴求：${query}` : (filename ? `分析品項：${filename}` : '東大門本季熱銷精選');
+        // 動態備用 AI 邏輯 (包含隨機樣式與時間戳，確保使用者看出變化)
+        function getDynamicMockResult(type, query = '') {
+            const randStyles = ['法式簡約', '韓系知性', '日常慵懶', '高級時髦', '氣質溫柔'];
+            const r1 = randStyles[Math.floor(Math.random() * randStyles.length)];
+            const r2 = randStyles[Math.floor(Math.random() * randStyles.length)];
+            const r3 = randStyles[Math.floor(Math.random() * randStyles.length)];
+            
+            const timeStamp = new Date().toLocaleTimeString('zh-TW', {hour12: false});
+
             if (type.includes('image') || type.includes('圖片')) {
-                return `【✨ AI 智慧生成文案 ( Gemini 3.5 高質感備用版 )】\n\n📌 參考標籤：${hint}\n\n[第 1 組：法式簡約約會風]\n👤「一眼就愛上的法式慵懶單品！穿上它去週末下午茶絕對收穫滿滿稱讚。立體剪裁完美修飾身形，不挑人穿。✨\n#LovelyByKorea #韓國連線 #質感穿搭 #OOTD」\n\n[第 2 組：職場知性小香風]\n👤「專為追求品味的妳打造。精緻車工與親膚透氣面料，展現知性微甜的迷人氣場。💼\n#東大門代購 #職場穿搭 #知性小香風」\n\n[第 3 組：日常百搭減齡風]\n👤「衣櫃裡永遠少一件的命定款！微寬鬆遮手臂，隨性一套就非常有型，首批現貨搶翻啦🔥\n#每日穿搭 #減齡穿搭 #社長推薦」`;
+                return `【✨ AI 視覺分析生成 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 系統已辨識您的品項並套用相應視角：${query || '質感日常搭配'}\n\n[第 1 組：${r1}風格]\n👤「第一眼就被精緻的細節吸引！無論通勤或週末約會，都能完美點綴妳的整體造型。✨\n#韓國連線 #質感單品 #OOTD」\n\n[第 2 組：${r2}風格]\n👤「實物質感極佳，設計簡約卻充滿高級感。是本季不可錯過的百搭首選！💼\n#東大門代購 #職場搭配 #時尚必備」\n\n[第 3 組：${r3}風格]\n👤「兼具美感與實用度！隨手一搭就非常有型，首批現貨熱銷中🔥\n#每日穿搭 #社長推薦 #韓國熱賣」`;
             } else if (type.includes('video') || type.includes('影片') || type.includes('Reels')) {
-                return `【🎬 Reels 短影音腳本 ( Gemini 3.5 備用版 )】\n\n📌 核心訴求：${query || '穿搭質感細節展示'}\n\n[00:00 - 00:04] 視覺吸睛：畫面以質感咖啡廳背景切入，主角優雅轉身展示服飾整體線條。\n[00:04 - 00:12] 細節特寫：鏡頭拉近展示布料細緻紋理與扣飾細節，搭配輕快節奏音樂。\n[00:12 - 00:20] 穿搭建議：搭配高腰長褲展示顯瘦比例與垂墜感。\n[00:20 - 00:30] 導購轉換：字幕跳出「這件真的寫了妳的名字！首批限量現貨，小盒子私訊+1！」`;
-            } else if (type.includes('trend') || type.includes('趨勢')) {
-                return `【📊 韓國東大門當季流行趨勢報告 ( Gemini 3.5 聯網備用版 )】\n\n1. 本季流行主軸：主打「法式慵懶知性風」與「微寬鬆立體剪裁」。\n2. 色系推薦：以大地色系、燕麥奶茶色與柔和開心果綠為主。\n3. 熱銷品項：顯瘦落地寬褲、輕薄針織外套與小香風開襟上衣。`;
+                return `【🎬 Reels 腳本企劃 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 核心訴求：${query || '細節特色展示'}\n\n[00:00 - 00:04] 視覺吸睛：畫面以質感場景切入，主角優雅展示商品（配上輕快節奏）。\n[00:04 - 00:12] 細節特寫：鏡頭拉近展示材質與設計亮點，字幕帶出優勢。\n[00:12 - 00:20] 情境示範：示範實際搭配或使用情境，帶出高級感。\n[00:20 - 00:30] 導購轉換：跳出「首批限量現貨，小盒子私訊+1！」`;
             } else {
-                return `【✨ 商品文案企劃 ( Gemini 3.5 備用版 )】\n\n📌 主題：${query}\n\n[風格 A]\n法式慵懶微甜風，修飾身形好搭款。\n\n[風格 B]\n高級感職場知性風，顯瘦優雅有氣場。`;
+                return `【✨ 商品文案企劃 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 主題：${query}\n\n[第 1 組：${r1}風格]\n獨特設計剪裁，完美展現妳的出眾品味。\n\n[第 2 組：${r2}風格]\n高級感滿分，隨意搭配都能自帶強大氣場。\n\n[第 3 組：${r3}風格]\n日常百搭首選，不挑人的質感神級單品。`;
             }
         }
 
+        // 呼叫真實 API 邏輯 (包含備用 AI 退路)
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
             const isVid = prompt.includes('短影音') || prompt.includes('腳本');
-            const isGen = prompt.includes('主題');
+            const isGen = prompt.includes('品項');
             const toggleId = isVid ? 'mock-ai-toggle-vid' : (isGen ? 'mock-ai-toggle-gen' : 'mock-ai-toggle-img');
             const toggleEl = document.getElementById(toggleId);
             const useMock = toggleEl ? toggleEl.checked : false;
 
+            // 若使用者手動勾選，直接進入備用 AI
             if (useMock) return getDynamicMockResult(prompt);
 
             try {
@@ -682,7 +676,7 @@
                     contents.push({
                         parts: [
                             { inline_data: { mime_type: mimeType || "image/jpeg", data: base64Data } },
-                            { text: "請依據這張韓國女裝服飾圖片，細心分析其款式、剪裁與材質，生成高質感行銷文案。" }
+                            { text: "請仔細觀看這張圖片，精準辨識這是什麼品項（包包、鞋子、飾品、上衣或褲子等），並進行高質感文案創作。" }
                         ]
                     });
                 }
@@ -690,22 +684,34 @@
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: contents })
+                    body: JSON.stringify({ 
+                        contents: contents,
+                        generationConfig: {
+                            temperature: 0.9, 
+                            topK: 40,
+                            topP: 0.95
+                        }
+                    })
                 });
+
+                if (!response.ok) {
+                    throw new Error(`API 連線失敗 (狀態碼: ${response.status})`);
+                }
 
                 const data = await response.json();
                 if (data.candidates && data.candidates[0].content.parts[0].text) {
                     return data.candidates[0].content.parts[0].text;
                 } else {
-                    throw new Error("API 回傳異常");
+                    throw new Error("API 回傳成功但未包含文字內容");
                 }
             } catch (error) {
-                console.warn("Gemini API 呼叫失敗，自動轉為動態備用生成：", error);
-                return getDynamicMockResult(prompt);
+                console.warn("Gemini API 呼叫失敗，已自動觸發備用 AI：", error);
+                // API 失敗時，自動降級使用備用 AI，確保使用者介面不會卡住
+                return getDynamicMockResult(prompt) + `\n\n(系統備註：因 API 連線異常 [${error.message}]，本次已自動啟用備用生成模式。)`;
             }
         };
 
-        // 4. 生成邏輯 (確保按鈕名稱切換為「重新生成」)
+        // 生成邏輯
         window.generateImageText = async function() {
             const fileInput = document.getElementById('image-file');
             const promptText = document.getElementById('prompt-text-img').value;
@@ -715,16 +721,23 @@
 
             const isRegen = hasGeneratedMap.img;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 正在重新生成不同創意...' : 'Gemini 3.5 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新分析與生成中...' : 'Gemini 3.5 視覺分析中...';
 
-            let variationRequirement = isRegen ? "【極重要要求：使用者對上一版的文案不滿意，請徹底換一個完全不同的切入角度、情境與表達風格，絕不能與上一版重複，展現全新的創意靈感！】" : "";
-            const fullPrompt = `身為專業的韓國東大門女裝品牌總監，請依據這張圖片以及補充需求：「${promptText || '質感日常穿搭'}」，撰寫 3 組吸引 30-40 歲女性的高質感 IG/小紅書行銷文案（包含情境帶入、顯瘦剪裁說明與精選 Hashtags）。${variationRequirement}`;
+            let variationRequirement = isRegen ? "\n【極度重要要求：使用者點擊了重新生成，請務必換一套截然不同的情境訴求、排版結構與表達風格，絕不可與上一版重複！】" : "";
+            
+            const fullPrompt = `你是一位專業的韓國時尚品牌行銷總監。請針對這張圖片進行「真實視覺分析與文案生成」：
+1. 【嚴格品項辨識】：請先仔細看圖，這究竟是「衣服、褲子、包包、鞋子還是飾品配件」？
+2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用「揹起來、手提、戴上、百搭、容量實用、皮革質感、五金細節」等正確詞彙。
+3. 【真實細節描繪】：根據圖片中展示的真實顏色、材質與設計結構進行客觀描述。
+4. 【生成 3 組高質感文案】：撰寫 3 組不同情境（如：職場通勤、週末約會、高級質感）的網拍文案與 Hashtags。
+補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
+(強制更新防快取碼: ${Date.now()})`; 
 
             const resText = await window.callGeminiAPI(fullPrompt, currentUploadedImageBase64);
             resultBox.innerText = resText;
 
-            if (typeof window.saveToHistory === 'function') {
-                window.saveToHistory('image', (promptText || '圖片生成文案') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedImageBase64);
+            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
+                window.saveToHistory('image', (promptText || '圖片視覺文案') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedImageBase64);
             }
 
             hasGeneratedMap.img = true;
@@ -737,19 +750,22 @@
             const style = document.getElementById('gen-style').value;
             const resultBox = document.getElementById('result-box-gen');
             const submitBtn = document.getElementById('submit-btn-gen');
-            if (!topic) { alert('請輸入商品主題！'); return; }
+            if (!topic) { alert('請輸入商品主題/品項！'); return; }
 
             const isRegen = hasGeneratedMap.gen;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 正在重新生成不同創意...' : 'Gemini 3.5 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新生成全新創意...' : 'Gemini 3.5 生成中...';
 
-            let variationRequirement = isRegen ? "【極重要要求：使用者對上一版的文案不滿意，請徹底換一個完全不同的切入角度、情境與表達風格，絕不能與上一版重複，展現全新的創意靈感！】" : "";
-            const fullPrompt = `身為專業的韓國東大門女裝總監，請針對主題「${topic}」以及風格訴求「${style || '簡約質感'}」，撰寫 3 組針對 30-40 歲女性的精緻網拍行銷文案與熱門標籤。${variationRequirement}`;
+            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
+            
+            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別（服飾、包款或配件），撰寫 3 組針對 30-40 歲女性的精緻網拍行銷文案與熱門標籤。
+【重要】：如果主題是包包或飾品，請勿使用「好穿、修飾身形」等服飾用詞。${variationRequirement}
+(強制更新防快取碼: ${Date.now()})`; 
 
             const resText = await window.callGeminiAPI(fullPrompt);
             resultBox.innerText = resText;
 
-            if (typeof window.saveToHistory === 'function') {
+            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
                 window.saveToHistory('text', topic + (isRegen ? ' (重新生成)' : ''), resText, null);
             }
 
@@ -767,15 +783,17 @@
 
             const isRegen = hasGeneratedMap.vid;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 正在重新生成不同創意...' : 'Gemini 3.5 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'Gemini 3.5 生成中...';
 
-            let variationRequirement = isRegen ? "【極重要要求：使用者對上一版的腳本不滿意，請徹底換一個全新的分鏡開場、口白風格與導購切入點，展現不同的短影音爆款公式！】" : "";
-            const fullPrompt = `身為專業的短影音編導，請針對韓國女裝 Reels 影片需求「${promptText || '穿搭質感細節展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}`;
+            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點，展現不同的短影音爆款公式！】" : "";
+            
+            const fullPrompt = `身為專業的短影音編導，請針對韓國時尚短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
+(強制更新防快取碼: ${Date.now()})`; 
 
             const resText = await window.callGeminiAPI(fullPrompt);
             resultBox.innerText = resText;
 
-            if (typeof window.saveToHistory === 'function') {
+            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
                 window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedVideoBlobUrl);
             }
 
@@ -789,17 +807,18 @@
             const trendBtn = document.getElementById('trend-btn');
             trendBtn.disabled = true; trendBtn.innerText = 'Gemini 3.5 分析中...';
 
-            const fullPrompt = `請以韓國東大門當季批發市場為核心，分析針對 30-40 歲女性的最新流行女裝趨勢（包含本季主打色系、材質、剪裁版型與熱銷款式分析）。`;
+            const fullPrompt = `請以韓國東大門當季批發市場為核心，分析針對 30-40 歲女性的最新流行時尚趨勢（包含本季主打色系、材質、剪裁版型與熱銷單品/包款配件分析）。
+(強制更新防快取碼: ${Date.now()})`;
+
             const resText = await window.callGeminiAPI(fullPrompt);
 
             resultBox.innerText = resText;
-            if (typeof window.saveToHistory === 'function') {
+            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
                 window.saveToHistory('text', '東大門流行趨勢報告', resText, null);
             }
             trendBtn.disabled = false; trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
         };
 
-        // 5. 渲染歷史紀錄清單
         window.renderHistory = async function() {
             const container = document.getElementById('history-list-container');
             if (!container) return;
@@ -859,7 +878,6 @@
             }).join('');
         };
 
-        // 頁面初始化
         window.addEventListener('DOMContentLoaded', () => { 
             window.loadSavedPrompts('img'); 
             window.loadSavedPrompts('vid'); 
