@@ -1,55 +1,291 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orea Apparel AI</title>
-    <link rel="manifest" href="/manifest.json">
+    <title>韓國女裝 AI 智慧後台</title>
+    <!-- PWA 設定 -->
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#111827">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="AI 後台">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
     <style>
-      /* 全域防止水平超出與跑版 */
-      html, body {
-        width: 100%;
-        max-width: 100%;
-        overflow-x: hidden;
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: 'Noto Sans TC', sans-serif;
-      }
-
-      *, *:before, *:after {
-        box-sizing: inherit;
-      }
-
-      div, section, main, header, footer, form, .container {
-        max-width: 100%;
-        box-sizing: border-box;
-      }
-
-      .button-group, .action-container, .btn-wrapper {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        max-width: 100%;
-        align-items: center;
-      }
-
-      button, .btn, input[type="button"], input[type="submit"] {
-        max-width: 100%;
-        white-space: nowrap;
-      }
+        body { font-family: 'Noto Sans TC', sans-serif; font-size: 1.15rem; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* 🛡️ 安全防跑版與限制水平溢位 */
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        div, section, main, header, footer, form, .container {
+            max-width: 100%;
+            box-sizing: border-box;
+        }
     </style>
 </head>
-<body>
-    <div class="container mx-auto px-4">
-        <!-- 請將您原本的網頁主內容與按鈕結構貼在這裡 -->
-    </div>
-</body>
-</html>
+<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
+
+    <!-- 桌面版側邊欄 -->
+    <aside class="hidden md:flex w-72 bg-white border-r border-gray-200 flex-col justify-between shrink-0">
+        <div>
+            <div class="p-6 border-b border-gray-100">
+                <h1 class="text-2xl font-bold tracking-wider text-gray-900">AI 營運助理</h1>
+                <p class="text-sm text-gray-400 mt-1">韓國女裝智慧管理後台</p>
+            </div>
+            <nav class="p-4 space-y-1.5">
+                <a href="#" onclick="switchTab('copywriting')" id="desktop-nav-copywriting" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                    <span>📄</span> 文案生成
+                </a>
+                <a href="#" onclick="switchTab('image-copy')" id="desktop-nav-image-copy" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors">
+                    <span>🖼️</span> 圖片生成文案
+                </a>
+                <a href="#" onclick="switchTab('video-copy')" id="desktop-nav-video-copy" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                    <span>🎬</span> 影片生成文案
+                </a>
+                <a href="#" onclick="switchTab('trend')" id="desktop-nav-trend" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                    <span>📊</span> 韓國東大門流行女裝趨勢
+                </a>
+                <a href="#" onclick="switchTab('pricing')" id="desktop-nav-pricing" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                    <span>💰</span> 價格試算器
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-gray-100 space-y-3">
+            <button onclick="switchTab('history')" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2">
+                <span>📂</span> 歷史紀錄
+            </button>
+            <div class="text-sm text-gray-400 text-center">
+                LovelyByKorea Admin v3.21 (PWA)
+            </div>
+        </div>
+    </aside>
+
+    <!-- 主畫面容器 -->
+    <main class="flex-1 flex flex-col overflow-y-auto relative bg-gray-50">
+        <!-- 頂部 Header -->
+        <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm shrink-0 z-10">
+            <h2 id="page-title" class="text-lg md:text-xl font-semibold text-gray-800">圖片生成文案</h2>
+            <div class="text-sm md:text-base text-gray-500 font-medium">CEO 專屬後台</div>
+        </header>
+
+        <!-- 內容區 -->
+        <div class="px-4 md:px-8 pt-6 pb-28 md:pb-12 max-w-6xl w-full mx-auto">
+            
+            <!-- 1. 圖片生成文案 -->
+            <div id="tab-image-copy" class="space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🖼️ 圖片生成文案設定</h3>
+                        <button onclick="resetModule('img')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors">🔄 重置</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                        <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
+                            <div id="preview-placeholder-img" class="text-center text-gray-400">
+                                <span class="text-4xl">🖼️</span>
+                                <p class="text-sm mt-2 font-medium">上傳的圖片預覽</p>
+                            </div>
+                            <img id="image-preview" src="" alt="預覽圖" class="absolute inset-0 w-full h-full object-contain hidden bg-black/5">
+                        </div>
+                        <div class="md:col-span-8 space-y-5">
+                            <div>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳服飾圖片</label>
+                                <input type="file" id="image-file" accept="image/*" onchange="previewFile(event, 'image')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">補充說明或穿搭需求</label>
+                                <div class="flex gap-2 mb-2.5">
+                                    <select id="preset-prompts-img" onchange="selectPresetPrompt('img')" class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                        <option value="">-- 選擇常用或自訂說明 --</option>
+                                        <option value="強調版型修飾、適合週末約會">強調版型修飾、適合週末約會</option>
+                                        <option value="微寬鬆減齡、遮手臂、日常好搭">微寬鬆減齡、遮手臂、日常好搭</option>
+                                        <option value="質感高級感、職場知性風">質感高級感、職場知性風</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="prompt-text-img" placeholder="或直接在此輸入新的補充說明..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <button onclick="saveCustomPrompt('img')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap">💾 儲存</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pt-1">
+                                <button onclick="generateImageText()" id="submit-btn-img" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors">
+                                    ✨ 生成 3 組專屬文案
+                                </button>
+                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" id="mock-ai-toggle-img" checked class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                    <span class="text-xs md:text-sm font-bold text-gray-700">⚡ 內建模擬 AI 生成</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果</h3>
+                    <div id="result-box-img" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳圖片並點擊按鈕。</div>
+                </div>
+            </div>
+
+            <!-- 2. 文案生成 -->
+            <div id="tab-general-copy" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">📄 純文字文案生成設定</h3>
+                        <button onclick="resetModule('gen')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors">🔄 重置</button>
+                    </div>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">商品主題 / 穿搭系列名稱</label>
+                            <input type="text" id="gen-topic" placeholder="例如：韓國東大門早秋針織外套、顯瘦落地寬褲..." class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">風格要求與訴求</label>
+                            <div class="flex gap-2 mb-2.5">
+                                <select id="preset-prompts-gen" onchange="selectPresetPrompt('gen')" class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <option value="">-- 選擇常用或自訂風格要求 --</option>
+                                    <option value="質感簡約、知性小香風、減齡休閒">質感簡約、知性小香風、減齡休閒</option>
+                                    <option value="微寬鬆顯瘦、日常百搭通勤風">微寬鬆顯瘦、日常百搭通勤風</option>
+                                    <option value="高級感約會穿搭、溫柔小女人風">高級感約會穿搭、溫柔小女人風</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" id="gen-style" placeholder="或直接在此輸入新的風格要求與訴求..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                <button onclick="saveCustomPrompt('gen')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap">💾 儲存</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 pt-1">
+                            <button onclick="generateTextOnly()" id="submit-btn-gen" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors">
+                                ✨ 生成 3 組專屬文案
+                            </button>
+                            <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
+                                <input type="checkbox" id="mock-ai-toggle-gen" checked class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                <span class="text-xs md:text-sm font-bold text-gray-700">⚡ 內建模擬 AI 生成</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果</h3>
+                    <div id="result-box-gen" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請輸入主題與風格並點擊按鈕。</div>
+                </div>
+            </div>
+
+            <!-- 3. 影片生成文案 -->
+            <div id="tab-video-copy" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 影片生成文案設定</h3>
+                        <button onclick="resetModule('vid')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors">🔄 重置</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                        <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
+                            <div id="preview-placeholder-vid" class="text-center text-gray-400">
+                                <span class="text-4xl">🎬</span>
+                                <p class="text-sm mt-2 font-medium">上傳的影片預覽</p>
+                            </div>
+                            <video id="video-preview" src="" controls class="absolute inset-0 w-full h-full object-contain hidden bg-black/5"></video>
+                        </div>
+                        <div class="md:col-span-8 space-y-5">
+                            <div>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳短影音 / Reels 檔案</label>
+                                <input type="file" id="video-file" accept="video/*" onchange="previewFile(event, 'video')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">補充說明或短影音腳本需求</label>
+                                <div class="flex gap-2 mb-2.5">
+                                    <select id="preset-prompts-vid" onchange="selectPresetPrompt('vid')" class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                        <option value="">-- 選擇常用或自訂說明 --</option>
+                                        <option value="Reels 節奏明快、強調穿搭前後對比">Reels 節奏明快、強調穿搭前後對比</option>
+                                        <option value="30秒質感生活感短片、配音樂好搭">30秒質感生活感短片、配音樂好搭</option>
+                                        <option value="高級感穿搭教學、重點細節特寫">高級感穿搭教學、重點細節特寫</option>
+                                    </select>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="prompt-text-vid" placeholder="或直接在此輸入新的補充說明..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <button onclick="saveCustomPrompt('vid')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap">💾 儲存</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pt-1">
+                                <button onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors">
+                                    🎬 生成 Reels 專屬腳本
+                                </button>
+                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
+                                    <input type="checkbox" id="mock-ai-toggle-vid" checked class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                    <span class="text-xs md:text-sm font-bold text-gray-700">⚡ 內建模擬 AI 生成</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>🎬</span> AI 執行結果</h3>
+                    <div id="result-box-vid" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳影片並點擊按鈕。</div>
+                </div>
+            </div>
+
+            <!-- 4. 最新流行趨勢 -->
+            <div id="tab-trend" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h3 class="font-medium text-gray-900 text-base md:text-lg">韓國東大門當季流行女裝趨勢分析</h3>
+                        <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行聯網分析與真實網拍連結對照。</p>
+                    </div>
+                    <div class="flex gap-2.5 w-full md:w-auto">
+                        <button onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm">
+                            📊 分析最新趨勢與網拍範例
+                        </button>
+                        <button onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap">
+                            🔄 重置
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告</h3>
+                    <div id="trend-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[380px] leading-relaxed">點擊上方按鈕開始分析。</div>
+                </div>
+            </div>
+
+            <!-- 5. 價格試算器 -->
+            <div id="tab-pricing" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-lg">💰 韓國商品價格試算表</h3>
+                            <p class="text-sm text-gray-500 mt-1">所有數值皆可自由編輯，即時計算台幣成本、實際成本與利潤。</p>
+                        </div>
+                        <div class="flex gap-2.5">
+                            <button onclick="fetchBankRate()" id="fetch-rate-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors">🔄 同步台銀即時匯率</button>
+                            <button onclick="resetPricing()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300">🔄 恢復預設值</button>
+                        </div>
+                    </div>
+
+                    <!-- 三欄式網格排列 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                            <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 1. 基礎成本與匯率</h4>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">韓元成本價 (₩)</label>
+                                <input type="number" id="calc-krw" value="40000" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white font-bold text-red-600 focus:outline-none focus:ring-2 focus:ring-gray-900">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">換算匯率 (自動串聯台銀)</label>
+                                <input type="number" step="0.0001" id="calc-rate" value="0.0228" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                                <div class="text-xs text-gray-400 mt-1.5">= 台幣換算: <span id="res-rate">912</span> 元 <span id="rate-source" class="text-blue-500 font-medium"></span></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                            <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 2. 抽成與運費計算</h4>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">代付貨款抽成 (韓幣金額)</label>
+                                <input type="number" step="0.01" id="calc-commission-rate" value="0.02" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                                <div class="text-xs text-gray-400 mt-1.5">= 抽成金額
