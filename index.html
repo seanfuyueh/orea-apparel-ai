@@ -45,7 +45,7 @@
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
             <div class="text-sm text-gray-400 text-center">
-                LovelyByKorea Admin v3.22 (Cloud)
+                LovelyByKorea Admin v3.24 (Gemini 3.5)
             </div>
         </div>
     </aside>
@@ -83,10 +83,7 @@
                                 <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">補充說明或穿搭需求</label>
                                 <div class="mb-2.5">
                                     <select id="preset-prompts-img" onchange="selectPresetPrompt('img')" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
-                                        <option value="">-- 選擇常用或自訂說明 --</option>
-                                        <option value="強調版型修飾、適合週末約會">強調版型修飾、適合週末約會</option>
-                                        <option value="微寬鬆減齡、遮手臂、日常好搭">微寬鬆減齡、遮手臂、日常好搭</option>
-                                        <option value="質感高級感、職場知性風">質感高級感、職場知性風</option>
+                                        <option value="">-- 選擇常用或自訂項目 --</option>
                                     </select>
                                 </div>
                                 <div class="flex flex-col md:flex-row gap-2">
@@ -94,20 +91,20 @@
                                     <button type="button" onclick="saveCustomPrompt('img')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-3 pt-1">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                                 <button type="button" onclick="generateImageText()" id="submit-btn-img" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer">
                                     ✨ 生成 3 組專屬文案
                                 </button>
-                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
-                                    <input type="checkbox" id="mock-ai-toggle-img" checked class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
-                                    <span class="text-xs md:text-sm font-bold text-gray-700">⚡ 內建模擬 AI 生成</span>
+                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
+                                    <input type="checkbox" id="mock-ai-toggle-img" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                    <span class="text-xs md:text-sm font-bold text-gray-700 text-center">⚡ 使用模擬備用 AI</span>
                                 </label>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果</h3>
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果 (Gemini 3.5 驅動)</h3>
                     <div id="result-box-img" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳圖片並點擊按鈕。</div>
                 </div>
             </div>
@@ -128,10 +125,7 @@
                             <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">風格要求與訴求</label>
                             <div class="mb-2.5">
                                 <select id="preset-prompts-gen" onchange="selectPresetPrompt('gen')" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
-                                    <option value="">-- 選擇常用或自訂風格要求 --</option>
-                                    <option value="質感簡約、知性小香風、減齡休閒">質感簡約、知性小香風、減齡休閒</option>
-                                    <option value="微寬鬆顯瘦、日常百搭通勤風">微寬鬆顯瘦、日常百搭通勤風</option>
-                                    <option value="高級感約會穿搭、溫柔小女人風">高級感約會穿搭、溫柔小女人風</option>
+                                    <option value="">-- 選擇常用或自訂項目 --</option>
                                 </select>
                             </div>
                             <div class="flex flex-col md:flex-row gap-2">
@@ -139,19 +133,19 @@
                                 <button type="button" onclick="saveCustomPrompt('gen')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-3 pt-1">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                             <button type="button" onclick="generateTextOnly()" id="submit-btn-gen" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer">
                                 ✨ 生成 3 組專屬文案
                             </button>
-                            <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
-                                <input type="checkbox" id="mock-ai-toggle-gen" checked class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
-                                <span class="text-xs md:text-sm font-bold text-gray-700">⚡ 內建模擬 AI 生成</span>
+                            <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
+                                <input type="checkbox" id="mock-ai-toggle-gen" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                <span class="text-xs md:text-sm font-bold text-gray-700 text-center">⚡ 使用模擬備用 AI</span>
                             </label>
                         </div>
                     </div>
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果</h3>
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果 (Gemini 3.5 驅動)</h3>
                     <div id="result-box-gen" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請輸入主題與風格並點擊按鈕。</div>
                 </div>
             </div>
@@ -180,10 +174,7 @@
                                 <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">補充說明或短影音腳本需求</label>
                                 <div class="mb-2.5">
                                     <select id="preset-prompts-vid" onchange="selectPresetPrompt('vid')" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
-                                        <option value="">-- 選擇常用或自訂說明 --</option>
-                                        <option value="Reels 節奏明快、強調穿搭前後對比">Reels 節奏明快、強調穿搭前後對比</option>
-                                        <option value="30秒質感生活感短片、配音樂好搭">30秒質感生活感短片、配音樂好搭</option>
-                                        <option value="高級感穿搭教學、重點細節特寫">高級感穿搭教學、重點細節特寫</option>
+                                        <option value="">-- 選擇常用或自訂項目 --</option>
                                     </select>
                                 </div>
                                 <div class="flex flex-col md:flex-row gap-2">
@@ -191,20 +182,20 @@
                                     <button type="button" onclick="saveCustomPrompt('vid')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-3 pt-1">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                                 <button type="button" onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer">
                                     🎬 生成 Reels 專屬腳本
                                 </button>
-                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors">
-                                    <input type="checkbox" id="mock-ai-toggle-vid" checked class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
-                                    <span class="text-xs md:text-sm font-bold text-gray-700">⚡ 內建模擬 AI 生成</span>
+                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
+                                    <input type="checkbox" id="mock-ai-toggle-vid" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                    <span class="text-xs md:text-sm font-bold text-gray-700 text-center">⚡ 使用模擬備用 AI</span>
                                 </label>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>🎬</span> AI 執行結果</h3>
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>🎬</span> AI 執行結果 (Gemini 3.5 驅動)</h3>
                     <div id="result-box-vid" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳影片並點擊按鈕。</div>
                 </div>
             </div>
@@ -226,7 +217,7 @@
                     </div>
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告</h3>
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告 (Gemini 3.5 驅動)</h3>
                     <div id="trend-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[380px] leading-relaxed">點擊上方按鈕開始分析。</div>
                 </div>
             </div>
@@ -370,7 +361,7 @@
         </div>
     </div>
 
-    <!-- Firebase SDK 與 雲端同步邏輯 -->
+    <!-- Firebase SDK 與 Gemini 3.5 AI 核心邏輯 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -386,10 +377,17 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+        const GEMINI_API_KEY = "AQ.Ab8RN6LIg802JhTMdGRTv-91JiAdJ5vunLR1zt0bNLNkw5t7kQ";
 
-        // 將重要函式掛載到全域讓 HTML 按鈕可以調用
+        let isSaving = false;
+
         window.db = db;
+        
+        // 歷史紀錄雲端寫入 (附帶防重複)
         window.saveToHistory = async function(type, title, content, mediaSrc = null) {
+            if (isSaving) return;
+            isSaving = true;
+
             const now = new Date();
             const record = {
                 type: type,
@@ -404,6 +402,8 @@
                 renderHistory();
             } catch (e) {
                 console.error("雲端寫入失敗: ", e);
+            } finally {
+                setTimeout(() => { isSaving = false; }, 1000);
             }
         };
 
@@ -412,8 +412,14 @@
                 const q = query(collection(db, "ai_history_records"), orderBy("timestamp", "desc"));
                 const querySnapshot = await getDocs(q);
                 let records = [];
+                let seen = new Set();
                 querySnapshot.forEach((docSnap) => {
-                    records.push({ id: docSnap.id, ...docSnap.data() });
+                    const data = docSnap.data();
+                    const uniqueKey = `${data.title}_${data.timestamp}`;
+                    if (!seen.has(uniqueKey)) {
+                        seen.add(uniqueKey);
+                        records.push({ id: docSnap.id, ...data });
+                    }
                 });
                 return records;
             } catch (e) {
@@ -430,6 +436,77 @@
                 } catch (e) {
                     console.error("雲端刪除失敗: ", e);
                 }
+            }
+        };
+
+        // 自訂提示詞雲端同步存取
+        window.savePromptToCloud = async function(mode, promptText) {
+            try {
+                await addDoc(collection(db, "ai_custom_prompts"), { mode: mode, text: promptText, timestamp: Date.now() });
+                loadSavedPrompts(mode);
+            } catch (e) {
+                console.error("提示詞雲端寫入失敗: ", e);
+            }
+        };
+
+        window.loadPromptsFromCloud = async function(mode) {
+            try {
+                const q = query(collection(db, "ai_custom_prompts"), orderBy("timestamp", "asc"));
+                const querySnapshot = await getDocs(q);
+                let customList = [];
+                querySnapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    if (data.mode === mode && data.text) {
+                        customList.push(data.text);
+                    }
+                });
+                return customList;
+            } catch (e) {
+                console.error("提示詞雲端讀取失敗: ", e);
+                return [];
+            }
+        };
+
+        // 呼叫真實 Gemini 3.5 API (附帶備用 Mock 機制)
+        window.callGeminiAPI = async function(prompt, imageBase64 = null) {
+            const useMock = document.getElementById(
+                prompt.includes('短影音') ? 'mock-ai-toggle-vid' : 
+                prompt.includes('主題') ? 'mock-ai-toggle-gen' : 'mock-ai-toggle-img'
+            ).checked;
+
+            if (useMock) {
+                return getDynamicMockResult(prompt);
+            }
+
+            try {
+                let contents = [{ parts: [{ text: prompt }] }];
+                if (imageBase64) {
+                    const base64Data = imageBase64.split(',')[1];
+                    const mimeType = imageBase64.substring(imageBase64.indexOf(':') + 1, imageBase64.indexOf(';'));
+                    contents.push({
+                        parts: [
+                            { inline_data: { mime_type: mimeType || "image/jpeg", data: base64Data } },
+                            { text: "請依據這張韓國女裝服飾圖片，生成專業的行銷文案。" }
+                        ]
+                    });
+                }
+
+                // 使用 gemini-3.5-flash 模型
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: contents })
+                });
+
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    return data.candidates[0].content.parts[0].text;
+                } else {
+                    throw new Error("API 回傳格式異常");
+                }
+            } catch (error) {
+                console.warn("Gemini 3.5 API 呼叫失敗，自動切換為備用模擬生成：", error);
+                return getDynamicMockResult(prompt);
             }
         };
 
@@ -701,27 +778,27 @@
             if (select && input && select.value) input.value = select.value;
         }
 
-        function saveCustomPrompt(mode) {
+        async function saveCustomPrompt(mode) {
             const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
             if(!input) return;
             const val = input.value.trim();
             if (!val) { alert('請先輸入想要儲存的項目！'); return; }
-            let saved = JSON.parse(localStorage.getItem(`saved_prompts_${mode}`) || '[]');
-            if (!saved.includes(val)) {
-                saved.push(val);
-                localStorage.setItem(`saved_prompts_${mode}`, JSON.stringify(saved));
-                loadSavedPrompts(mode);
-                alert('已成功儲存！');
-            } else { alert('此項目已存在！'); }
+            
+            await window.savePromptToCloud(mode, val);
+            input.value = '';
+            alert('已成功儲存至雲端！');
         }
 
-        function loadSavedPrompts(mode) {
+        async function loadSavedPrompts(mode) {
             const select = document.getElementById(`preset-prompts-${mode}`);
             if (!select) return;
+            
             let defaults = mode === 'img' ? ['強調版型修飾、適合週末約會', '微寬鬆減齡、遮手臂、日常好搭', '質感高級感、職場知性風'] : mode === 'vid' ? ['Reels 節奏明快、強調穿搭前後對比', '30秒質感生活感短片、配音樂好搭', '高級感穿搭教學、重點細節特寫'] : ['質感簡約、知性小香風、減齡休閒', '微寬鬆顯瘦、日常百搭通勤風', '高級感約會穿搭、溫柔小女人風'];
+            
             select.innerHTML = `<option value="">-- 選擇常用或自訂項目 --</option>` + defaults.map(d => `<option value="${d}">${d}</option>`).join('');
-            let saved = JSON.parse(localStorage.getItem(`saved_prompts_${mode}`) || '[]');
-            saved.forEach(item => {
+            
+            let cloudSaved = await window.loadPromptsFromCloud(mode);
+            cloudSaved.forEach(item => {
                 if (!defaults.includes(item)) {
                     const opt = document.createElement('option');
                     opt.value = item; opt.text = '💾 ' + item;
@@ -736,10 +813,10 @@
             ];
             const chosen = sets[0];
             const hint = query ? `特別訴求：${query}` : (filename ? `分析品項：${filename}` : '東大門本季熱銷精選');
-            if (type === 'image') return `【✨ AI 智慧生成文案】\n\n📌 參考標籤：${hint}\n\n[第 1 組]\n${chosen.group1}\n\n[第 2 組]\n${chosen.group2}\n\n[第 3 組]\n${chosen.group3}`;
-            if (type === 'text') return `【✨ 商品文案企劃】\n\n📌 主題與風格：${query}\n\n[風格 A]\n${chosen.group1}\n\n[風格 B]\n${chosen.group2}\n\n[風格 C]\n${chosen.group3}`;
-            if (type === 'video') return `【🎬 Reels 短影音腳本】\n\n📌 核心需求：${query || '穿搭質感細節展示'}\n\n[00:00 - 00:04] 視覺吸睛：以 ${chosen.scene} 切入。\n[00:04 - 00:16] 細節特寫：近拍 ${chosen.feat}。\n[00:16 - 00:30] 導購轉換：「這件真的寫了妳的名字！首批限量+1！」`;
-            if (type === 'trend') return `【📊 韓國東大門當季流行趨勢報告】\n\n1. 本季流行主軸：主打「${chosen.adj}」。\n2. 材質與剪裁：以 ${chosen.feat} 為主流。`;
+            if (type.includes('image')) return `【✨ AI 智慧生成文案 (模擬備用)】\n\n📌 參考標籤：${hint}\n\n[第 1 組]\n${chosen.group1}\n\n[第 2 組]\n${chosen.group2}\n\n[第 3 組]\n${chosen.group3}`;
+            if (type.includes('text')) return `【✨ 商品文案企劃 (模擬備用)】\n\n📌 主題與風格：${query}\n\n[風格 A]\n${chosen.group1}\n\n[風格 B]\n${chosen.group2}\n\n[風格 C]\n${chosen.group3}`;
+            if (type.includes('video')) return `【🎬 Reels 短影音腳本 (模擬備用)】\n\n📌 核心需求：${query || '穿搭質感細節展示'}\n\n[00:00 - 00:04] 視覺吸睛：以 ${chosen.scene} 切入。\n[00:04 - 00:16] 細節特寫：近拍 ${chosen.feat}。\n[00:16 - 00:30] 導購轉換：「這件真的寫了妳的名字！首批限量+1！」`;
+            if (type.includes('trend')) return `【📊 韓國東大門當季流行趨勢報告 (模擬備用)】\n\n1. 本季流行主軸：主打「${chosen.adj}」。\n2. 材質與剪裁：以 ${chosen.feat} 為主流。`;
         }
 
         async function generateImageText() {
@@ -748,15 +825,16 @@
             const resultBox = document.getElementById('result-box-img');
             const submitBtn = document.getElementById('submit-btn-img');
             if (fileInput.files.length === 0 && !currentUploadedImageBase64) { alert('請先上傳圖片！'); return; }
-            submitBtn.disabled = true; submitBtn.innerText = '生成中...';
-            setTimeout(() => {
-                const resText = getDynamicMockResult('image', promptText, currentUploadedImageFilename || '服飾');
-                resultBox.innerText = resText;
-                if (typeof window.saveToHistory === 'function') {
-                    window.saveToHistory('image', promptText || '圖片文案', resText, document.getElementById('image-preview').src);
-                }
-                submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
-            }, 600);
+            submitBtn.disabled = true; submitBtn.innerText = 'Gemini 3.5 生成中...';
+            
+            const prompt = `身為專業的韓國東大門女裝總監，請針對這件服飾與以下需求生成 3 組高質感小紅書與 IG 網拍文案：${promptText || '質感日常穿搭'}`;
+            const resText = await window.callGeminiAPI(prompt, currentUploadedImageBase64);
+            
+            resultBox.innerText = resText;
+            if (typeof window.saveToHistory === 'function') {
+                window.saveToHistory('image', promptText || '圖片文案', resText, document.getElementById('image-preview').src);
+            }
+            submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
         }
 
         async function generateTextOnly() {
@@ -765,15 +843,16 @@
             const resultBox = document.getElementById('result-box-gen');
             const submitBtn = document.getElementById('submit-btn-gen');
             if (!topic) { alert('請輸入商品主題！'); return; }
-            submitBtn.disabled = true; submitBtn.innerText = '生成中...';
-            setTimeout(() => {
-                const resText = getDynamicMockResult('text', topic + ' (' + style + ')');
-                resultBox.innerText = resText;
-                if (typeof window.saveToHistory === 'function') {
-                    window.saveToHistory('text', topic, resText, null);
-                }
-                submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
-            }, 600);
+            submitBtn.disabled = true; submitBtn.innerText = 'Gemini 3.5 生成中...';
+
+            const prompt = `身為專業的韓國東大門女裝總監，請針對主題「${topic}」以及風格需求「${style || '簡約質感'}」，撰寫 3 組吸引 30-40 歲女性的精緻網拍行銷文案與標籤。`;
+            const resText = await window.callGeminiAPI(prompt);
+
+            resultBox.innerText = resText;
+            if (typeof window.saveToHistory === 'function') {
+                window.saveToHistory('text', topic, resText, null);
+            }
+            submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
         }
 
         async function generateVideoText() {
@@ -782,29 +861,31 @@
             const resultBox = document.getElementById('result-box-vid');
             const submitBtn = document.getElementById('submit-btn-vid');
             if (fileInput.files.length === 0 && !currentUploadedVideoBlobUrl) { alert('請先上傳影片！'); return; }
-            submitBtn.disabled = true; submitBtn.innerText = '生成中...';
-            setTimeout(() => {
-                const resText = getDynamicMockResult('video', promptText, currentUploadedVideoFilename);
-                resultBox.innerText = resText;
-                if (typeof window.saveToHistory === 'function') {
-                    window.saveToHistory('video', promptText || '短影音腳本', resText, currentUploadedVideoBlobUrl);
-                }
-                submitBtn.disabled = false; submitBtn.innerText = '🎬 生成 Reels 專屬腳本';
-            }, 600);
+            submitBtn.disabled = true; submitBtn.innerText = 'Gemini 3.5 生成中...';
+
+            const prompt = `身為專業的短影音編導，請針對韓國女裝 Reels 影片需求「${promptText || '穿搭質感細節展示'}」，編寫一份 30 秒高流量的短影音腳本（包含秒數、畫面、口白與導購金句）。`;
+            const resText = await window.callGeminiAPI(prompt);
+
+            resultBox.innerText = resText;
+            if (typeof window.saveToHistory === 'function') {
+                window.saveToHistory('video', promptText || '短影音腳本', resText, currentUploadedVideoBlobUrl);
+            }
+            submitBtn.disabled = false; submitBtn.innerText = '🎬 生成 Reels 專屬腳本';
         }
 
         async function fetchTrend() {
             const resultBox = document.getElementById('trend-result-box');
             const trendBtn = document.getElementById('trend-btn');
-            trendBtn.disabled = true; trendBtn.innerText = '分析中...';
-            setTimeout(() => {
-                const resText = getDynamicMockResult('trend', '');
-                resultBox.innerText = resText;
-                if (typeof window.saveToHistory === 'function') {
-                    window.saveToHistory('text', '東大門流行趨勢報告', resText, null);
-                }
-                trendBtn.disabled = false; trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
-            }, 600);
+            trendBtn.disabled = true; trendBtn.innerText = 'Gemini 3.5 分析中...';
+
+            const prompt = `請以韓國東大門當季批發市場為核心，分析針對 30-40 歲女性的最新流行女裝趨勢（包含本季主打色系、材質、剪裁版型與熱銷款式分析）。`;
+            const resText = await window.callGeminiAPI(prompt);
+
+            resultBox.innerText = resText;
+            if (typeof window.saveToHistory === 'function') {
+                window.saveToHistory('text', '東大門流行趨勢報告', resText, null);
+            }
+            trendBtn.disabled = false; trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
         }
     </script>
 </body>
