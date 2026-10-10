@@ -557,4 +557,209 @@
                 localStorage.setItem('ai_history_records', JSON.stringify(history));
             } catch (e) {
                 history.forEach(item => { if(item.mediaSrc && item.mediaSrc.length > 500) item.mediaSrc = null; });
-                try { localStorage.setItem('
+                try { localStorage.setItem('ai_history_records', JSON.stringify(history)); } catch (err) {}
+            }
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-list-container');
+            if(!container) return;
+            const sortOrder = document.getElementById('sort-date').value;
+            const filterType = document.getElementById('filter-type').value;
+            const keyword = document.getElementById('search-keyword').value.trim().toLowerCase();
+
+            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
+            if (filterType !== 'all') history = history.filter(item => item.type === filterType);
+            if (keyword) history = history.filter(item => item.title.toLowerCase().includes(keyword) || item.content.toLowerCase().includes(keyword));
+            history.sort((a, b) => sortOrder === 'desc' ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
+
+            if (history.length === 0) {
+                container.innerHTML = `<div class="bg-white p-12 rounded-2xl border border-gray-200 text-center text-gray-400"><span class="text-4xl">📂</span><p class="text-base mt-2">目前沒有找到符合條件的紀錄。</p></div>`;
+                return;
+            }
+
+            container.innerHTML = history.map(item => {
+                let badge = item.type === 'image' ? '<span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">🖼️ 圖片文案</span>' : item.type === 'video' ? '<span class="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium">🎬 影片腳本</span>' : '<span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-medium">📄 純文字/趨勢</span>';
+                let mediaHtml = item.mediaSrc ? (item.type === 'video' && item.mediaSrc.startsWith('blob:') ? `<video src="${item.mediaSrc}" controls class="w-28 h-28 object-contain rounded-xl border border-gray-200 shrink-0 bg-black"></video>` : `<div class="w-28 h-28 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200 overflow-hidden shrink-0"><img src="${item.mediaSrc}" class="w-full h-full object-cover"></div>`) : '';
+
+                return `
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-3.5">
+                            <div class="flex items-center gap-3">${badge}<span class="font-semibold text-gray-800 text-base">${item.title}</span></div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm text-gray-400">${item.dateStr}</span>
+                                <button type="button" onclick="openModal(${item.id})" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 cursor-pointer">🔍 檢視</button>
+                                <button type="button" onclick="deleteRecord(${item.id})" class="text-sm text-red-500 hover:text-red-700 font-medium cursor-pointer">刪除</button>
+                            </div>
+                        </div>
+                        <div class="flex gap-4 items-start">${mediaHtml}<div class="flex-1 bg-gray-50 p-4 rounded-xl text-sm text-gray-700 whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">${item.content}</div></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openModal(id) {
+            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
+            const item = history.find(r => r.id === id);
+            if (!item) return;
+
+            document.getElementById('modal-title').innerHTML = `🔍 完整檢視：${item.title} <span class="text-sm text-gray-400 font-normal ml-2">(${item.dateStr})</span>`;
+            let bigMedia = item.mediaSrc ? `<div class="md:col-span-5 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-4 bg-white h-96 relative overflow-hidden shadow-sm">${item.type === 'video' && item.mediaSrc.startsWith('blob:') ? `<video src="${item.mediaSrc}" controls class="w-full h-full object-contain bg-black rounded-xl"></video>` : `<img src="${item.mediaSrc}" class="w-full h-full object-cover rounded-xl">`}</div>` : '';
+
+            document.getElementById('modal-body').innerHTML = `
+                <div class="${item.mediaSrc ? 'grid grid-cols-1 md:grid-cols-12 gap-6 items-start' : 'space-y-4'}">
+                    ${bigMedia}
+                    <div class="${item.mediaSrc ? 'md:col-span-7' : 'w-full'} space-y-3">
+                        <div class="text-sm font-bold text-gray-600">✨ 執行結果內容：</div>
+                        <div class="bg-white border border-gray-200 rounded-2xl p-6 text-base text-gray-800 whitespace-pre-wrap leading-relaxed max-h-[500px] overflow-y-auto shadow-sm">${item.content}</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('expand-modal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('expand-modal').classList.add('hidden'); }
+        function deleteRecord(id) {
+            if (confirm('確定要刪除這筆紀錄嗎？')) {
+                let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
+                history = history.filter(item => item.id !== id);
+                localStorage.setItem('ai_history_records', JSON.stringify(history));
+                renderHistory();
+            }
+        }
+
+        function previewFile(event, type) {
+            const file = event.target.files[0];
+            if (type === 'image' && file) {
+                currentUploadedImageFilename = file.name;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = 400; canvas.height = 400 * (img.height / img.width);
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        currentUploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
+                        document.getElementById('image-preview').src = currentUploadedImageBase64;
+                        document.getElementById('image-preview').classList.remove('hidden');
+                        document.getElementById('preview-placeholder-img').classList.add('hidden');
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else if (type === 'video' && file) {
+                currentUploadedVideoFilename = file.name;
+                currentUploadedVideoBlobUrl = URL.createObjectURL(file);
+                document.getElementById('video-preview').src = currentUploadedVideoBlobUrl;
+                document.getElementById('video-preview').classList.remove('hidden');
+                document.getElementById('preview-placeholder-vid').classList.add('hidden');
+            }
+        }
+
+        function selectPresetPrompt(mode) {
+            const select = document.getElementById(`preset-prompts-${mode}`);
+            const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
+            if (select && input && select.value) input.value = select.value;
+        }
+
+        function saveCustomPrompt(mode) {
+            const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
+            if(!input) return;
+            const val = input.value.trim();
+            if (!val) { alert('請先輸入想要儲存的項目！'); return; }
+            let saved = JSON.parse(localStorage.getItem(`saved_prompts_${mode}`) || '[]');
+            if (!saved.includes(val)) {
+                saved.push(val);
+                localStorage.setItem(`saved_prompts_${mode}`, JSON.stringify(saved));
+                loadSavedPrompts(mode);
+                alert('已成功儲存！');
+            } else { alert('此項目已存在！'); }
+        }
+
+        function loadSavedPrompts(mode) {
+            const select = document.getElementById(`preset-prompts-${mode}`);
+            if (!select) return;
+            let defaults = mode === 'img' ? ['強調版型修飾、適合週末約會', '微寬鬆減齡、遮手臂、日常好搭', '質感高級感、職場知性風'] : mode === 'vid' ? ['Reels 節奏明快、強調穿搭前後對比', '30秒質感生活感短片、配音樂好搭', '高級感穿搭教學、重點細節特寫'] : ['質感簡約、知性小香風、減齡休閒', '微寬鬆顯瘦、日常百搭通勤風', '高級感約會穿搭、溫柔小女人風'];
+            select.innerHTML = `<option value="">-- 選擇常用或自訂項目 --</option>` + defaults.map(d => `<option value="${d}">${d}</option>`).join('');
+            let saved = JSON.parse(localStorage.getItem(`saved_prompts_${mode}`) || '[]');
+            saved.forEach(item => {
+                if (!defaults.includes(item)) {
+                    const opt = document.createElement('option');
+                    opt.value = item; opt.text = '💾 ' + item;
+                    select.appendChild(opt);
+                }
+            });
+        }
+
+        function getDynamicMockResult(type, query, filename = '') {
+            const sets = [
+                { adj: '法式慵懶微甜風', scene: '週末下午茶約會拍照', feat: '立體剪裁完美修飾身形、不挑人穿', group1: '「一眼就愛上的法式慵懶單品！穿上它去週末下午茶絕對收穫滿滿稱讚。✨\n#LovelyByKorea #韓國連線 #質感穿搭 #OOTD」', group2: '「專為追求品味的妳打造。精緻車工與親膚透氣面料，展現知性微甜的迷人氣場。💼\n#東大門代購 #職場穿搭 #知性小香風」', group3: '「衣櫃裡永遠少一件的命定款！隨性一套就很有型，首批現貨搶翻啦🔥\n#每日穿搭 #減齡穿搭 #社長推薦」' }
+            ];
+            const chosen = sets[0];
+            const hint = query ? `特別訴求：${query}` : (filename ? `分析品項：${filename}` : '東大門本季熱銷精選');
+            if (type === 'image') return `【✨ AI 智慧生成文案】\n\n📌 參考標籤：${hint}\n\n[第 1 組]\n${chosen.group1}\n\n[第 2 組]\n${chosen.group2}\n\n[第 3 組]\n${chosen.group3}`;
+            if (type === 'text') return `【✨ 商品文案企劃】\n\n📌 主題與風格：${query}\n\n[風格 A]\n${chosen.group1}\n\n[風格 B]\n${chosen.group2}\n\n[風格 C]\n${chosen.group3}`;
+            if (type === 'video') return `【🎬 Reels 短影音腳本】\n\n📌 核心需求：${query || '穿搭質感細節展示'}\n\n[00:00 - 00:04] 視覺吸睛：以 ${chosen.scene} 切入。\n[00:04 - 00:16] 細節特寫：近拍 ${chosen.feat}。\n[00:16 - 00:30] 導購轉換：「這件真的寫了妳的名字！首批限量+1！」`;
+            if (type === 'trend') return `【📊 韓國東大門當季流行趨勢報告】\n\n1. 本季流行主軸：主打「${chosen.adj}」。\n2. 材質與剪裁：以 ${chosen.feat} 為主流。`;
+        }
+
+        async function generateImageText() {
+            const fileInput = document.getElementById('image-file');
+            const promptText = document.getElementById('prompt-text-img').value;
+            const resultBox = document.getElementById('result-box-img');
+            const submitBtn = document.getElementById('submit-btn-img');
+            if (fileInput.files.length === 0 && !currentUploadedImageBase64) { alert('請先上傳圖片！'); return; }
+            submitBtn.disabled = true; submitBtn.innerText = '生成中...';
+            setTimeout(() => {
+                const resText = getDynamicMockResult('image', promptText, currentUploadedImageFilename || '服飾');
+                resultBox.innerText = resText;
+                saveToHistory('image', promptText || '圖片文案', resText, document.getElementById('image-preview').src);
+                submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
+            }, 600);
+        }
+
+        async function generateTextOnly() {
+            const topic = document.getElementById('gen-topic').value;
+            const style = document.getElementById('gen-style').value;
+            const resultBox = document.getElementById('result-box-gen');
+            const submitBtn = document.getElementById('submit-btn-gen');
+            if (!topic) { alert('請輸入商品主題！'); return; }
+            submitBtn.disabled = true; submitBtn.innerText = '生成中...';
+            setTimeout(() => {
+                const resText = getDynamicMockResult('text', topic + ' (' + style + ')');
+                resultBox.innerText = resText;
+                saveToHistory('text', topic, resText, null);
+                submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案';
+            }, 600);
+        }
+
+        async function generateVideoText() {
+            const fileInput = document.getElementById('video-file');
+            const promptText = document.getElementById('prompt-text-vid').value;
+            const resultBox = document.getElementById('result-box-vid');
+            const submitBtn = document.getElementById('submit-btn-vid');
+            if (fileInput.files.length === 0 && !currentUploadedVideoBlobUrl) { alert('請先上傳影片！'); return; }
+            submitBtn.disabled = true; submitBtn.innerText = '生成中...';
+            setTimeout(() => {
+                const resText = getDynamicMockResult('video', promptText, currentUploadedVideoFilename);
+                resultBox.innerText = resText;
+                saveToHistory('video', promptText || '短影音腳本', resText, currentUploadedVideoBlobUrl);
+                submitBtn.disabled = false; submitBtn.innerText = '🎬 生成 Reels 專屬腳本';
+            }, 600);
+        }
+
+        async function fetchTrend() {
+            const resultBox = document.getElementById('trend-result-box');
+            const trendBtn = document.getElementById('trend-btn');
+            trendBtn.disabled = true; trendBtn.innerText = '分析中...';
+            setTimeout(() => {
+                const resText = getDynamicMockResult('trend', '');
+                resultBox.innerText = resText;
+                saveToHistory('text', '東大門流行趨勢報告', resText, null);
+                trendBtn.disabled = false; trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
+            }, 600);
+        }
+    </script>
+</body>
+</html>
