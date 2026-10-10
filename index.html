@@ -18,7 +18,7 @@
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 🛡️ 手機跑版終極修正樣式 */
+        /* 防跑版基礎設定 */
         html, body {
             width: 100%;
             max-width: 100%;
@@ -29,14 +29,6 @@
         }
         *, *:before, *:after {
             box-sizing: inherit;
-        }
-        div, section, main, header, footer, form, .container, input, select, button {
-            max-width: 100%;
-            box-sizing: border-box;
-        }
-        /* 強制防止按鈕與輸入框撐破版面 */
-        .flex {
-            min-width: 0;
         }
     </style>
 </head>
@@ -111,17 +103,18 @@
                             </div>
                             <div>
                                 <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">補充說明或穿搭需求</label>
-                                <div class="flex gap-2 mb-2.5">
-                                    <select id="preset-prompts-img" onchange="selectPresetPrompt('img')" class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                <div class="mb-2.5">
+                                    <select id="preset-prompts-img" onchange="selectPresetPrompt('img')" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
                                         <option value="">-- 選擇常用或自訂說明 --</option>
                                         <option value="強調版型修飾、適合週末約會">強調版型修飾、適合週末約會</option>
                                         <option value="微寬鬆減齡、遮手臂、日常好搭">微寬鬆減齡、遮手臂、日常好搭</option>
                                         <option value="質感高級感、職場知性風">質感高級感、職場知性風</option>
                                     </select>
                                 </div>
-                                <div class="flex gap-2">
-                                    <input type="text" id="prompt-text-img" placeholder="或直接在此輸入新的補充說明..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none min-w-0">
-                                    <button onclick="saveCustomPrompt('img')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 shrink-0">💾 儲存</button>
+                                <!-- 🔄 改善處：改為直式堆疊或彈性換行，避免按鈕把版面撐破 -->
+                                <div class="flex flex-col md:flex-row gap-2">
+                                    <input type="text" id="prompt-text-img" placeholder="或直接在此輸入新的補充說明..." class="w-full md:flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <button onclick="saveCustomPrompt('img')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap">💾 儲存</button>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3 pt-1">
@@ -156,17 +149,17 @@
                         </div>
                         <div>
                             <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">風格要求與訴求</label>
-                            <div class="flex gap-2 mb-2.5">
-                                <select id="preset-prompts-gen" onchange="selectPresetPrompt('gen')" class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                            <div class="mb-2.5">
+                                <select id="preset-prompts-gen" onchange="selectPresetPrompt('gen')" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
                                     <option value="">-- 選擇常用或自訂風格要求 --</option>
                                     <option value="質感簡約、知性小香風、減齡休閒">質感簡約、知性小香風、減齡休閒</option>
                                     <option value="微寬鬆顯瘦、日常百搭通勤風">微寬鬆顯瘦、日常百搭通勤風</option>
                                     <option value="高級感約會穿搭、溫柔小女人風">高級感約會穿搭、溫柔小女人風</option>
                                 </select>
                             </div>
-                            <div class="flex gap-2">
-                                <input type="text" id="gen-style" placeholder="或直接在此輸入新的風格要求與訴求..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none min-w-0">
-                                <button onclick="saveCustomPrompt('gen')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 shrink-0">💾 儲存</button>
+                            <div class="flex flex-col md:flex-row gap-2">
+                                <input type="text" id="gen-style" placeholder="或直接在此輸入新的風格要求與訴求..." class="w-full md:flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                <button onclick="saveCustomPrompt('gen')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap">💾 儲存</button>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3 pt-1">
@@ -208,17 +201,17 @@
                             </div>
                             <div>
                                 <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">補充說明或短影音腳本需求</label>
-                                <div class="flex gap-2 mb-2.5">
-                                    <select id="preset-prompts-vid" onchange="selectPresetPrompt('vid')" class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                <div class="mb-2.5">
+                                    <select id="preset-prompts-vid" onchange="selectPresetPrompt('vid')" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
                                         <option value="">-- 選擇常用或自訂說明 --</option>
                                         <option value="Reels 節奏明快、強調穿搭前後對比">Reels 節奏明快、強調穿搭前後對比</option>
                                         <option value="30秒質感生活感短片、配音樂好搭">30秒質感生活感短片、配音樂好搭</option>
                                         <option value="高級感穿搭教學、重點細節特寫">高級感穿搭教學、重點細節特寫</option>
                                     </select>
                                 </div>
-                                <div class="flex gap-2">
-                                    <input type="text" id="prompt-text-vid" placeholder="或直接在此輸入新的補充說明..." class="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none min-w-0">
-                                    <button onclick="saveCustomPrompt('vid')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 shrink-0">💾 儲存</button>
+                                <div class="flex flex-col md:flex-row gap-2">
+                                    <input type="text" id="prompt-text-vid" placeholder="或直接在此輸入新的補充說明..." class="w-full md:flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <button onclick="saveCustomPrompt('vid')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap">💾 儲存</button>
                                 </div>
                             </div>
                             <div class="grid grid-cols-2 gap-3 pt-1">
@@ -247,4 +240,14 @@
                         <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行聯網分析與真實網拍連結對照。</p>
                     </div>
                     <div class="flex gap-2.5 w-full md:w-auto">
-                        <button onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900
+                        <button onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm">
+                            📊 分析最新趨勢與網拍範例
+                        </button>
+                        <button onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap">
+                            🔄 重置
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告</h3>
+                    <div id="trend-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text
