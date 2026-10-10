@@ -4,111 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>韓國女裝 AI 智慧後台</title>
-    <!-- PWA 設定 -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#111827">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="AI 後台">
-    
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; font-size: 1.15rem; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* 防跑版基礎設定 */
-        html, body {
-            width: 100%;
-            max-width: 100%;
-            overflow-x: hidden;
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        *, *:before, *:after {
-            box-sizing: inherit;
-        }
+        html, body { width: 100%; max-width: 100%; overflow-x: hidden; box-sizing: border-box; margin: 0; padding: 0; }
+        *, *:before, *:after { box-sizing: inherit; }
     </style>
-
-    <!-- 💡 提前宣告核心函式，確保絕不會發生 switchTab is not defined -->
-    <script>
-        let currentUploadedImageBase64 = null;
-        let currentUploadedImageFilename = null;
-        let currentUploadedVideoBlobUrl = null;
-        let currentUploadedVideoFilename = null;
-
-        function switchTab(tab, saveState = true) {
-            ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.classList.add('hidden');
-            });
-
-            ['desktop-nav-image-copy', 'desktop-nav-copywriting', 'desktop-nav-video-copy', 'desktop-nav-trend', 'desktop-nav-pricing', 'desktop-nav-history'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.className = 'flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors';
-            });
-            ['mobile-nav-image-copy', 'mobile-nav-copywriting', 'mobile-nav-video-copy', 'mobile-nav-trend', 'mobile-nav-pricing', 'mobile-nav-history'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.className = 'flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl';
-            });
-
-            let currentDesktopNav, currentMobileNav;
-
-            if (tab === 'image-copy') {
-                const el = document.getElementById('tab-image-copy');
-                if(el) el.classList.remove('hidden');
-                currentDesktopNav = document.getElementById('desktop-nav-image-copy');
-                currentMobileNav = document.getElementById('mobile-nav-image-copy');
-                const title = document.getElementById('page-title');
-                if(title) title.innerText = '圖片生成文案';
-            } else if (tab === 'copywriting') {
-                const el = document.getElementById('tab-general-copy');
-                if(el) el.classList.remove('hidden');
-                currentDesktopNav = document.getElementById('desktop-nav-copywriting');
-                currentMobileNav = document.getElementById('mobile-nav-copywriting');
-                const title = document.getElementById('page-title');
-                if(title) title.innerText = '文案生成';
-            } else if (tab === 'video-copy') {
-                const el = document.getElementById('tab-video-copy');
-                if(el) el.classList.remove('hidden');
-                currentDesktopNav = document.getElementById('desktop-nav-video-copy');
-                currentMobileNav = document.getElementById('mobile-nav-video-copy');
-                const title = document.getElementById('page-title');
-                if(title) title.innerText = '影片生成文案';
-            } else if (tab === 'trend') {
-                const el = document.getElementById('tab-trend');
-                if(el) el.classList.remove('hidden');
-                currentDesktopNav = document.getElementById('desktop-nav-trend');
-                currentMobileNav = document.getElementById('mobile-nav-trend');
-                const title = document.getElementById('page-title');
-                if(title) title.innerText = '韓國東大門最新流行女裝趨勢';
-            } else if (tab === 'pricing') {
-                const el = document.getElementById('tab-pricing');
-                if(el) el.classList.remove('hidden');
-                currentDesktopNav = document.getElementById('desktop-nav-pricing');
-                currentMobileNav = document.getElementById('mobile-nav-pricing');
-                const title = document.getElementById('page-title');
-                if(title) title.innerText = '韓國商品價格試算器';
-            } else if (tab === 'history') {
-                const el = document.getElementById('tab-history');
-                if(el) el.classList.remove('hidden');
-                currentDesktopNav = document.getElementById('desktop-nav-history');
-                currentMobileNav = document.getElementById('mobile-nav-history');
-                const title = document.getElementById('page-title');
-                if(title) title.innerText = '歷史紀錄查詢';
-                if (typeof renderHistory === 'function') renderHistory();
-            }
-
-            if (currentDesktopNav) currentDesktopNav.className = 'flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors';
-            if (currentMobileNav) currentMobileNav.className = 'flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold';
-
-            if (saveState) {
-                localStorage.setItem('active_tab', tab);
-            }
-        }
-    </script>
 </head>
 <body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden">
 
@@ -120,26 +22,26 @@
                 <p class="text-sm text-gray-400 mt-1">韓國女裝智慧管理後台</p>
             </div>
             <nav class="p-4 space-y-1.5">
-                <a href="#" onclick="switchTab('copywriting'); return false;" id="desktop-nav-copywriting" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                <button onclick="switchTab('copywriting')" id="desktop-nav-copywriting" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left">
                     <span>📄</span> 文案生成
-                </a>
-                <a href="#" onclick="switchTab('image-copy'); return false;" id="desktop-nav-image-copy" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors">
+                </button>
+                <button onclick="switchTab('image-copy')" id="desktop-nav-image-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left">
                     <span>🖼️</span> 圖片生成文案
-                </a>
-                <a href="#" onclick="switchTab('video-copy'); return false;" id="desktop-nav-video-copy" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                </button>
+                <button onclick="switchTab('video-copy')" id="desktop-nav-video-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left">
                     <span>🎬</span> 影片生成文案
-                </a>
-                <a href="#" onclick="switchTab('trend'); return false;" id="desktop-nav-trend" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                </button>
+                <button onclick="switchTab('trend')" id="desktop-nav-trend" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left">
                     <span>📊</span> 韓國東大門流行女裝趨勢
-                </a>
-                <a href="#" onclick="switchTab('pricing'); return false;" id="desktop-nav-pricing" class="flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                </button>
+                <button onclick="switchTab('pricing')" id="desktop-nav-pricing" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left">
                     <span>💰</span> 價格試算器
-                </a>
+                </button>
             </nav>
         </div>
 
         <div class="p-4 border-t border-gray-100 space-y-3">
-            <button onclick="switchTab('history'); return false;" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2">
+            <button onclick="switchTab('history')" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2">
                 <span>📂</span> 歷史紀錄
             </button>
             <div class="text-sm text-gray-400 text-center">
@@ -150,13 +52,11 @@
 
     <!-- 主畫面容器 -->
     <main class="flex-1 flex flex-col overflow-y-auto relative bg-gray-50">
-        <!-- 頂部 Header -->
         <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm shrink-0 z-10">
             <h2 id="page-title" class="text-lg md:text-xl font-semibold text-gray-800">圖片生成文案</h2>
             <div class="text-sm md:text-base text-gray-500 font-medium">CEO 專屬後台</div>
         </header>
 
-        <!-- 內容區 -->
         <div class="px-4 md:px-8 pt-6 pb-28 md:pb-12 max-w-6xl w-full mx-auto">
             
             <!-- 1. 圖片生成文案 -->
@@ -345,7 +245,6 @@
                         </div>
                     </div>
 
-                    <!-- 三欄式網格排列 -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
                             <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 1. 基礎成本與匯率</h4>
@@ -397,7 +296,6 @@
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -435,30 +333,30 @@
 
     <!-- 手機底部導航列 -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-1 py-2.5 flex justify-around items-center shrink-0 z-30 shadow-lg">
-        <a href="#" onclick="switchTab('copywriting'); return false;" id="mobile-nav-copywriting" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+        <button onclick="switchTab('copywriting')" id="mobile-nav-copywriting" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
             <span class="text-lg">📄</span>
             <span class="text-xs font-medium">文案</span>
-        </a>
-        <a href="#" onclick="switchTab('image-copy'); return false;" id="mobile-nav-image-copy" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold">
+        </button>
+        <button onclick="switchTab('image-copy')" id="mobile-nav-image-copy" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold">
             <span class="text-lg">🖼️</span>
             <span class="text-xs font-medium">圖片</span>
-        </a>
-        <a href="#" onclick="switchTab('video-copy'); return false;" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+        </button>
+        <button onclick="switchTab('video-copy')" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
             <span class="text-lg">🎬</span>
             <span class="text-xs font-medium">影片</span>
-        </a>
-        <a href="#" onclick="switchTab('trend'); return false;" id="mobile-nav-trend" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+        </button>
+        <button onclick="switchTab('trend')" id="mobile-nav-trend" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
             <span class="text-lg">📊</span>
             <span class="text-xs font-medium">趨勢</span>
-        </a>
-        <a href="#" onclick="switchTab('pricing'); return false;" id="mobile-nav-pricing" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+        </button>
+        <button onclick="switchTab('pricing')" id="mobile-nav-pricing" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
             <span class="text-lg">💰</span>
             <span class="text-xs font-medium">試算</span>
-        </a>
-        <a href="#" onclick="switchTab('history'); return false;" id="mobile-nav-history" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
+        </button>
+        <button onclick="switchTab('history')" id="mobile-nav-history" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl">
             <span class="text-lg">📂</span>
             <span class="text-xs font-medium">紀錄</span>
-        </a>
+        </button>
     </nav>
 
     <!-- 滿版大尺寸彈跳視窗 -->
@@ -472,22 +370,18 @@
         </div>
     </div>
 
-    <!-- 頁面初始化與 API 邏輯 -->
+    <!-- JavaScript 邏輯 -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('PWA 註冊成功:', reg.scope))
-                    .catch(err => console.log('PWA 註冊失敗:', err));
-            });
-        }
+        let currentUploadedImageBase64 = null;
+        let currentUploadedImageFilename = null;
+        let currentUploadedVideoBlobUrl = null;
+        let currentUploadedVideoFilename = null;
 
         window.addEventListener('DOMContentLoaded', () => { 
             loadSavedPrompts('img'); 
             loadSavedPrompts('vid'); 
             loadSavedPrompts('gen'); 
             fetchBankRate();
-            
             const lastTab = localStorage.getItem('active_tab') || 'image-copy';
             switchTab(lastTab, false);
         });
@@ -510,262 +404,39 @@
             } catch (e) {
                 console.log('網路同步匯率失敗，使用預設值');
             }
-
             if(rateSource) rateSource.innerText = "(使用預設匯率)";
             calculatePrice();
         }
 
-        function resetModule(mode) {
-            if (mode === 'img') {
-                document.getElementById('image-file').value = '';
-                document.getElementById('image-preview').src = '';
-                document.getElementById('image-preview').classList.add('hidden');
-                document.getElementById('preview-placeholder-img').classList.remove('hidden');
-                document.getElementById('preset-prompts-img').value = '';
-                document.getElementById('prompt-text-img').value = '';
-                document.getElementById('submit-btn-img').innerText = '✨ 生成 3 組專屬文案';
-                document.getElementById('submit-btn-img').disabled = false;
-                document.getElementById('result-box-img').innerText = '尚未開始生成，請上傳圖片並點擊按鈕。';
-                currentUploadedImageBase64 = null;
-                currentUploadedImageFilename = null;
-            } else if (mode === 'gen') {
-                document.getElementById('gen-topic').value = '';
-                document.getElementById('preset-prompts-gen').value = '';
-                document.getElementById('gen-style').value = '';
-                document.getElementById('submit-btn-gen').innerText = '✨ 生成 3 組專屬文案';
-                document.getElementById('submit-btn-gen').disabled = false;
-                document.getElementById('result-box-gen').innerText = '尚未開始生成，請輸入主題與風格並點擊按鈕。';
-            } else if (mode === 'vid') {
-                document.getElementById('video-file').value = '';
-                document.getElementById('video-preview').src = '';
-                document.getElementById('video-preview').classList.add('hidden');
-                document.getElementById('preview-placeholder-vid').classList.remove('hidden');
-                document.getElementById('preset-prompts-vid').value = '';
-                document.getElementById('prompt-text-vid').value = '';
-                document.getElementById('submit-btn-vid').innerText = '🎬 生成 Reels 專屬腳本';
-                document.getElementById('submit-btn-vid').disabled = false;
-                document.getElementById('result-box-vid').innerText = '尚未開始生成，請上傳影片並點擊按鈕。';
-                currentUploadedVideoBlobUrl = null;
-                currentUploadedVideoFilename = null;
-            } else if (mode === 'trend') {
-                document.getElementById('trend-btn').innerText = '📊 分析最新趨勢與網拍範例';
-                document.getElementById('trend-btn').disabled = false;
-                document.getElementById('trend-result-box').innerText = '點擊上方按鈕開始分析。';
-            }
-        }
+        function switchTab(tab, saveState = true) {
+            ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
 
-        function calculatePrice() {
-            const krw = parseFloat(document.getElementById('calc-krw').value) || 0;
-            const rate = parseFloat(document.getElementById('calc-rate').value) || 0;
-            const commRate = parseFloat(document.getElementById('calc-commission-rate').value) || 0;
-            const shipping = parseFloat(document.getElementById('calc-shipping').value) || 0;
-            const bossMultiplier = parseFloat(document.getElementById('calc-boss-multiplier').value) || 0;
-            const retailMultiplier = parseFloat(document.getElementById('calc-retail-multiplier').value) || 0;
+            ['desktop-nav-image-copy', 'desktop-nav-copywriting', 'desktop-nav-video-copy', 'desktop-nav-trend', 'desktop-nav-pricing', 'desktop-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left';
+            });
+            ['mobile-nav-image-copy', 'mobile-nav-copywriting', 'mobile-nav-video-copy', 'mobile-nav-trend', 'mobile-nav-pricing', 'mobile-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl';
+            });
 
-            const rateAmount = krw * rate;                  
-            const commKrw = krw * commRate;                 
-            const commTwd = commKrw * rate;                 
-            const subtotal = rateAmount + commTwd + shipping; 
-            const bossCost = Math.round(subtotal * bossMultiplier); 
-            const retailPrice = Math.round(bossCost * retailMultiplier); 
-            const profit = retailPrice - bossCost;
+            let currentDesktopNav, currentMobileNav;
 
-            document.getElementById('res-rate').innerText = Math.round(rateAmount);
-            document.getElementById('res-commission-krw').innerText = Math.round(commKrw).toLocaleString();
-            document.getElementById('res-commission-twd').innerText = Math.round(commTwd);
-            document.getElementById('res-subtotal').innerText = Math.round(subtotal);
-            document.getElementById('res-boss-cost').innerText = bossCost.toLocaleString();
-            document.getElementById('res-retail-price').innerText = retailPrice.toLocaleString();
-            document.getElementById('res-profit').innerText = profit.toLocaleString();
-        }
-
-        function resetPricing() {
-            document.getElementById('calc-krw').value = 40000;
-            document.getElementById('calc-rate').value = 0.0228;
-            document.getElementById('calc-commission-rate').value = 0.02;
-            document.getElementById('calc-shipping').value = 60;
-            document.getElementById('calc-boss-multiplier').value = 1.05;
-            document.getElementById('calc-retail-multiplier').value = 2.8;
-            calculatePrice();
-        }
-
-        function saveToHistory(type, title, content, mediaSrc = null) {
-            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
-            const now = new Date();
-            
-            const record = {
-                id: Date.now(),
-                type: type,
-                title: title,
-                content: content,
-                mediaSrc: mediaSrc || null,
-                dateStr: now.toLocaleString('zh-TW', { hour12: false }),
-                timestamp: now.getTime()
-            };
-            history.unshift(record);
-
-            try {
-                localStorage.setItem('ai_history_records', JSON.stringify(history));
-            } catch (e) {
-                history.forEach(item => { if(item.mediaSrc && item.mediaSrc.length > 500) item.mediaSrc = null; });
-                try {
-                    localStorage.setItem('ai_history_records', JSON.stringify(history));
-                } catch (err) {
-                    alert('歷史紀錄儲存空間已滿！');
-                }
-            }
-        }
-
-        function renderHistory() {
-            const container = document.getElementById('history-list-container');
-            if(!container) return;
-            const sortOrder = document.getElementById('sort-date').value;
-            const filterType = document.getElementById('filter-type').value;
-            const keyword = document.getElementById('search-keyword').value.trim().toLowerCase();
-
-            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
-
-            if (filterType !== 'all') history = history.filter(item => item.type === filterType);
-            if (keyword) history = history.filter(item => item.title.toLowerCase().includes(keyword) || item.content.toLowerCase().includes(keyword));
-            history.sort((a, b) => sortOrder === 'desc' ? b.timestamp - a.timestamp : a.timestamp - b.timestamp);
-
-            if (history.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-white p-12 rounded-2xl border border-gray-200 text-center text-gray-400">
-                        <span class="text-4xl">📂</span>
-                        <p class="text-base mt-2">目前沒有找到符合條件的紀錄。</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = history.map(item => {
-                let badge = '';
-                if(item.type === 'image') badge = '<span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-medium">🖼️ 圖片文案</span>';
-                else if(item.type === 'video') badge = '<span class="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg text-sm font-medium">🎬 影片腳本</span>';
-                else badge = '<span class="bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg text-sm font-medium">📄 純文字/趨勢</span>';
-
-                let mediaHtml = '';
-                if (item.mediaSrc) {
-                    if (item.type === 'video' && item.mediaSrc.startsWith('blob:')) {
-                        mediaHtml = `<video src="${item.mediaSrc}" controls class="w-28 h-28 object-contain rounded-xl border border-gray-200 shrink-0 bg-black"></video>`;
-                    } else {
-                        mediaHtml = `<div class="w-28 h-28 flex items-center justify-center bg-gray-50 rounded-xl border border-gray-200 overflow-hidden shrink-0"><img src="${item.mediaSrc}" class="w-full h-full object-cover"></div>`;
-                    }
-                }
-
-                return `
-                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-3.5">
-                            <div class="flex items-center gap-3">
-                                ${badge}
-                                <span class="font-semibold text-gray-800 text-base">${item.title}</span>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <span class="text-sm text-gray-400">${item.dateStr}</span>
-                                <button onclick="openModal(${item.id})" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300">🔍 檢視</button>
-                                <button onclick="deleteRecord(${item.id})" class="text-sm text-red-500 hover:text-red-700 font-medium">刪除</button>
-                            </div>
-                        </div>
-                        <div class="flex gap-4 items-start">
-                            ${mediaHtml}
-                            <div class="flex-1 bg-gray-50 p-4 rounded-xl text-sm text-gray-700 whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">${item.content}</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function openModal(id) {
-            let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
-            const item = history.find(r => r.id === id);
-            if (!item) return;
-
-            const modal = document.getElementById('expand-modal');
-            const modalTitle = document.getElementById('modal-title');
-            const modalBody = document.getElementById('modal-body');
-
-            modalTitle.innerHTML = `🔍 完整檢視：${item.title} <span class="text-sm text-gray-400 font-normal ml-2">(${item.dateStr})</span>`;
-
-            let bigMedia = '';
-            if (item.mediaSrc) {
-                if (item.type === 'video' && item.mediaSrc.startsWith('blob:')) {
-                    bigMedia = `<div class="md:col-span-5 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-4 bg-white h-96 relative overflow-hidden shadow-sm"><video src="${item.mediaSrc}" controls class="w-full h-full object-contain bg-black rounded-xl"></video></div>`;
-                } else {
-                    bigMedia = `<div class="md:col-span-5 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-2xl p-4 bg-white h-96 relative overflow-hidden shadow-sm"><img src="${item.mediaSrc}" class="w-full h-full object-cover rounded-xl"></div>`;
-                }
-            }
-
-            modalBody.innerHTML = `
-                <div class="${item.mediaSrc ? 'grid grid-cols-1 md:grid-cols-12 gap-6 items-start' : 'space-y-4'}">
-                    ${bigMedia}
-                    <div class="${item.mediaSrc ? 'md:col-span-7' : 'w-full'} space-y-3">
-                        <div class="text-sm font-bold text-gray-600">✨ 執行結果內容：</div>
-                        <div class="bg-white border border-gray-200 rounded-2xl p-6 text-base text-gray-800 whitespace-pre-wrap leading-relaxed max-h-[500px] overflow-y-auto shadow-sm">${item.content}</div>
-                    </div>
-                </div>
-            `;
-            modal.classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('expand-modal').classList.add('hidden');
-        }
-
-        function deleteRecord(id) {
-            if (confirm('確定要刪除這筆紀錄嗎？')) {
-                let history = JSON.parse(localStorage.getItem('ai_history_records') || '[]');
-                history = history.filter(item => item.id !== id);
-                localStorage.setItem('ai_history_records', JSON.stringify(history));
-                renderHistory();
-            }
-        }
-
-        function previewFile(event, type) {
-            const file = event.target.files[0];
-            if (type === 'image') {
-                const preview = document.getElementById('image-preview');
-                const placeholder = document.getElementById('preview-placeholder-img');
-                if (file) {
-                    currentUploadedImageFilename = file.name;
-                    const reader = new FileReader();
-                    reader.onload = e => { 
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            const MAX_WIDTH = 400;
-                            const MAX_HEIGHT = 400;
-                            let width = img.width;
-                            let height = img.height;
-                            if (width > height) {
-                                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-                            } else {
-                                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-                            }
-                            canvas.width = width;
-                            canvas.height = height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0, width, height);
-                            currentUploadedImageBase64 = canvas.toDataURL('image/jpeg', 0.7);
-                            preview.src = currentUploadedImageBase64; 
-                            preview.classList.remove('hidden'); 
-                            placeholder.classList.add('hidden'); 
-                        };
-                        img.src = e.target.result;
-                    }
-                    reader.readAsDataURL(file);
-                }
-            } else if (type === 'video') {
-                const preview = document.getElementById('video-preview');
-                const placeholder = document.getElementById('preview-placeholder-vid');
-                if (file) {
-                    currentUploadedVideoFilename = file.name;
-                    currentUploadedVideoBlobUrl = URL.createObjectURL(file);
-                    preview.src = currentUploadedVideoBlobUrl;
-                    preview.classList.remove('hidden');
-                    placeholder.classList.add('hidden');
-                }
-            }
-        }
-
-        function selectPresetPrompt(
+            if (tab === 'image-copy') {
+                document.getElementById('tab-image-copy').classList.remove('hidden');
+                currentDesktopNav = document.getElementById('desktop-nav-image-copy');
+                currentMobileNav = document.getElementById('mobile-nav-image-copy');
+                document.getElementById('page-title').innerText = '圖片生成文案';
+            } else if (tab === 'copywriting') {
+                document.getElementById('tab-general-copy').classList.remove('hidden');
+                currentDesktopNav = document.getElementById('desktop-nav-copywriting');
+                currentMobileNav = document.getElementById('mobile-nav-copywriting');
+                document.getElementById('page-title').innerText = '文案生成';
+            } else if (tab === 'video-copy') {
+                document.getElementById('tab-video-copy').classList.remove('hidden');
+                currentDesktopNav = document.getElementById('desktop-nav-video-copy');
+                currentMobileNav = document.getElementById('mobile-nav-video-copy');
+                document.getElementById('page-
