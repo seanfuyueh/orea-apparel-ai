@@ -55,7 +55,7 @@
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
             <div class="text-sm text-gray-400 text-center">
-                LovelyByKorea Admin v4.2
+                LovelyByKorea Admin v4.3
             </div>
         </div>
     </aside>
@@ -369,7 +369,7 @@
 
     <!-- ================= 一般腳本區 ================= -->
     <script>
-        // 【重要】填寫 Gemini API Key
+        // API Key 已填入
         const GEMINI_API_KEY = "Ab8RN6LIg802JhTMdGRTv-91JiAdJ5vunLR1zt0bNLNkw5t7kQ";
         
         let currentUploadedImageBase64 = null;
@@ -513,10 +513,8 @@
                 currentUploadedImageFilename = file.name;
                 const reader = new FileReader();
                 reader.onload = e => {
-                    // 只截取 base64 編碼本身，去除 data:image/jpeg;base64, 前綴
                     const result = e.target.result;
                     currentUploadedImageBase64 = result.split(',')[1];
-                    
                     document.getElementById('image-preview').src = result;
                     document.getElementById('image-preview').classList.remove('hidden');
                     document.getElementById('preview-placeholder-img').classList.add('hidden');
@@ -622,62 +620,28 @@
             }
         };
 
-        // 【升級版備用庫】: 真正讓文案、情境、標籤、表情符號都隨機打亂，每次都不一樣
+        // 備用模擬 AI 庫
         function getDynamicMockResult(type, query = '') {
             const timeStamp = new Date().toLocaleTimeString('zh-TW', {hour12: false});
+            const hooks = ["一眼就被精緻的細節吸引！", "實物質感真的太棒了，完全超出期待。", "一拿到手就忍不住想立刻搭配出門！", "設計感與實用性完美結合的命定款。"];
+            const benefits = ["無論通勤或週末約會，都能完美點綴妳的整體造型。", "設計簡約卻充滿高級感，是本季不可錯過的百搭首選！", "兼具美感與實用度！隨手一搭就非常有型。"];
+            const endings = ["首批現貨熱銷中🔥", "韓國連線少量追加到貨🛒", "千萬別錯過這波上新✨"];
+            const hashtagsList = ["#韓國連線 #質感單品 #OOTD", "#東大門代購 #職場搭配 #時尚必備", "#每日穿搭 #社長推薦 #韓國熱賣"];
+            const styles = ['法式簡約', '韓系知性', '日常慵懶', '高級時髦', '氣質溫柔'];
             
-            const hooks = [
-                "一眼就被精緻的細節吸引！", 
-                "實物質感真的太棒了，完全超出期待。", 
-                "一拿到手就忍不住想立刻搭配出門！", 
-                "設計感與實用性完美結合的命定款。",
-                "這細節真的無可挑惕，隨便搭都好看。"
-            ];
-            
-            const benefits = [
-                "無論通勤或週末約會，都能完美點綴妳的整體造型。",
-                "設計簡約卻充滿高級感，是本季不可錯過的百搭首選！",
-                "兼具美感與實用度！隨手一搭就非常有型。",
-                "輕鬆駕馭各種場合，絕對是衣櫃/包櫃裡最常點名的一款。",
-                "優雅又不失隨性，展現獨特的個人品味。"
-            ];
-            
-            const endings = [
-                "首批現貨熱銷中🔥", "韓國連線少量追加到貨🛒", "千萬別錯過這波上新✨", "手刀加入購物車吧👇", "快標記閨蜜一起入手💕"
-            ];
-            
-            const hashtagsList = [
-                "#韓國連線 #質感單品 #OOTD",
-                "#東大門代購 #職場搭配 #時尚必備",
-                "#每日穿搭 #社長推薦 #韓國熱賣",
-                "#約會穿搭 #高級感 #必買清單",
-                "#日常百搭 #實穿分享 #質感女孩"
-            ];
-
-            const styles = ['法式簡約', '韓系知性', '日常慵懶', '高級時髦', '氣質溫柔', '優雅名媛', '率性街頭'];
-            
-            // 隨機抽取函數
             const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
             const getGroup = (num) => {
                 const s = styles.splice(Math.floor(Math.random() * styles.length), 1)[0];
                 return `[第 ${num} 組：${s}風格]\n👤「${pick(hooks)}${pick(benefits)}${pick(endings)}\n${pick(hashtagsList)}」`;
             };
 
-            if (type.includes('image') || type.includes('圖片')) {
-                return `【✨ AI 視覺分析生成 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 系統已辨識並套用相應視角：${query || '質感日常搭配'}\n\n${getGroup(1)}\n\n${getGroup(2)}\n\n${getGroup(3)}`;
-            } else if (type.includes('video') || type.includes('影片') || type.includes('Reels')) {
-                return `【🎬 Reels 腳本企劃 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 核心訴求：${query || '細節特色展示'}\n\n[00:00 - 00:04] 視覺吸睛：畫面以質感場景切入，主角優雅展示商品（配上輕快節奏）。\n[00:04 - 00:12] 細節特寫：鏡頭拉近展示材質與設計亮點，字幕帶出優勢。\n[00:12 - 00:20] 情境示範：示範實際搭配或使用情境，帶出高級感。\n[00:20 - 00:30] 導購轉換：跳出「首批限量現貨，小盒子私訊+1！」`;
-            } else {
-                return `【✨ 商品文案企劃 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 主題：${query}\n\n${getGroup(1)}\n\n${getGroup(2)}\n\n${getGroup(3)}`;
-            }
+            return `【✨ AI 視覺分析生成 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 系統已辨識並套用相應視角：${query || '質感日常搭配'}\n\n${getGroup(1)}\n\n${getGroup(2)}\n\n${getGroup(3)}`;
         }
 
-        // 呼叫真實 API 邏輯 (修復 400 錯誤結構)
+        // 呼叫真實 API 邏輯 (使用 gemini-2.5-flash 模型)
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
             try {
                 let parts = [{ text: prompt }];
-                
-                // 修復：確保 Base64 乾淨且設定正確的 mimeType
                 if (imageBase64) {
                     parts.push({
                         inline_data: { 
@@ -687,7 +651,8 @@
                     });
                 }
 
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                // 改用您帳戶支援的 gemini-2.5-flash 模型
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -701,7 +666,8 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`API 連線失敗 (狀態碼: ${response.status})`);
+                    const errJson = await response.json().catch(() => ({}));
+                    throw new Error(`API 連線失敗 (狀態碼: ${response.status}) ${errJson.error?.message || ''}`);
                 }
 
                 const data = await response.json();
@@ -712,7 +678,6 @@
                 }
             } catch (error) {
                 console.warn("Gemini API 呼叫失敗，已自動觸發備用 AI：", error);
-                // API 失敗時，自動降級使用我們剛剛強化的「全隨機備用 AI」
                 return getDynamicMockResult(prompt) + `\n\n(系統備註：因 API 連線異常 [${error.message}]，本次已自動啟用備用生成模式。)`;
             }
         };
@@ -727,7 +692,7 @@
 
             const isRegen = hasGeneratedMap.img;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新分析與生成中...' : 'Gemini 3.5 視覺分析中...';
+            submitBtn.innerText = isRegen ? '🎲 重新分析與生成中...' : 'Gemini 2.5 視覺分析中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：使用者點擊了重新生成，請務必換一套截然不同的情境訴求、排版結構與表達風格，絕不可與上一版重複！】" : "";
             
@@ -742,7 +707,6 @@
             const resText = await window.callGeminiAPI(fullPrompt, currentUploadedImageBase64);
             resultBox.innerText = resText;
 
-            // 如果使用真實 API 成功，才存入歷史紀錄（備用模式不存）
             if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
                 window.saveToHistory('image', (promptText || '圖片視覺文案') + (isRegen ? ' (重新生成)' : ''), resText, `data:image/jpeg;base64,${currentUploadedImageBase64}`);
             }
@@ -761,7 +725,7 @@
 
             const isRegen = hasGeneratedMap.gen;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新生成全新創意...' : 'Gemini 3.5 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新生成全新創意...' : 'Gemini 2.5 生成中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
             
@@ -790,7 +754,7 @@
 
             const isRegen = hasGeneratedMap.vid;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'Gemini 3.5 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'Gemini 2.5 生成中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點，展現不同的短影音爆款公式！】" : "";
             
@@ -812,7 +776,7 @@
         window.fetchTrend = async function() {
             const resultBox = document.getElementById('trend-result-box');
             const trendBtn = document.getElementById('trend-btn');
-            trendBtn.disabled = true; trendBtn.innerText = 'Gemini 3.5 分析中...';
+            trendBtn.disabled = true; trendBtn.innerText = 'Gemini 2.5 分析中...';
 
             const fullPrompt = `請以韓國東大門當季批發市場為核心，分析針對 30-40 歲女性的最新流行時尚趨勢（包含本季主打色系、材質、剪裁版型與熱銷單品/包款配件分析）。
 (強制更新防快取碼: ${Date.now()})`;
