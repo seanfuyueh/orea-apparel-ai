@@ -381,8 +381,8 @@
 
     <!-- ================= 一般腳本區 ================= -->
     <script>
-        // 已更新為您提供的全新 API Key
-        const GEMINI_API_KEY = "AQ.Ab8RN6LIylrnpQO4U9auDdyAI_d3QhRCxNCMEJGEoKP_rVvENw";
+        // 已更新為您最新提供的有效 API Key
+        const GEMINI_API_KEY = "AQ.Ab8RN6I5nidkecyPXF_IL29aCJP02_gsWl7l_rx33MMvwENbsg";
         
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
@@ -650,7 +650,7 @@
             return `【✨ AI 視覺分析生成 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 系統已辨識並套用相應視角：${query || '質感日常搭配'}\n\n${getGroup(1)}\n\n${getGroup(2)}\n\n${getGroup(3)}`;
         }
 
-        // 呼叫真實 API 邏輯 (支援模擬備用 AI 切換開關)
+        // 呼叫真實 API 邏輯（已全面升級為 gemini-3.0-flash）
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
             const isVid = prompt.includes('短影音') || prompt.includes('腳本');
             const isGen = prompt.includes('品項');
@@ -671,24 +671,22 @@
                     });
                 }
 
-                // 暫時改回 Google 官方直連網址測試
-// 使用 Cloudflare 中繼站網址
-const PROXY_URL = "https://withered-bird-7bd4.lovely201406.workers.dev";
+                const PROXY_URL = "https://withered-bird-7bd4.lovely201406.workers.dev";
 
-const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-    method: 'POST',
-    headers: { 
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        contents: [{ parts: parts }],
-        generationConfig: {
-            temperature: 0.9, 
-            topK: 40,
-            topP: 0.95
-        }
-    })
-});
+                const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-3.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contents: [{ parts: parts }],
+                        generationConfig: {
+                            temperature: 0.9, 
+                            topK: 40,
+                            topP: 0.95
+                        }
+                    })
+                });
 
                 if (!response.ok) {
                     const errJson = await response.json().catch(() => ({}));
@@ -717,13 +715,13 @@ const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-1.5-flash:genera
 
             const isRegen = hasGeneratedMap.img;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新分析與生成中...' : 'Gemini 2.5 視覺分析中...';
+            submitBtn.innerText = isRegen ? '🎲 重新分析與生成中...' : 'Gemini 3.0 視覺分析中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：使用者點擊了重新生成，請務必換一套截然不同的情境訴求、排版結構與表達風格，絕不可與上一版重複！】" : "";
             
             const fullPrompt = `你是一位專業的韓國時尚品牌行銷總監。請針對這張圖片進行「真實視覺分析與文案生成」：
 1. 【嚴格品項辨識】：請先仔細看圖，這究竟是「衣服、褲子、包包、鞋子還是飾品配件」？
-​2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用「揹起來、手提、戴上、百搭、容量實用、皮革質感、五金細節」等正確詞彙。
+2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用「揹起來、手提、戴上、百搭、容量實用、皮革質感、五金細節」等正確詞彙。
 3. 【真實細節描繪】：根據圖片中展示的真實顏色、材質與設計結構進行客觀描述。
 4. 【生成 3 組高質感文案】：撰寫 3 組不同情境（如：職場通勤、週末約會、高級質感）的網拍文案與 Hashtags。
 補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
@@ -750,7 +748,7 @@ const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-1.5-flash:genera
 
             const isRegen = hasGeneratedMap.gen;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新生成全新創意...' : 'Gemini 2.5 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新生成全新創意...' : 'Gemini 3.0 生成中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
             
@@ -779,7 +777,7 @@ const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-1.5-flash:genera
 
             const isRegen = hasGeneratedMap.vid;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'Gemini 2.5 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'Gemini 3.0 生成中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點，展現不同的短影音爆款公式！】" : "";
             
@@ -801,7 +799,7 @@ const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-1.5-flash:genera
         window.fetchTrend = async function() {
             const resultBox = document.getElementById('trend-result-box');
             const trendBtn = document.getElementById('trend-btn');
-            trendBtn.disabled = true; trendBtn.innerText = 'Gemini 2.5 分析中...';
+            trendBtn.disabled = true; trendBtn.innerText = 'Gemini 3.0 分析中...';
 
             const fullPrompt = `請以韓國東大門當季批發市場為核心，分析針對 30-40 歲女性的最新流行時尚趨勢（包含本季主打色系、材質、剪裁版型與熱銷單品/包款配件分析）。
 (強制更新防快取碼: ${Date.now()})`;
