@@ -673,19 +673,22 @@
 
                 // 暫時改回 Google 官方直連網址測試
 const PROXY_URL = "https://generativelanguage.googleapis.com";
-                
-                const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: parts }],
-                        generationConfig: {
-                            temperature: 0.9, 
-                            topK: 40,
-                            topP: 0.95
-                        }
-                    })
-                });
+
+const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-2.5-flash:generateContent`, {
+    method: 'POST',
+    headers: { 
+        'Content-Type': 'application/json',
+        'x-goog-api-key': GEMINI_API_KEY // AQ.Ab8RN6LRw_Vp3qJbBTB7DJaFY2v0BNDxaPRE1FRn4ywZ57N7JA
+    },
+    body: JSON.stringify({
+        contents: [{ parts: parts }],
+        generationConfig: {
+            temperature: 0.9, 
+            topK: 40,
+            topP: 0.95
+        }
+    })
+});
 
                 if (!response.ok) {
                     const errJson = await response.json().catch(() => ({}));
