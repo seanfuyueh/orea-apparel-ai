@@ -381,9 +381,6 @@
 
     <!-- ================= 一般腳本區 ================= -->
     <script>
-        // 已更新為您最新提供的有效 API Key
-        const GEMINI_API_KEY = "AQ.Ab8RN6I5nidkecyPXF_IL29aCJP02_gsWl7l_rx33MMvwENbsg";
-        
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
         let currentUploadedVideoBlobUrl = null;
@@ -650,7 +647,7 @@
             return `【✨ AI 視覺分析生成 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 系統已辨識並套用相應視角：${query || '質感日常搭配'}\n\n${getGroup(1)}\n\n${getGroup(2)}\n\n${getGroup(3)}`;
         }
 
-        // 呼叫真實 API 邏輯（已全面升級為 gemini-3.0-flash）
+        // 改為呼叫您自己的 Render 後端 API（金鑰安全存放在 Render 後端環境變數）
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
             const isVid = prompt.includes('短影音') || prompt.includes('腳本');
             const isGen = prompt.includes('品項');
@@ -661,36 +658,20 @@
             if (useMock) return getDynamicMockResult(prompt);
 
             try {
-                let parts = [{ text: prompt }];
-                if (imageBase64) {
-                    parts.push({
-                        inline_data: { 
-                            mime_type: "image/jpeg", 
-                            data: imageBase64 
-                        }
-                    });
-                }
-
-                const PROXY_URL = "https://withered-bird-7bd4.lovely201406.workers.dev";
-
-                const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-3.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                const response = await fetch('/api/generate', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        contents: [{ parts: parts }],
-                        generationConfig: {
-                            temperature: 0.9, 
-                            topK: 40,
-                            topP: 0.95
-                        }
+                        prompt: prompt,
+                        imageBase64: imageBase64
                     })
                 });
 
                 if (!response.ok) {
                     const errJson = await response.json().catch(() => ({}));
-                    throw new Error(`API 連線失敗 (狀態碼: ${response.status}) ${errJson.error?.message || ''}`);
+                    throw new Error(`後端伺服器錯誤 (狀態碼: ${response.status}) ${errJson.error || ''}`);
                 }
 
                 const data = await response.json();
@@ -700,8 +681,8 @@
                     throw new Error("API 回傳成功但未包含文字內容");
                 }
             } catch (error) {
-                console.warn("Gemini API 呼叫失敗，已自動觸發備用 AI：", error);
-                return getDynamicMockResult(prompt) + `\n\n(系統備註：因 API 連線異常 [${error.message}]，本次已自動啟用備用生成模式。)`;
+                console.warn("後端 AI 呼叫失敗，已自動觸發備用 AI：", error);
+                return getDynamicMockResult(prompt) + `\n\n(系統備註：因後端連線異常 [${error.message}]，本次已自動啟用備用生成模式。)`;
             }
         };
 
@@ -715,7 +696,7 @@
 
             const isRegen = hasGeneratedMap.img;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新分析與生成中...' : 'Gemini 3.0 視覺分析中...';
+            submitBtn.innerText = isRegen ? '🎲 重新分析與生成中...' : 'AI 視覺分析中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：使用者點擊了重新生成，請務必換一套截然不同的情境訴求、排版結構與表達風格，絕不可與上一版重複！】" : "";
             
@@ -748,7 +729,7 @@
 
             const isRegen = hasGeneratedMap.gen;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新生成全新創意...' : 'Gemini 3.0 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新生成全新創意...' : 'AI 生成中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
             
@@ -777,7 +758,7 @@
 
             const isRegen = hasGeneratedMap.vid;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'Gemini 3.0 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'AI 生成中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點，展現不同的短影音爆款公式！】" : "";
             
@@ -799,7 +780,7 @@
         window.fetchTrend = async function() {
             const resultBox = document.getElementById('trend-result-box');
             const trendBtn = document.getElementById('trend-btn');
-            trendBtn.disabled = true; trendBtn.innerText = 'Gemini 3.0 分析中...';
+            trendBtn.disabled = true; trendBtn.innerText = 'AI 分析中...';
 
             const fullPrompt = `請以韓國東大門當季批發市場為核心，分析針對 30-40 歲女性的最新流行時尚趨勢（包含本季主打色系、材質、剪裁版型與熱銷單品/包款配件分析）。
 (強制更新防快取碼: ${Date.now()})`;
@@ -930,7 +911,7 @@
                 });
                 return records;
             } catch (e) {
-                console.error("雲端讀取歷史紀錄失敗: ", e);
+                console.error("雲端讀取歷史紀錄失敗: `/api/generate`", e);
                 return [];
             }
         };
