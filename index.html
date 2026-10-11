@@ -672,14 +672,13 @@
                 }
 
                 // 暫時改回 Google 官方直連網址測試
+// 使用 Cloudflare 中繼站網址
 const PROXY_URL = "https://withered-bird-7bd4.lovely201406.workers.dev";
 
-// 1. 將 ?key=${GEMINI_API_KEY} 加回網址後方
 const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
     method: 'POST',
     headers: { 
         'Content-Type': 'application/json'
-        // 2. 這裡務必刪除 x-goog-api-key，否則會被瀏覽器 CORS 擋下
     },
     body: JSON.stringify({
         contents: [{ parts: parts }],
