@@ -671,8 +671,8 @@
                     });
                 }
 
-                // --- 這裡換成您的專屬 Cloudflare 中繼站網址 ---
-                const PROXY_URL = "https://withered-bird-7bd4.lovely201406.workers.dev";
+                // 暫時改回 Google 官方直連網址測試
+const PROXY_URL = "https://generativelanguage.googleapis.com";
                 
                 const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
                     method: 'POST',
