@@ -382,7 +382,7 @@
     <!-- ================= 一般腳本區 ================= -->
     <script>
         // 已更新為您提供的全新 API Key
-        const GEMINI_API_KEY = "AQ.Ab8RN6KhtKNH8fKEbNb-Jva7HpBGTcbRuKpowizN1_m6rGql0Q";
+        const GEMINI_API_KEY = "AQ.Ab8RN6LIylrnpQO4U9auDdyAI_d3QhRCxNCMEJGEoKP_rVvENw";
         
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
@@ -674,11 +674,12 @@
                 // 暫時改回 Google 官方直連網址測試
 const PROXY_URL = "https://generativelanguage.googleapis.com";
 
-const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-2.5-flash:generateContent`, {
+// 1. 將 ?key=${GEMINI_API_KEY} 加回網址後方
+const response = await fetch(`${PROXY_URL}/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
     method: 'POST',
     headers: { 
-        'Content-Type': 'application/json',
-        'x-goog-api-key': GEMINI_API_KEY // AQ.Ab8RN6LRw_Vp3qJbBTB7DJaFY2v0BNDxaPRE1FRn4ywZ57N7JA
+        'Content-Type': 'application/json'
+        // 2. 這裡務必刪除 x-goog-api-key，否則會被瀏覽器 CORS 擋下
     },
     body: JSON.stringify({
         contents: [{ parts: parts }],
