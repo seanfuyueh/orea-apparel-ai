@@ -1,8 +1,10 @@
-from fastapi import FastAPI, File, UploadFile, Form
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from google import genai
+from google.genai import types
 import os
+import base64
 
 app = FastAPI()
 
@@ -19,7 +21,7 @@ app.add_middleware(
 client = genai.Client()
 
 # ========================================================
-# 🚀 處理前端的 AI 生成請求
+# 🚀 處理前端的 AI 生成請求 (支援文字與圖片)
 # ========================================================
 @app.post("/api/generate")
 async def generate_content(data: dict):
@@ -29,14 +31,15 @@ async def generate_content(data: dict):
 
         contents = [prompt]
         if image_base64:
-            import base64
+            # 解碼 Base64 圖片並包裝為 Gemini 專用 Part 格式
             image_bytes = base64.b64decode(image_base64)
-            contents.append({
-                "mime_type": "image/jpeg",
-                "data": image_bytes
-            })
+            image_part = types.Part.from_bytes(
+                data=image_bytes,
+                mime_type="image/jpeg"
+            )
+            contents.append(image_part)
 
-        # 呼叫 Gemini 3.0 Flash 模型
+        # 呼叫 Gemini AI 模型
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=contents
@@ -47,7 +50,7 @@ async def generate_content(data: dict):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 🚀 絕對不 404 的精準檔案路由
+# 🚀 精準檔案路由
 # ========================================================
 @app.get("/")
 @app.get("/index.html")
@@ -67,7 +70,7 @@ async def read_sw():
     return FileResponse("sw.js", media_type="application/javascript")
 
 # ========================================================
-# 雲端部署與本機啟動設定
+# 啟動設定
 # ========================================================
 if __name__ == "__main__":
     import uvicorn
