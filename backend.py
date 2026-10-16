@@ -41,7 +41,7 @@ async def generate_content(data: dict):
 
         # 呼叫 Gemini AI 模組 (前面有 8 個空格，在 try 區塊之內)
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-1.5-flash',
             contents=contents
         )
 
