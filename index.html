@@ -224,7 +224,7 @@
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
                         <h3 class="font-medium text-gray-900 text-base md:text-lg">韓國東大門當季流行時尚趨勢分析</h3>
-                        <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行聯網分析與熱銷單品推薦。</p>
+                        <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行實時 IG 爆款貼文爬取與熱銷單品推薦。</p>
                     </div>
                     <div class="flex gap-2.5 w-full md:w-auto">
                         <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
@@ -517,51 +517,49 @@
         };
 
         window.previewFile = function(event, type) {
-    const file = event.target.files[0];
-    if (type === 'image' && file) {
-        currentUploadedImageFilename = file.name;
-        const reader = new FileReader();
-        reader.onload = e => {
-            const img = new Image();
-            img.onload = () => {
-                // 等比例縮放至最大長寬 1024px
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
-                const maxDim = 1024;
-                if (width > maxDim || height > maxDim) {
-                    if (width > height) {
-                        height = Math.round((height * maxDim) / width);
-                        width = maxDim;
-                    } else {
-                        width = Math.round((width * maxDim) / height);
-                        height = maxDim;
-                    }
-                }
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                // 轉為 JPEG 壓縮檔 (品質 0.8，約 150KB~200KB)
-                const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                currentUploadedImageBase64 = compressedDataUrl.split(',')[1];
-                
-                document.getElementById('image-preview').src = compressedDataUrl;
-                document.getElementById('image-preview').classList.remove('hidden');
-                document.getElementById('preview-placeholder-img').classList.add('hidden');
-            };
-            img.src = e.target.result;
+            const file = event.target.files[0];
+            if (type === 'image' && file) {
+                currentUploadedImageFilename = file.name;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDim = 1024;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) {
+                                height = Math.round((height * maxDim) / width);
+                                width = maxDim;
+                            } else {
+                                width = Math.round((width * maxDim) / height);
+                                height = maxDim;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        currentUploadedImageBase64 = compressedDataUrl.split(',')[1];
+                        
+                        document.getElementById('image-preview').src = compressedDataUrl;
+                        document.getElementById('image-preview').classList.remove('hidden');
+                        document.getElementById('preview-placeholder-img').classList.add('hidden');
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else if (type === 'video' && file) {
+                currentUploadedVideoFilename = file.name;
+                currentUploadedVideoBlobUrl = URL.createObjectURL(file);
+                document.getElementById('video-preview').src = currentUploadedVideoBlobUrl;
+                document.getElementById('video-preview').classList.remove('hidden');
+                document.getElementById('preview-placeholder-vid').classList.add('hidden');
+            }
         };
-        reader.readAsDataURL(file);
-    } else if (type === 'video' && file) {
-        currentUploadedVideoFilename = file.name;
-        currentUploadedVideoBlobUrl = URL.createObjectURL(file);
-        document.getElementById('video-preview').src = currentUploadedVideoBlobUrl;
-        document.getElementById('video-preview').classList.remove('hidden');
-        document.getElementById('preview-placeholder-vid').classList.add('hidden');
-    }
-};
 
         window.resetModule = function(mode) {
             hasGeneratedMap[mode] = false;
@@ -672,7 +670,7 @@
             return `【✨ AI 視覺分析生成 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 系統已辨識並套用相應視角：${query || '質感日常搭配'}\n\n${getGroup(1)}\n\n${getGroup(2)}\n\n${getGroup(3)}`;
         }
 
-        // 改為安全呼叫您自己的 FastAPI 後端 API（/api/generate）
+        // 安全呼叫 FastAPI 後端 API（/api/generate）
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
             const isVid = prompt.includes('短影音') || prompt.includes('腳本');
             const isGen = prompt.includes('品項');
@@ -804,21 +802,41 @@
             submitBtn.innerText = '重新生成';
         };
 
+        // 🚀【修正重點】實時間接串接 Apify + Gemini 的東大門實時流行趨勢路由 (/api/realtime-trends)
         window.fetchTrend = async function() {
             const resultBox = document.getElementById('trend-result-box');
             const trendBtn = document.getElementById('trend-btn');
-            trendBtn.disabled = true; trendBtn.innerText = 'AI 分析中...';
 
-            const fullPrompt = `請以韓國東大門當季批發市場為核心，分析針對 30-40 歲女性的最新流行時尚趨勢（包含本季主打色系、材質、剪裁版型與熱銷單品/包款配件分析）。
-(強制更新防快取碼: ${Date.now()})`;
-
-            const resText = await window.callGeminiAPI(fullPrompt);
-
-            resultBox.innerText = resText;
-            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
-                window.saveToHistory('text', '東大門流行趨勢報告', resText, null);
+            if (trendBtn) {
+                trendBtn.disabled = true;
+                trendBtn.innerText = '🔍 實時抓取 IG 爆款數據中...';
             }
-            trendBtn.disabled = false; trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
+            resultBox.innerText = '正在透過爬蟲引擎抓取韓國爆款 IG 貼文，並由 Gemini Vision 進行多模態趨勢分析，請稍候約 20-30 秒...';
+
+            try {
+                const response = await fetch('/api/realtime-trends', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+
+                if (response.ok && data.report) {
+                    resultBox.innerText = data.report;
+                    if (typeof window.saveToHistory === 'function') {
+                        window.saveToHistory('text', '東大門 IG 實時爆款趨勢報告', data.report, null);
+                    }
+                } else {
+                    resultBox.innerText = '分析失敗：' + (data.error || '無法取得資料');
+                }
+            } catch (error) {
+                resultBox.innerText = '連線發生錯誤：' + error.message;
+            } finally {
+                if (trendBtn) {
+                    trendBtn.disabled = false;
+                    trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
+                }
+            }
         };
 
         window.renderHistory = async function() {
