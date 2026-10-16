@@ -94,7 +94,53 @@ async def get_realtime_trends():
         for idx, post in enumerate(sorted_posts, 1):
             likes = post.get('likesCount', 0)
             comments = post.get('commentsCount', 0)
-            caption = post
+            caption = post.get('caption', '無內文')
+            post_url = post.get('url', '')
+            display_url = post.get('displayUrl', '')
+
+            trend_summary_prompt += f"【🔥 爆款第 {idx} 名】\n"
+            trend_summary_prompt += f"- 貼文連結: {post_url}\n"
+            trend_summary_prompt += f"- 按讚數: {likes} | 留言數: {comments}\n"
+            trend_summary_prompt += f"- 貼文內文: {caption[:150]}...\n\n"
+
+            if display_url:
+                try:
+                    img_resp = requests.get(display_url, timeout=10)
+                    if img_resp.status_code == 200:
+                        image_part = types.Part.from_bytes(
+                            data=img_resp.content,
+                            mime_type="image/jpeg"
+                        )
+                        image_parts.append(image_part)
+                except Exception as img_err:
+                    print(f"圖片下載失敗: {img_err}")
+
+        trend_summary_prompt += """
+請根據上述真實高流量貼文與圖片，產出一份「東大門流行趨勢與爆款分析報告」：
+1. 視覺風格分析：總結這幾款爆款商品的共通設計亮點（顏色、面料、剪裁）。
+2. 爆款原因分析：為什麼這幾篇貼文在 IG 上能獲得高按讚數與高互動？
+3. 明確列出這 3 篇爆款貼文的真實 IG 連結與按讚數供用戶查驗。
+"""
+
+        contents = [trend_summary_prompt] + image_parts
+
+        # 4. 呼叫 Gemini 3.8-Flash (加入 503 重試機制)
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                ai_response = client.models.generate_content(
+                    model='gemini-3.8-flash',
+                    contents=contents
+                )
+                return JSONResponse(content={"report": ai_response.text})
+            except Exception as e:
+                if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
+                    time.sleep(2)  # 遇到 503 等待 2 秒後自動重試
+                    continue
+                return JSONResponse(status_code=500, content={"error": str(e)})
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
 # 🚀 精準檔案路由
