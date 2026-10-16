@@ -39,12 +39,12 @@ async def generate_content(data: dict):
             )
             contents.append(image_part)
 
-        # 呼叫 Gemini AI 模型
-    response = client.models.generate_content(
-        model='gemini-2.0-flash',
-        contents=contents
-    )
-        
+        # 呼叫 Gemini AI 模組 (前面有 8 個空格，在 try 區塊之內)
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=contents
+        )
+
         return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
