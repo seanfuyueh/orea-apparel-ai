@@ -5,11 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>韓國女裝 AI 智慧後台</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Marked.js 解析器 (用於將 Markdown 語法轉為 HTML 超連結與表格) -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; font-size: 1.15rem; }
         html, body { width: 100%; max-width: 100%; overflow-x: hidden; box-sizing: border-box; margin: 0; padding: 0; }
         *, *:before, *:after { box-sizing: inherit; }
+
+        /* 📌 Markdown 報告渲染專用樣式 (防止手機版跑版與網址無效) */
+        .markdown-body {
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            line-height: 1.7;
+        }
+        .markdown-body a {
+            color: #2563eb;
+            text-decoration: underline;
+            font-weight: 500;
+            word-break: break-all;
+        }
+        .markdown-body a:hover {
+            color: #1d4ed8;
+        }
+        .markdown-body table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            display: block;
+            overflow-x: auto;
+            white-space: normal;
+        }
+        .markdown-body th, .markdown-body td {
+            border: 1px solid #e5e7eb;
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            word-break: break-word;
+            min-width: 100px;
+        }
+        .markdown-body th {
+            background-color: #f3f4f6;
+            font-weight: 700;
+        }
+        .markdown-body ul, .markdown-body ol {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .markdown-body ul { list-style-type: disc; }
+        .markdown-body ol { list-style-type: decimal; }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 {
+            font-weight: 700;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #111827;
+        }
+        .markdown-body h3 { font-size: 1.2rem; }
+        .markdown-body p { margin-bottom: 0.75rem; }
+        .markdown-body hr {
+            border: 0;
+            height: 1px;
+            background: #e5e7eb;
+            margin: 1.5rem 0;
+        }
     </style>
     <!-- 強制註銷舊版 Service Worker 快取 -->
     <script>
@@ -118,7 +177,7 @@
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
                     <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 視覺分析與文案結果</h3>
-                    <div id="result-box-img" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳圖片並點擊按鈕。</div>
+                    <div id="result-box-img" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed markdown-body">尚未開始生成，請上傳圖片並點擊按鈕。</div>
                 </div>
             </div>
 
@@ -162,7 +221,7 @@
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
                     <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果</h3>
-                    <div id="result-box-gen" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請輸入主題與風格並點擊按鈕。</div>
+                    <div id="result-box-gen" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed markdown-body">尚未開始生成，請輸入主題與風格並點擊按鈕。</div>
                 </div>
             </div>
 
@@ -215,7 +274,7 @@
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
                     <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>🎬</span> AI 執行結果</h3>
-                    <div id="result-box-vid" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed">尚未開始生成，請上傳影片並點擊按鈕。</div>
+                    <div id="result-box-vid" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[240px] leading-relaxed markdown-body">尚未開始生成，請上傳影片並點擊按鈕。</div>
                 </div>
             </div>
 
@@ -237,7 +296,7 @@
                 </div>
                 <div class="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
                     <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告</h3>
-                    <div id="trend-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 whitespace-pre-wrap min-h-[380px] leading-relaxed">點擊上方按鈕開始分析。</div>
+                    <div id="trend-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm md:text-base text-gray-700 min-h-[380px] leading-relaxed markdown-body overflow-x-auto max-w-full">點擊上方按鈕開始分析。</div>
                 </div>
             </div>
 
@@ -375,7 +434,7 @@
                 <div id="modal-title" class="font-semibold text-base md:text-lg flex items-center gap-2">🔍 紀錄檢視</div>
                 <button type="button" onclick="closeModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl text-sm font-medium border border-gray-700 cursor-pointer">❌ 關閉視窗</button>
             </div>
-            <div id="modal-body" class="p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50"></div>
+            <div id="modal-body" class="p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50 markdown-body"></div>
         </div>
     </div>
 
@@ -387,6 +446,23 @@
         let currentUploadedVideoFilename = null;
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
+
+        // 📌 Markdown 渲染輔助函式：自動開啟新分頁超連結與套用樣式
+        window.renderMarkdownContent = function(elementId, text) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            if (typeof marked !== 'undefined' && text) {
+                const renderer = new marked.Renderer();
+                const originalLink = renderer.link;
+                renderer.link = (href, title, text) => {
+                    const html = originalLink.call(renderer, href, title, text);
+                    return html.replace(/^<a /, '<a target="_blank" rel="noopener noreferrer" ');
+                };
+                el.innerHTML = marked.parse(text, { renderer });
+            } else {
+                el.innerText = text || '';
+            }
+        };
 
         window.saveToHistory = async function() {};
         window.loadHistoryFromCloud = async function() { return []; };
@@ -454,11 +530,14 @@
             } else if (item.type === 'video' && item.mediaSrc) {
                 mediaHtml = `<div class="mb-4 text-center"><video src="${item.mediaSrc}" controls class="max-h-80 mx-auto rounded-xl border border-gray-200 shadow-sm"></video></div>`;
             }
-            document.getElementById('modal-body').innerHTML = `
+            
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = `
                 <div class="text-xs text-gray-400 mb-2">建立時間：${item.dateStr || ''}</div>
                 ${mediaHtml}
-                <div class="bg-white border border-gray-200 rounded-xl p-5 text-gray-800 whitespace-pre-wrap leading-relaxed shadow-inner">${item.content || '無內容'}</div>
+                <div id="modal-text-content" class="bg-white border border-gray-200 rounded-xl p-5 text-gray-800 leading-relaxed shadow-inner markdown-body"></div>
             `;
+            window.renderMarkdownContent('modal-text-content', item.content || '無內容');
             document.getElementById('expand-modal').classList.remove('hidden');
         };
 
@@ -715,7 +794,6 @@
         window.generateImageText = async function() {
             const fileInput = document.getElementById('image-file');
             const promptText = document.getElementById('prompt-text-img').value;
-            const resultBox = document.getElementById('result-box-img');
             const submitBtn = document.getElementById('submit-btn-img');
             if (fileInput.files.length === 0 && !currentUploadedImageBase64) { alert('請先上傳圖片！'); return; }
 
@@ -734,7 +812,7 @@
 (強制更新防快取碼: ${Date.now()})`; 
 
             const resText = await window.callGeminiAPI(fullPrompt, currentUploadedImageBase64);
-            resultBox.innerText = resText;
+            window.renderMarkdownContent('result-box-img', resText);
 
             if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
                 window.saveToHistory('image', (promptText || '圖片視覺文案') + (isRegen ? ' (重新生成)' : ''), resText, `data:image/jpeg;base64,${currentUploadedImageBase64}`);
@@ -748,7 +826,6 @@
         window.generateTextOnly = async function() {
             const topic = document.getElementById('gen-topic').value;
             const style = document.getElementById('gen-style').value;
-            const resultBox = document.getElementById('result-box-gen');
             const submitBtn = document.getElementById('submit-btn-gen');
             if (!topic) { alert('請輸入商品主題/品項！'); return; }
 
@@ -763,7 +840,7 @@
 (強制更新防快取碼: ${Date.now()})`; 
 
             const resText = await window.callGeminiAPI(fullPrompt);
-            resultBox.innerText = resText;
+            window.renderMarkdownContent('result-box-gen', resText);
 
             if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
                 window.saveToHistory('text', topic + (isRegen ? ' (重新生成)' : ''), resText, null);
@@ -777,7 +854,6 @@
         window.generateVideoText = async function() {
             const fileInput = document.getElementById('video-file');
             const promptText = document.getElementById('prompt-text-vid').value;
-            const resultBox = document.getElementById('result-box-vid');
             const submitBtn = document.getElementById('submit-btn-vid');
             if (fileInput.files.length === 0 && !currentUploadedVideoBlobUrl) { alert('請先上傳影片！'); return; }
 
@@ -791,7 +867,7 @@
 (強制更新防快取碼: ${Date.now()})`; 
 
             const resText = await window.callGeminiAPI(fullPrompt);
-            resultBox.innerText = resText;
+            window.renderMarkdownContent('result-box-vid', resText);
 
             if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
                 window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedVideoBlobUrl);
@@ -802,7 +878,7 @@
             submitBtn.innerText = '重新生成';
         };
 
-        // 🚀【修正重點】實時間接串接 Apify + Gemini 的東大門實時流行趨勢路由 (/api/realtime-trends)
+        // 🚀【東大門實時流行趨勢，支援 Markdown 渲染超連結與手機防跑版】
         window.fetchTrend = async function() {
             const resultBox = document.getElementById('trend-result-box');
             const trendBtn = document.getElementById('trend-btn');
@@ -822,7 +898,7 @@
                 const data = await response.json();
 
                 if (response.ok && data.report) {
-                    resultBox.innerText = data.report;
+                    window.renderMarkdownContent('trend-result-box', data.report);
                     if (typeof window.saveToHistory === 'function') {
                         window.saveToHistory('text', '東大門 IG 實時爆款趨勢報告', data.report, null);
                     }
