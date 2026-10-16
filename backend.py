@@ -1,5 +1,6 @@
 import base64
 import os
+import re
 import time
 import requests
 from fastapi import FastAPI
@@ -19,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 初始化 Google Gemini 客戶端 (自動抓取 GEMINI_API_KEY)
+# 初始化 Google Gemini 客戶端
 client = genai.Client()
 
 # 從 Render 環境變數抓取 APIFY_TOKEN
@@ -42,7 +43,6 @@ async def generate_content(data: dict):
         )
         contents.append(image_part)
 
-    # 自動重試機制 (最多重試 3 次)
     max_retries = 3
     for attempt in range(max_retries):
         try:
@@ -58,7 +58,7 @@ async def generate_content(data: dict):
             return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📊 韓國東大門 IG 實時爆款趨勢分析 (TOP 10 穩健版)
+# 📊 韓國東大門 IG 實時爆款趨勢分析 (TOP 10 格式清洗版)
 # ========================================================
 @app.post("/api/realtime-trends")
 async def get_realtime_trends():
@@ -66,20 +66,34 @@ async def get_realtime_trends():
         if not APIFY_TOKEN:
             return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
 
-        # 1. 自動讀取 ig_targets.txt 中的網址清單
+        # 1. 自動從根目錄讀取 ig_targets.txt 並嚴格清洗網址格式
         target_file_path = os.path.join(os.path.dirname(__file__), "ig_targets.txt")
         ig_urls = []
         if os.path.exists(target_file_path):
             with open(target_file_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
-                    if line and not line.startswith("#"):
+                    # 忽略空行與以 # 開頭的註解
+                    if not line or line.startswith("#"):
+                        continue
+                    
+                    # 確保網址開頭包含 https://
+                    if not line.startswith("http://") and not line.startswith("https://"):
+                        line = "https://" + line
+                    
+                    # 確保網址結尾有斜線 /
+                    if not line.endswith("/"):
+                        line += "/"
+
+                    # 驗證是否符合 Instagram 網址格式
+                    if "instagram.com/" in line:
                         ig_urls.append(line)
 
+        # 若檔案無有效網址，使用預設帳號
         if not ig_urls:
             ig_urls = ["https://www.instagram.com/partysu_official/"]
 
-        # 2. 呼叫 Apify Instagram Scraper (設定 20 篇以確保速度與品質)
+        # 2. 呼叫 Apify Instagram Scraper
         apify_url = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
         payload = {
             "directUrls": ig_urls,
@@ -91,7 +105,7 @@ async def get_realtime_trends():
         items = response.json()
         
         if not isinstance(items, list) or len(items) == 0:
-            error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據，請檢查網址或 Apify 額度"
+            error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據，請確認 ig_targets.txt 網址或 Apify 狀態。"
             return JSONResponse(status_code=500, content={"error": error_msg})
 
         # 3. 依照 (愛心數 + 留言數*2) 排序，挑選前 10 名
