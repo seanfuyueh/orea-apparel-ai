@@ -23,31 +23,35 @@ client = genai.Client()
 # ========================================================
 # 🚀 處理前端的 AI 生成請求 (支援文字與圖片)
 # ========================================================
+import time：
 @app.post("/api/generate")
 async def generate_content(data: dict):
-    try:
-        prompt = data.get("prompt", "")
-        image_base64 = data.get("imageBase64", None)
+    prompt = data.get("prompt", "")
+    image_base64 = data.get("imageBase64", None)
 
-        contents = [prompt]
-        if image_base64:
-            # 解碼 Base64 圖片並包裝為 Gemini 專用 Part 格式
-            image_bytes = base64.b64decode(image_base64)
-            image_part = types.Part.from_bytes(
-                data=image_bytes,
-                mime_type="image/jpeg"
-            )
-            contents.append(image_part)
-
-        # 呼叫 Gemini AI 模組 (前面有 8 個空格，在 try 區塊之內)
-        response = client.models.generate_content(
-            model='gemini-3.8-flash',
-            contents=contents
+    contents = [prompt]
+    if image_base64:
+        image_bytes = base64.b64decode(image_base64)
+        image_part = types.Part.from_bytes(
+            data=image_bytes,
+            mime_type="image/jpeg"
         )
+        contents.append(image_part)
 
-        return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+    # 自動重試機制 (最多重試 3 次)
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model='gemini-3.8-flash',
+                contents=contents
+            )
+            return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
+        except Exception as e:
+            if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
+                time.sleep(2)  # 等待 2 秒後自動重試
+                continue
+            return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
 # 🚀 精準檔案路由
