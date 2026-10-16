@@ -58,7 +58,7 @@ async def generate_content(data: dict):
             return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📊 韓國東大門 IG 實時爆款趨勢分析 (動態讀取 ig_targets.txt)
+# 📊 韓國東大門 IG 實時爆款趨勢分析 (TOP 10 產出版)
 # ========================================================
 @app.post("/api/realtime-trends")
 async def get_realtime_trends():
@@ -80,11 +80,11 @@ async def get_realtime_trends():
         if not ig_urls:
             ig_urls = ["https://www.instagram.com/partysu_official/"]
 
-        # 2. 呼叫 Apify Instagram Scraper 抓取目標 IG 最新貼文
+        # 2. 呼叫 Apify Instagram Scraper (提高至 30 篇以確保數據庫充足)
         apify_url = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
         payload = {
             "directUrls": ig_urls,
-            "resultsLimit": 15,
+            "resultsLimit": 30,
             "searchType": "user"
         }
         
@@ -94,12 +94,12 @@ async def get_realtime_trends():
         if not isinstance(items, list) or len(items) == 0:
             return JSONResponse(status_code=500, content={"error": "無法取得 IG 貼文數據，請確認 ig_targets.txt 網址或 Apify 狀態。"})
 
-        # 3. 依照 (愛心數 + 留言數*2) 排序，挑選出流量最高的 TOP 3 爆款貼文
+        # 3. 依照 (愛心數 + 留言數*2) 排序，挑選出流量最高的 TOP 10 爆款貼文
         sorted_posts = sorted(
             items, 
             key=lambda x: (x.get('likesCount', 0) or 0) + (x.get('commentsCount', 0) or 0) * 2, 
             reverse=True
-        )[:3]
+        )[:10]
 
         # 4. 組成 Prompt 與爆款圖片供 Gemini 分析
         trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是實時抓取到的最新熱門 IG 爆款貼文數據與圖片：\n\n"
@@ -130,16 +130,16 @@ async def get_realtime_trends():
                     print(f"圖片下載失敗: {img_err}")
 
         trend_summary_prompt += """
-請根據上述數據與圖片，產出一份結構清晰的「東大門流行趨勢與爆款分析報告」。
+請根據上述數據與圖片，產出一份結構清晰的「東大門流行趨勢與爆款 TOP 10 分析報告」。
 
 【⚠️ 格式排版極重要要求】：
-請對這 3 款爆款單品依次進行單獨分析。**每一款單品講解完畢後，請務必在其分析文字的正下方，直接貼上該單品的 IG 貼文連結按鈕（格式為：`[📸 查看 Instagram 貼文](該篇貼文的真實連結)`）！絕不要統一放在報告最後！**
+請對這 10 款爆款單品（No.1 至 No.10）依次進行單獨分析。**每一款單品講解完畢後，請務必在其分析文字的正下方，直接貼上該單品的 IG 貼文連結按鈕（格式為：`[📸 查看 Instagram 貼文](該篇貼文的真實連結)`）！絕不要統一放在報告最後！**
 
 請嚴格按照以下結構格式撰寫：
 
-### 壹、本週東大門 IG 爆款單品逐一解析
+### 壹、本週東大門 IG 爆款單品 TOP 10 逐一解析
 
-【🔥 爆款 No.1：(給予一個精準單品名稱，例如：韓系落肩羊毛針織外套)】
+【🔥 爆款 No.1：(給予精準單品名稱)】
 - **互動數據**：(列出按讚數與留言數)
 - **視覺與設計亮點**：(分析顏色、面料、剪裁與搭配方式)
 - **爆款原因分析**：(為什麼這款能在 IG 上引發話題與高觸及)
@@ -148,7 +148,7 @@ async def get_realtime_trends():
 
 ---
 
-【🔥 爆款 No.2：(給予一個精準單品名稱)】
+【🔥 爆款 No.2：(給予精準單品名稱)】
 - **互動數據**：(列出按讚數與留言數)
 - **視覺與設計亮點**：(分析顏色、面料、剪裁與搭配方式)
 - **爆款原因分析**：(為什麼這款能在 IG 上引發話題與高觸及)
@@ -157,17 +157,12 @@ async def get_realtime_trends():
 
 ---
 
-【🔥 爆款 No.3：(給予一個精準單品名稱)】
-- **互動數據**：(列出按讚數與留言數)
-- **視覺與設計亮點**：(分析顏色、面料、剪裁與搭配方式)
-- **爆款原因分析**：(為什麼這款能在 IG 上引發話題與高觸及)
-
-[📸 查看 Instagram 貼文](第3篇貼文的真實連結)
+(請依此類推完整的列出 No.3、No.4、No.5、No.6、No.7、No.8、No.9 至 No.10，每款下方都必須帶有其專屬連結按鈕)
 
 ---
 
 ### 貳、東大門當季流行趨勢總結與採購建議
-1. **整體視覺風格趨勢**：(總結這幾款爆款的共通點與韓國女性最愛的風格)
+1. **整體視覺風格趨勢**：(總結這 10 款爆款的共通點與韓國女性最愛的風格)
 2. **賣家選品與行銷建議**：(提供給台灣女裝賣家的採購與粉專/IG 行銷切入點)
 """
 
