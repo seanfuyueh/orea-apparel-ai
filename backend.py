@@ -58,7 +58,7 @@ async def generate_content(data: dict):
             return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📊 韓國東大門 IG 實時爆款趨勢分析 (TOP 10 產出版)
+# 📊 韓國東大門 IG 實時爆款趨勢分析 (TOP 10 穩健版)
 # ========================================================
 @app.post("/api/realtime-trends")
 async def get_realtime_trends():
@@ -66,7 +66,7 @@ async def get_realtime_trends():
         if not APIFY_TOKEN:
             return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
 
-        # 1. 自動從根目錄讀取 ig_targets.txt 中的網址清單
+        # 1. 自動讀取 ig_targets.txt 中的網址清單
         target_file_path = os.path.join(os.path.dirname(__file__), "ig_targets.txt")
         ig_urls = []
         if os.path.exists(target_file_path):
@@ -76,15 +76,14 @@ async def get_realtime_trends():
                     if line and not line.startswith("#"):
                         ig_urls.append(line)
 
-        # 若檔案不存在或內容空白，則使用預設帳號
         if not ig_urls:
             ig_urls = ["https://www.instagram.com/partysu_official/"]
 
-        # 2. 呼叫 Apify Instagram Scraper (提高至 30 篇以確保數據庫充足)
+        # 2. 呼叫 Apify Instagram Scraper (設定 20 篇以確保速度與品質)
         apify_url = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
         payload = {
             "directUrls": ig_urls,
-            "resultsLimit": 30,
+            "resultsLimit": 20,
             "searchType": "user"
         }
         
@@ -92,9 +91,10 @@ async def get_realtime_trends():
         items = response.json()
         
         if not isinstance(items, list) or len(items) == 0:
-            return JSONResponse(status_code=500, content={"error": "無法取得 IG 貼文數據，請確認 ig_targets.txt 網址或 Apify 狀態。"})
+            error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據，請檢查網址或 Apify 額度"
+            return JSONResponse(status_code=500, content={"error": error_msg})
 
-        # 3. 依照 (愛心數 + 留言數*2) 排序，挑選出流量最高的 TOP 10 爆款貼文
+        # 3. 依照 (愛心數 + 留言數*2) 排序，挑選前 10 名
         sorted_posts = sorted(
             items, 
             key=lambda x: (x.get('likesCount', 0) or 0) + (x.get('commentsCount', 0) or 0) * 2, 
@@ -133,7 +133,7 @@ async def get_realtime_trends():
 請根據上述數據與圖片，產出一份結構清晰的「東大門流行趨勢與爆款 TOP 10 分析報告」。
 
 【⚠️ 格式排版極重要要求】：
-請對這 10 款爆款單品（No.1 至 No.10）依次進行單獨分析。**每一款單品講解完畢後，請務必在其分析文字的正下方，直接貼上該單品的 IG 貼文連結按鈕（格式為：`[📸 查看 Instagram 貼文](該篇貼文的真實連結)`）！絕不要統一放在報告最後！**
+請對這 10 款爆款單品依次進行單獨分析。**每一款單品講解完畢後，請務必在其分析文字的正下方，直接貼上該單品的 IG 貼文連結按鈕（格式為：`[📸 查看 Instagram 貼文](該篇貼文的真實連結)`）！絕不要統一放在報告最後！**
 
 請嚴格按照以下結構格式撰寫：
 
@@ -148,16 +148,7 @@ async def get_realtime_trends():
 
 ---
 
-【🔥 爆款 No.2：(給予精準單品名稱)】
-- **互動數據**：(列出按讚數與留言數)
-- **視覺與設計亮點**：(分析顏色、面料、剪裁與搭配方式)
-- **爆款原因分析**：(為什麼這款能在 IG 上引發話題與高觸及)
-
-[📸 查看 Instagram 貼文](第2篇貼文的真實連結)
-
----
-
-(請依此類推完整的列出 No.3、No.4、No.5、No.6、No.7、No.8、No.9 至 No.10，每款下方都必須帶有其專屬連結按鈕)
+(請依此類推完整的列出 No.2 至 No.10，每款下方都必須帶有其專屬連結按鈕)
 
 ---
 
@@ -184,6 +175,7 @@ async def get_realtime_trends():
                 return JSONResponse(status_code=500, content={"error": str(e)})
 
     except Exception as e:
+        print(f"Realtime trend error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
