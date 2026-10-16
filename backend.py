@@ -23,7 +23,7 @@ client = genai.Client()
 # ========================================================
 # 🚀 處理前端的 AI 生成請求 (支援文字與圖片)
 # ========================================================
-import time：
+import time
 @app.post("/api/generate")
 async def generate_content(data: dict):
     prompt = data.get("prompt", "")
