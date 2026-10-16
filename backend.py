@@ -40,10 +40,10 @@ async def generate_content(data: dict):
             contents.append(image_part)
 
         # 呼叫 Gemini AI 模型
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=contents
-        )
+       response = client.models.generate_content(
+    model='gemini-2.0-flash',  # 更新為標準可用模型
+    contents=contents
+)
         
         return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
     except Exception as e:
