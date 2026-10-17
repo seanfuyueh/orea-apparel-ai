@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 初始化 Google Gemini 客戶端 (會自動抓取環境變數 GEMINI_API_KEY)
+# 初始化 Google Gemini 客戶端
 client = genai.Client()
 
 # 從 Render 環境變數抓取 APIFY_TOKEN
@@ -59,7 +59,7 @@ def add_history_item(item: dict = Body(...)):
         item["id"] = int(time.time() * 1000)
     if "date" not in item:
         item["date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    history.insert(0, item)  # 最新產出的排在最前面
+    history.insert(0, item)
     save_cloud_history(history)
     return {"status": "success", "item": item}
 
@@ -76,7 +76,7 @@ def clear_all_history():
     return {"status": "success"}
 
 # ========================================================
-# 🚀 處理前端的 AI 生成請求 (支援文字與圖片)
+# 🚀 處理前端的 AI 生成請求 (支援文字與圖片 + 3次 503 防護)
 # ========================================================
 @app.post("/api/generate")
 async def generate_content(data: dict):
@@ -92,7 +92,6 @@ async def generate_content(data: dict):
         )
         contents.append(image_part)
 
-    # 自動重試機制 (最多重試 3 次)
     max_retries = 3
     for attempt in range(max_retries):
         try:
@@ -103,7 +102,7 @@ async def generate_content(data: dict):
             return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
         except Exception as e:
             if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
-                time.sleep(2)  # 等待 2 秒後自動重試
+                time.sleep(2)
                 continue
             return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -116,7 +115,6 @@ async def get_realtime_trends():
         if not APIFY_TOKEN:
             return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
 
-        # 1. 呼叫 Apify Instagram Scraper 抓取 @partysu_official 最新 15 篇貼文
         apify_url = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
         payload = {
             "directUrls": ["https://www.instagram.com/partysu_official/"],
@@ -130,14 +128,12 @@ async def get_realtime_trends():
         if not isinstance(items, list) or len(items) == 0:
             return JSONResponse(status_code=500, content={"error": "無法取得 IG 貼文數據，請確認 Apify 額度或帳號狀態。"})
 
-        # 2. 依照 (愛心數 + 留言數*2) 排序，取出前 3 筆最高流量貼文
         sorted_posts = sorted(
             items, 
             key=lambda x: (x.get('likesCount', 0) or 0) + (x.get('commentsCount', 0) or 0) * 2, 
             reverse=True
         )[:3]
 
-        # 3. 組成 Prompt 與爆款圖片供 Gemini 分析
         trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是從韓國熱門 IG 帳號 @partysu_official 實時抓取到的本週最高流量貼文數據與圖片：\n\n"
         
         image_parts = []
@@ -167,14 +163,13 @@ async def get_realtime_trends():
 
         trend_summary_prompt += """
 請根據上述真實高流量貼文與圖片，產出一份「東大門流行趨勢與爆款分析報告」：
-1. 視覺風格分析：總結這幾款爆款商品的共通設計亮點（顏色、面料、剪裁）。
+1. 視覺風格分析：總結這幾款爆款商品的共通設計亮點（顏色, 面料, 剪裁）。
 2. 爆款原因分析：為什麼這幾篇貼文在 IG 上能獲得高按讚數與高互動？
 3. 明確列出這 3 篇爆款貼文的真實 IG 連結與按讚數供用戶查驗。
 """
 
         contents = [trend_summary_prompt] + image_parts
 
-        # 4. 呼叫 Gemini 3.8-Flash (附帶 3 次重試防護，完美解決 503 瞬間過載)
         max_retries = 3
         for attempt in range(max_retries):
             try:
@@ -200,9 +195,7 @@ async def publish_meta(data: dict = Body(...)):
     try:
         message = data.get("message", "韓國女裝新品連線！")
         image_base64 = data.get("imageBase64", "")
-
         image_url_used = "https://picsum.photos/800/1000"
-
         fb_caption = f"{message}\n\n✨ 歡迎點擊私訊詢問小幫手或直接下單！"
         ig_caption = f"{message}\n\n#韓國女裝 #正韓連線 #東大門穿搭 #OOTD"
 
@@ -235,9 +228,6 @@ async def read_manifest():
 async def read_sw():
     return FileResponse("sw.js", media_type="application/javascript")
 
-# ========================================================
-# 啟動設定
-# ========================================================
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))

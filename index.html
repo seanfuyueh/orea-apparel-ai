@@ -21,17 +21,16 @@
         <button onclick="switchTab('pricing')" id="nav-pricing" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">💰 價格試算器</button>
         <button onclick="switchTab('history')" id="nav-history" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">📂 雲端歷史紀錄</button>
       </nav>
-      <div class="mt-8 text-xs text-gray-400">LovelyByKorea Admin v4.5</div>
+      <div class="mt-8 text-xs text-gray-400">LovelyByKorea Admin v4.7</div>
     </aside>
 
     <!-- 主要內容區 -->
     <main class="flex-1 overflow-y-auto p-4 md:p-8">
 
-      <!-- ================= 1. 圖片生成文案分頁 (含一鍵發佈) ================= -->
+      <!-- ================= 1. 圖片生成文案分頁 ================= -->
       <div id="tab-image-gen" class="tab-content">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">🖼️ 圖片視覺分析與文案生成</h3>
-          
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">上傳商品圖片 (服飾/包款/鞋款/飾品)</label>
@@ -53,7 +52,6 @@
               </div>
             </div>
           </div>
-
           <button onclick="generateContent()" class="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition">
             ✨ 分析圖片並生成 3 組文案
           </button>
@@ -64,7 +62,6 @@
           <div id="resultOutput" class="p-4 bg-gray-50 rounded-lg text-gray-700 whitespace-pre-line min-h-[120px] mb-6">
             尚未開始生成，請上傳圖片並點擊按鈕。
           </div>
-
           <div class="border-t pt-6">
             <h4 class="text-md font-semibold mb-3">📱 Meta 智慧雙平台一鍵發佈</h4>
             <p class="text-xs text-gray-500 mb-4">系統會自動將您上傳的圖片轉為公開連結，並將文案智慧改寫為 FB 與 IG 各自最適合的風格同步發布！</p>
@@ -80,7 +77,6 @@
       <div id="tab-text-gen" class="tab-content hidden">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4">📄 純文字文案生成設定</h3>
-          
           <div class="mb-4">
             <div class="flex justify-between items-center mb-2">
               <label class="text-sm font-medium text-gray-700">商品主題與風格訴求</label>
@@ -96,12 +92,10 @@
               <button onclick="savePreset('text')" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium border">💾 儲存</button>
             </div>
           </div>
-
           <button onclick="generateTextOnly()" class="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition">
             ✨ 生成 3 組專屬文案
           </button>
         </div>
-
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
           <h3 class="text-lg font-semibold mb-4">✨ AI 執行結果</h3>
           <div id="textResultOutput" class="p-4 bg-gray-50 rounded-lg text-gray-700 whitespace-pre-line min-h-[120px]">
@@ -114,12 +108,10 @@
       <div id="tab-video-gen" class="tab-content hidden">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4">🎬 影片生成文案與 Reels 腳本設定</h3>
-          
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">上傳短影音 / Reels 檔案</label>
             <input type="file" id="videoInput" accept="video/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700">
           </div>
-
           <div class="mb-4">
             <div class="flex justify-between items-center mb-2">
               <label class="text-sm font-medium text-gray-700">短影音腳本需求或特色</label>
@@ -135,12 +127,10 @@
               <button onclick="savePreset('video')" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium border">💾 儲存</button>
             </div>
           </div>
-
           <button onclick="generateVideoScript()" class="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition">
             🎬 生成 Reels 專屬腳本
           </button>
         </div>
-
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
           <h3 class="text-lg font-semibold mb-4">🎬 AI 執行結果</h3>
           <div id="videoResultOutput" class="p-4 bg-gray-50 rounded-lg text-gray-700 whitespace-pre-line min-h-[120px]">
@@ -166,14 +156,14 @@
         </div>
       </div>
 
-      <!-- ================= 5. 價格試算器分頁 (修正順序與台銀匯率更新按鈕) ================= -->
+      <!-- ================= 5. 價格試算器分頁 ================= -->
       <div id="tab-pricing" class="tab-content hidden">
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-2">💰 韓國商品價格試算表</h3>
-          <p class="text-sm text-gray-500 mb-6">數值可自由編輯，計算邏輯：韓幣成本 ➔ 換算匯率 ➔ 代付抽成 ➔ 運費 ➔ 批發商抽成 ➔ 小賣價係數。</p>
+          <p class="text-sm text-gray-500 mb-6">計算順序：韓幣成本 ➔ 換算匯率 ➔ 代付款抽成(%)連動換算 ➔ 運費 ➔ 批發商抽成(%) ➔ 小賣價係數。</p>
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <!-- 第一欄：成本與匯率 -->
+            <!-- 第一欄 -->
             <div class="p-4 bg-gray-50 rounded-lg border">
               <label class="block text-sm font-medium text-gray-700 mb-1">韓元成本價 (₩)</label>
               <input type="number" id="krwCost" value="40000" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white mb-3">
@@ -182,21 +172,22 @@
                 <label class="text-sm font-medium text-gray-700">換算匯率</label>
                 <button onclick="fetchBotExchangeRate()" class="text-xs bg-violet-100 hover:bg-violet-200 text-violet-700 px-2 py-1 rounded font-medium transition">🔄 更新台銀匯率</button>
               </div>
-              <input type="number" id="exchangeRate" value="0.0228" step="0.0001" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
-              <p class="text-xs text-gray-500 mt-2" id="ntdResult">台幣換算: 912 元</p>
+              <input type="number" id="exchangeRate" value="0.0225" step="0.0001" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+              <p class="text-xs text-gray-500 mt-2" id="ntdResult">台幣換算: 900 元</p>
             </div>
 
-            <!-- 第二欄：代付與運費 -->
+            <!-- 第二欄 -->
             <div class="p-4 bg-gray-50 rounded-lg border">
-              <label class="block text-sm font-medium text-gray-700 mb-1">代付貨款抽成 (韓幣)</label>
-              <input type="number" id="commissionKrw" value="800" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white mb-3">
+              <label class="block text-sm font-medium text-gray-700 mb-1">代付款抽成 (%)</label>
+              <input type="number" id="commissionPct" value="2" step="0.01" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white mb-1">
+              <p class="text-xs text-gray-500 mb-3" id="commissionKrwDisplay">自動計算代付款: 800 ₩</p>
               
               <label class="block text-sm font-medium text-gray-700 mb-1">公斤數運費 (台幣)</label>
               <input type="number" id="shippingNtd" value="78" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
-              <p class="text-xs text-gray-500 mt-2" id="subtotalNtd">台幣成本小計: 990 元</p>
+              <p class="text-xs text-gray-500 mt-2" id="subtotalNtd">台幣成本小計: 978 元</p>
             </div>
 
-            <!-- 第三欄：批發商抽成與小賣係數 (批發商抽成移至此區塊上方) -->
+            <!-- 第三欄 -->
             <div class="p-4 bg-gray-50 rounded-lg border">
               <label class="block text-sm font-medium text-gray-700 mb-1">批發商抽成 (%)</label>
               <input type="number" id="wholesalerMarkup" value="0" step="1" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white mb-3">
@@ -205,8 +196,8 @@
               <input type="number" id="markupRatio" value="2.8" step="0.1" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white mb-4">
               
               <div class="mt-4 space-y-2 text-sm font-medium">
-                <p id="finalPrice" class="text-gray-900 font-bold">終端售價: 2,912 元</p>
-                <p id="estProfit" class="text-green-600 font-bold">預估利潤: 1,872 元</p>
+                <p id="finalPrice" class="text-gray-900 font-bold">終端售價: 2,738 元</p>
+                <p id="estProfit" class="text-green-600 font-bold">預估利潤: 1,760 元</p>
               </div>
             </div>
           </div>
@@ -225,8 +216,6 @@
               🗑️ 清空所有雲端紀錄
             </button>
           </div>
-
-          <!-- 篩選與搜尋列 -->
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div>
               <label class="block text-xs font-medium text-gray-500 mb-1">📅 依日期排序</label>
@@ -250,17 +239,13 @@
               <input type="text" id="historySearch" oninput="renderHistory()" placeholder="輸入關鍵字搜尋紀錄..." class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
             </div>
           </div>
-
-          <!-- 歷史紀錄列表 -->
-          <div id="historyListContainer" class="space-y-4">
-            <!-- 動態渲染紀錄 -->
-          </div>
+          <div id="historyListContainer" class="space-y-4"></div>
         </div>
       </div>
     </main>
   </div>
 
-  <!-- ================= 手機版底部導覽列 ================= -->
+  <!-- 手機版底部導覽列 -->
   <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 z-50 shadow-lg">
     <button onclick="switchTab('text-gen')" id="m-nav-text-gen" class="flex flex-col items-center text-xs text-gray-600 py-1 px-1">
       <span class="text-base">📄</span><span>文案</span>
@@ -286,12 +271,10 @@
     let lastGeneratedText = "";
     let cloudHistoryCache = [];
 
-    // 切換分頁
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.getElementById('tab-' + tabId).classList.remove('hidden');
 
-      // 更新桌面版側邊欄按鈕樣式
       document.querySelectorAll('aside nav button').forEach(btn => {
         btn.classList.remove('bg-gray-900', 'text-white', 'font-medium');
         btn.classList.add('text-gray-600', 'hover:bg-gray-100');
@@ -302,7 +285,6 @@
         activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
       }
 
-      // 更新手機版底部導覽列樣式
       document.querySelectorAll('.md\\:hidden button').forEach(btn => {
         btn.classList.remove('text-gray-900', 'font-bold');
         btn.classList.add('text-gray-600');
@@ -318,7 +300,6 @@
       }
     }
 
-    // ================= 雲端歷史紀錄 API 互動 =================
     async function saveToCloudHistory(type, title, content) {
       try {
         await fetch('/api/history', {
@@ -354,18 +335,15 @@
       const keyword = document.getElementById('historySearch').value.toLowerCase();
 
       let history = [...cloudHistoryCache];
-
       if (filterType !== 'all') {
         history = history.filter(item => item.type === filterType);
       }
-
       if (keyword) {
         history = history.filter(item => 
           item.title.toLowerCase().includes(keyword) || 
           item.content.toLowerCase().includes(keyword)
         );
       }
-
       history.sort((a, b) => {
         const timeA = new Date(a.date).getTime();
         const timeB = new Date(b.date).getTime();
@@ -397,24 +375,16 @@
     async function deleteCloudItem(id) {
       try {
         const res = await fetch(`/api/history/${id}`, { method: 'DELETE' });
-        if (res.ok) {
-          fetchCloudHistory();
-        }
-      } catch (err) {
-        alert('刪除失敗: ' + err.message);
-      }
+        if (res.ok) fetchCloudHistory();
+      } catch (err) { alert('刪除失敗: ' + err.message); }
     }
 
     async function clearCloudHistory() {
       if (confirm('確定要清空 Render 雲端伺服器上的所有歷史紀錄嗎？')) {
         try {
           const res = await fetch('/api/history', { method: 'DELETE' });
-          if (res.ok) {
-            fetchCloudHistory();
-          }
-        } catch (err) {
-          alert('清空失敗: ' + err.message);
-        }
+          if (res.ok) fetchCloudHistory();
+        } catch (err) { alert('清空失敗: ' + err.message); }
       }
     }
 
@@ -423,7 +393,6 @@
       return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    // 提示詞選單相關函式
     function onPresetChange(type) {
       const select = document.getElementById(type + 'PresetSelect');
       const input = document.getElementById(type === 'image' ? 'promptInput' : type + 'PromptInput');
@@ -435,17 +404,13 @@
       const select = document.getElementById(type + 'PresetSelect');
       const val = input.value.trim();
       if (!val) { alert('請先輸入內容再儲存！'); return; }
-      
       let exists = Array.from(select.options).some(opt => opt.value === val);
       if (!exists) {
         const opt = document.createElement('option');
         opt.value = val; opt.text = val;
-        select.add(opt);
-        select.value = val;
+        select.add(opt); select.value = val;
         alert('已成功儲存至常用項目！');
-      } else {
-        alert('此項目已經在選單中了！');
-      }
+      } else { alert('此項目已經在選單中了！'); }
     }
 
     function deleteCustomPreset(type) {
@@ -455,12 +420,9 @@
         select.remove(select.selectedIndex);
         input.value = "";
         alert('已刪除該項目');
-      } else {
-        alert('請先從上方下拉選單選擇要刪除的項目');
-      }
+      } else { alert('請先從上方下拉選單選擇要刪除的項目'); }
     }
 
-    // 各項 AI 生成與自動同步至雲端紀錄
     async function generateContent() {
       const fileInput = document.getElementById('imageInput');
       const promptInput = document.getElementById('promptInput').value;
@@ -534,7 +496,7 @@
         const data = await res.json();
         if (res.ok) {
           output.innerText = data.report;
-          saveToCloudHistory('📊 趨勢報告', '東大門 IG 爆款 TOP 10 分析', data.report);
+          saveToCloudHistory('📊 趨勢報告', '東大門 IG 爆款 TOP 3 分析', data.report);
         } else { output.innerText = "分析失敗: " + data.error; }
       } catch (err) { output.innerText = "錯誤: " + err.message; }
     }
@@ -576,25 +538,24 @@
       reader.readAsDataURL(fileInput.files[0]);
     }
 
-    // 模擬自動連線台銀更新匯率
     function fetchBotExchangeRate() {
-      // 這裡預設模擬串接台銀最新韓元現金/即期賣出匯率，或可由後端 API 提供
-      const simulatedRate = 0.0225; // 依台銀最新牌告調整
+      const simulatedRate = 0.0225;
       document.getElementById('exchangeRate').value = simulatedRate;
       calculatePrice();
       alert('已成功同步臺灣銀行最新韓元匯率！');
     }
 
-    // 價格試算器精準邏輯
     function calculatePrice() {
       const krw = parseFloat(document.getElementById('krwCost').value) || 0;
       const rate = parseFloat(document.getElementById('exchangeRate').value) || 0;
-      const commKrw = parseFloat(document.getElementById('commissionKrw').value) || 0;
+      const commPct = parseFloat(document.getElementById('commissionPct').value) || 0;
       const shipNtd = parseFloat(document.getElementById('shippingNtd').value) || 0;
       const wholesalerMarkupPct = parseFloat(document.getElementById('wholesalerMarkup').value) || 0;
       const markup = parseFloat(document.getElementById('markupRatio').value) || 1;
 
-      // 計算邏輯：1. 韓幣成本換算台幣 2. 加代付抽成 3. 加運費 4. 加批發商抽成 5. 乘小賣價係數
+      const commKrw = Math.round(krw * (commPct / 100));
+      document.getElementById('commissionKrwDisplay').innerText = `自動計算代付款: ${commKrw.toLocaleString()} ₩`;
+
       const krwTotal = krw + commKrw;
       const ntdBase = Math.round(krwTotal * rate);
       const costBeforeWholesaler = ntdBase + shipNtd;
@@ -602,8 +563,8 @@
       const finalPrice = Math.round(actualCost * markup);
       const profit = finalPrice - actualCost;
 
-      document.getElementById('ntdResult').innerText = `台幣換算: ${ntdBase} 元`;
-      document.getElementById('subtotalNtd').innerText = `台幣成本小計: ${actualCost} 元`;
+      document.getElementById('ntdResult').innerText = `台幣換算: ${ntdBase.toLocaleString()} 元`;
+      document.getElementById('subtotalNtd').innerText = `台幣成本小計: ${actualCost.toLocaleString()} 元`;
       document.getElementById('finalPrice').innerText = `終端售價: ${finalPrice.toLocaleString()} 元`;
       document.getElementById('estProfit').innerText = `預估利潤: ${profit.toLocaleString()} 元`;
     }
