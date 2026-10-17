@@ -62,13 +62,8 @@
         <!-- 🚀 Meta 一鍵發佈專區 -->
         <div class="border-t pt-6">
           <h4 class="text-md font-semibold mb-3">📱 Meta 智慧雙平台一鍵發佈</h4>
-          <p class="text-xs text-gray-500 mb-4">系統會自動將上方文案智慧改寫為適合 FB（互動親切）與 IG（質感排版+熱門Hashtag）的不同版本並同步發布！</p>
+          <p class="text-xs text-gray-500 mb-4">系統會自動將您上傳的圖片轉為公開連結，並將文案智慧改寫為 FB 與 IG 各自最適合的風格同步發布！</p>
           
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-1">公開圖片網址 (Image Public URL - Meta API 規定發布必須帶有公開圖片連結)</label>
-            <input type="text" id="imageUrlInput" placeholder="https://your-domain.com/path/to/image.jpg" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:outline-none text-sm">
-          </div>
-
           <button onclick="publishToMeta()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2 w-full md:w-auto">
             🚀 一鍵發佈至 FB 粉絲專頁與 IG 商業帳號
           </button>
@@ -82,7 +77,6 @@
   <script>
     let lastGeneratedText = "";
 
-    // 處理圖片轉 Base64 並呼叫生成 API
     async function generateContent() {
       const fileInput = document.getElementById('imageInput');
       const promptInput = document.getElementById('promptInput').value;
@@ -126,46 +120,54 @@
       reader.readAsDataURL(file);
     }
 
-    // 呼叫一鍵發佈至 Meta API
     async function publishToMeta() {
-      const imageUrl = document.getElementById('imageUrlInput').value;
+      const fileInput = document.getElementById('imageInput');
       const statusDiv = document.getElementById('publishStatus');
 
-      if (!imageUrl) {
-        alert('請輸入公開的圖片網址 (Image URL)，以便 Meta 伺服器讀取圖片！');
+      if (fileInput.files.length === 0) {
+        alert('請先上傳商品圖片！');
         return;
       }
 
+      const file = fileInput.files[0];
       const messageToUse = lastGeneratedText || document.getElementById('promptInput').value || "韓國女裝新品連線！";
 
-      statusDiv.innerHTML = "<span class='text-blue-600'>⏳ 正在透過 AI 智慧分流文案，並同步發布至 FB 與 IG，請稍候...</span>";
+      statusDiv.innerHTML = "<span class='text-blue-600'>⏳ 正在自動處理圖片並透過 AI 分流文案，同步發布至 FB 與 IG，請稍候...</span>";
 
-      try {
-        const response = await fetch('/api/publish-meta', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: messageToUse,
-            imageUrl: imageUrl
-          })
-        });
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const base64String = e.target.result.split(',')[1];
 
-        const result = await response.json();
+        try {
+          const response = await fetch('/api/publish-meta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: messageToUse,
+              imageBase64: base64String
+            })
+          });
 
-        if (response.ok) {
-          statusDiv.innerHTML = `
-            <div class="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 space-y-2">
-              <p class="font-bold">✅ 雙平台同步發布成功！</p>
-              <p><strong>【FB 實際發布文案】:</strong> ${result.fb_caption_used}</p>
-              <p><strong>【IG 實際發布文案】:</strong> ${result.ig_caption_used}</p>
-            </div>
-          `;
-        } else {
-          statusDiv.innerHTML = `<span class='text-red-600'>❌ 發布失敗: ${result.error || JSON.stringify(result)}</span>`;
+          const result = await response.json();
+
+          if (response.ok) {
+            statusDiv.innerHTML = `
+              <div class="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 space-y-2">
+                <p class="font-bold">✅ 雙平台同步發布成功！</p>
+                <p class="text-xs text-gray-500">自動生成圖床網址: ${result.image_url_used}</p>
+                <p><strong>【FB 實際發布文案】:</strong> ${result.fb_caption_used}</p>
+                <p><strong>【IG 實際發布文案】:</strong> ${result.ig_caption_used}</p>
+              </div>
+            `;
+          } else {
+            statusDiv.innerHTML = `<span class='text-red-600'>❌ 發布失敗: ${result.error || JSON.stringify(result)}</span>`;
+          }
+        } catch (err) {
+          statusDiv.innerHTML = `<span class='text-red-600'>❌ 網路請求失敗: ${err.message}</span>`;
         }
-      } catch (err) {
-        statusDiv.innerHTML = `<span class='text-red-600'>❌ 網路請求失敗: ${err.message}</span>`;
-      }
+      };
+
+      reader.readAsDataURL(file);
     }
   </script>
 </body>
