@@ -19,24 +19,23 @@
         <button onclick="switchTab('video-gen')" id="nav-video-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">🎬 影片腳本生成</button>
         <button onclick="switchTab('trends')" id="nav-trends" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">📊 韓國東大門趨勢</button>
         <button onclick="switchTab('pricing')" id="nav-pricing" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">💰 價格試算器</button>
-        <button onclick="switchTab('history')" id="nav-history" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">📂 歷史紀錄 (已同步)</button>
+        <button onclick="switchTab('history')" id="nav-history" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">📂 雲端歷史紀錄</button>
       </nav>
       <div class="mt-8 text-xs text-gray-400">LovelyByKorea Admin v4.4</div>
     </aside>
 
     <!-- 主要內容區 -->
     <main class="flex-1 overflow-y-auto p-4 md:p-8">
-      <header class="mb-6 md:mb-8 flex justify-between items-center">
-        <div>
-          <h2 class="text-xl md:text-2xl font-bold" id="pageTitle">圖片生成文案與一鍵發佈</h2>
-          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 支援 Meta (FB & IG) 智慧雙平台同步發布</p>
-        </div>
-      </header>
 
       <!-- ================= 1. 圖片生成文案分頁 (含一鍵發佈) ================= -->
       <div id="tab-image-gen" class="tab-content">
+        <header class="mb-6">
+          <h2 class="text-xl md:text-2xl font-bold">🖼️ 圖片視覺分析與 Meta 一鍵發佈</h2>
+          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 支援 Meta (FB & IG) 智慧雙平台同步發布</p>
+        </header>
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
-          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">🖼️ 圖片視覺分析與文案生成</h3>
+          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">🖼️ 上傳商品圖片與文案生成</h3>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
             <div>
@@ -84,6 +83,11 @@
 
       <!-- ================= 2. 純文字文案生成分頁 ================= -->
       <div id="tab-text-gen" class="tab-content hidden">
+        <header class="mb-6">
+          <h2 class="text-xl md:text-2xl font-bold">📄 純文字文案生成</h2>
+          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 高轉換率韓系服飾銷售文案智慧生成</p>
+        </header>
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4">📄 純文字文案生成設定</h3>
           
@@ -118,6 +122,11 @@
 
       <!-- ================= 3. 影片腳本生成分頁 ================= -->
       <div id="tab-video-gen" class="tab-content hidden">
+        <header class="mb-6">
+          <h2 class="text-xl md:text-2xl font-bold">🎬 影片生成文案與 Reels 腳本</h2>
+          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 短影音吸睛腳本與行銷文案</p>
+        </header>
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4">🎬 影片生成文案與 Reels 腳本設定</h3>
           
@@ -157,6 +166,11 @@
 
       <!-- ================= 4. 韓國東大門流行趨勢分頁 ================= -->
       <div id="tab-trends" class="tab-content hidden">
+        <header class="mb-6">
+          <h2 class="text-xl md:text-2xl font-bold">📊 韓國東大門流行趨勢分析</h2>
+          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 實時 IG 爆款貼文爬取與熱銷單品推薦</p>
+        </header>
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-2">📊 韓國東大門當季流行時尚趨勢分析</h3>
           <p class="text-sm text-gray-500 mb-4">針對 30-40 歲女性簡約質感風格進行實時 IG 爆款貼文爬取與熱銷單品推薦。</p>
@@ -174,6 +188,11 @@
 
       <!-- ================= 5. 價格試算器分頁 ================= -->
       <div id="tab-pricing" class="tab-content hidden">
+        <header class="mb-6">
+          <h2 class="text-xl md:text-2xl font-bold">💰 韓國商品價格試算表</h2>
+          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 台幣成本、代付抽成與利潤即時計算</p>
+        </header>
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-2">💰 韓國商品價格試算表</h3>
           <p class="text-sm text-gray-500 mb-6">所有數值皆可自由編輯，即時計算台幣成本、實際成本與利潤。</p>
@@ -210,16 +229,21 @@
         </div>
       </div>
 
-      <!-- ================= 6. 歷史紀錄分頁 ================= -->
+      <!-- ================= 6. 雲端歷史紀錄分頁 ================= -->
       <div id="tab-history" class="tab-content hidden">
+        <header class="mb-6">
+          <h2 class="text-xl md:text-2xl font-bold">📂 雲端歷史紀錄管理</h2>
+          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 所有產出紀錄完整保存於 Render 雲端伺服器</p>
+        </header>
+
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
-              <h3 class="text-lg font-semibold flex items-center gap-2">📂 歷史紀錄 (雲端同步中)</h3>
-              <p class="text-xs text-gray-500">自動記錄您所有產出的文案、腳本與趨勢分析</p>
+              <h3 class="text-lg font-semibold flex items-center gap-2">📂 雲端歷史紀錄 (伺服器同步)</h3>
+              <p class="text-xs text-gray-500">所有產出紀錄皆安全保存在 Render 雲端伺服器中</p>
             </div>
-            <button onclick="clearHistory()" class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-xs font-medium border border-red-200 transition">
-              🗑️ 清空所有紀錄
+            <button onclick="clearCloudHistory()" class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-xs font-medium border border-red-200 transition">
+              🗑️ 清空所有雲端紀錄
             </button>
           </div>
 
@@ -281,6 +305,7 @@
 
   <script>
     let lastGeneratedText = "";
+    let cloudHistoryCache = [];
 
     // 切換分頁
     function switchTab(tabId) {
@@ -310,39 +335,51 @@
       }
 
       if (tabId === 'history') {
-        renderHistory();
+        fetchCloudHistory();
       }
     }
 
-    // 歷史紀錄儲存機制 (LocalStorage)
-    function saveToHistory(type, title, content) {
-      let history = JSON.parse(localStorage.getItem('lovely_history') || '[]');
-      const newItem = {
-        id: Date.now(),
-        type: type, // '🖼️ 圖片文案', '🎬 影片腳本', '📄 純文字文案', '📊 趨勢報告'
-        title: title || '未命名主題',
-        content: content,
-        date: new Date().toISOString()
-      };
-      history.unshift(newItem); // 新的排在最前面
-      localStorage.setItem('lovely_history', JSON.stringify(history));
+    // ================= 雲端歷史紀錄 API 互動 =================
+    async function saveToCloudHistory(type, title, content) {
+      try {
+        await fetch('/api/history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, title: title || '未命名主題', content })
+        });
+      } catch (err) {
+        console.error('儲存雲端紀錄失敗:', err);
+      }
     }
 
-    // 渲染歷史紀錄
+    async function fetchCloudHistory() {
+      const container = document.getElementById('historyListContainer');
+      container.innerHTML = `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-lg border">正在從 Render 雲端伺服器載入紀錄...</div>`;
+      try {
+        const res = await fetch('/api/history');
+        if (res.ok) {
+          cloudHistoryCache = await res.json();
+          renderHistory();
+        } else {
+          container.innerHTML = `<div class="p-8 text-center text-red-400 bg-gray-50 rounded-lg border">載入雲端紀錄失敗。</div>`;
+        }
+      } catch (err) {
+        container.innerHTML = `<div class="p-8 text-center text-red-400 bg-gray-50 rounded-lg border">連線伺服器錯誤: ${err.message}</div>`;
+      }
+    }
+
     function renderHistory() {
       const container = document.getElementById('historyListContainer');
       const sortOrder = document.getElementById('historySort').value;
       const filterType = document.getElementById('historyFilterType').value;
       const keyword = document.getElementById('historySearch').value.toLowerCase();
 
-      let history = JSON.parse(localStorage.getItem('lovely_history') || '[]');
+      let history = [...cloudHistoryCache];
 
-      // 篩選類型
       if (filterType !== 'all') {
         history = history.filter(item => item.type === filterType);
       }
 
-      // 關鍵字搜尋
       if (keyword) {
         history = history.filter(item => 
           item.title.toLowerCase().includes(keyword) || 
@@ -350,7 +387,6 @@
         );
       }
 
-      // 排序
       history.sort((a, b) => {
         const timeA = new Date(a.date).getTime();
         const timeB = new Date(b.date).getTime();
@@ -358,7 +394,7 @@
       });
 
       if (history.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-lg border">目前沒有符合條件的歷史紀錄。</div>`;
+        container.innerHTML = `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-lg border">目前沒有符合條件的雲端歷史紀錄。</div>`;
         return;
       }
 
@@ -370,8 +406,8 @@
               <h4 class="font-semibold text-gray-900">${escapeHtml(item.title)}</h4>
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-xs text-gray-400">${new Date(item.date).toLocaleString()}</span>
-              <button onclick="deleteHistoryItem(${item.id})" class="text-xs text-red-500 hover:text-red-700 p-1">🗑️ 刪除</button>
+              <span class="text-xs text-gray-400">${item.date}</span>
+              <button onclick="deleteCloudItem(${item.id})" class="text-xs text-red-500 hover:text-red-700 p-1">🗑️ 刪除</button>
             </div>
           </div>
           <div class="text-sm text-gray-600 bg-white p-3 rounded border whitespace-pre-line max-h-36 overflow-y-auto">${escapeHtml(item.content)}</div>
@@ -379,17 +415,27 @@
       `).join('');
     }
 
-    function deleteHistoryItem(id) {
-      let history = JSON.parse(localStorage.getItem('lovely_history') || '[]');
-      history = history.filter(item => item.id !== id);
-      localStorage.setItem('lovely_history', JSON.stringify(history));
-      renderHistory();
+    async function deleteCloudItem(id) {
+      try {
+        const res = await fetch(`/api/history/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          fetchCloudHistory();
+        }
+      } catch (err) {
+        alert('刪除失敗: ' + err.message);
+      }
     }
 
-    function clearHistory() {
-      if (confirm('確定要清空所有歷史紀錄嗎？')) {
-        localStorage.removeItem('lovely_history');
-        renderHistory();
+    async function clearCloudHistory() {
+      if (confirm('確定要清空 Render 雲端伺服器上的所有歷史紀錄嗎？')) {
+        try {
+          const res = await fetch('/api/history', { method: 'DELETE' });
+          if (res.ok) {
+            fetchCloudHistory();
+          }
+        } catch (err) {
+          alert('清空失敗: ' + err.message);
+        }
       }
     }
 
@@ -435,7 +481,7 @@
       }
     }
 
-    // 各項 AI 生成與紀錄自動儲存
+    // 各項 AI 生成與自動同步至雲端紀錄
     async function generateContent() {
       const fileInput = document.getElementById('imageInput');
       const promptInput = document.getElementById('promptInput').value;
@@ -455,7 +501,7 @@
           if (res.ok) {
             lastGeneratedText = data.candidates[0].content.parts[0].text;
             output.innerText = lastGeneratedText;
-            saveToHistory('🖼️ 圖片文案', promptInput || '圖片生成文案', lastGeneratedText);
+            saveToCloudHistory('🖼️ 圖片文案', promptInput || '圖片生成文案', lastGeneratedText);
           } else { output.innerText = "生成失敗: " + data.error; }
         } catch (err) { output.innerText = "錯誤: " + err.message; }
       };
@@ -477,7 +523,7 @@
         if (res.ok) {
           const resultText = data.candidates[0].content.parts[0].text;
           output.innerText = resultText;
-          saveToHistory('📄 純文字文案', prompt, resultText);
+          saveToCloudHistory('📄 純文字文案', prompt, resultText);
         } else { output.innerText = "失敗: " + data.error; }
       } catch (err) { output.innerText = "錯誤: " + err.message; }
     }
@@ -496,7 +542,7 @@
         if (res.ok) {
           const resultText = data.candidates[0].content.parts[0].text;
           output.innerText = resultText;
-          saveToHistory('🎬 影片腳本', prompt || 'Reels 腳本', resultText);
+          saveToCloudHistory('🎬 影片腳本', prompt || 'Reels 腳本', resultText);
         } else { output.innerText = "失敗: " + data.error; }
       } catch (err) { output.innerText = "錯誤: " + err.message; }
     }
@@ -505,11 +551,11 @@
       const output = document.getElementById('trendsOutput');
       output.innerText = "正在向 Apify 與 Gemini 請求實時東大門爆款趨勢數據，請稍候...";
       try {
-        const res = await fetch('/api/realtime-trends', { method: 'POST' });
+        const res = await fetch('/api/realtime-trends', { method: 'POST' }, );
         const data = await res.json();
         if (res.ok) {
           output.innerText = data.report;
-          saveToHistory('📊 趨勢報告', '東大門 IG 爆款 TOP 10 分析', data.report);
+          saveToCloudHistory('📊 趨勢報告', '東大門 IG 爆款 TOP 10 分析', data.report);
         } else { output.innerText = "分析失敗: " + data.error; }
       } catch (err) { output.innerText = "錯誤: " + err.message; }
     }
@@ -540,7 +586,7 @@
                 <p><strong>【IG 實際發布文案】:</strong> ${result.ig_caption_used}</p>
               </div>
             `;
-            saveToHistory('🖼️ 圖片文案', 'Meta 一鍵發佈記錄', `FB: ${result.fb_caption_used}\nIG: ${result.ig_caption_used}`);
+            saveToCloudHistory('🖼️ 圖片文案', 'Meta 一鍵發佈記錄', `FB: ${result.fb_caption_used}\nIG: ${result.ig_caption_used}`);
           } else {
             statusDiv.innerHTML = `<span class='text-red-600'>❌ 發布失敗: ${result.error || JSON.stringify(result)}</span>`;
           }
