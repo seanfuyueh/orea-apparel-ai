@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI 營運助理 - 韓國時尚智慧管理後台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+  <div class="flex h-screen overflow-hidden">
+    <!-- 側邊導覽列 (已恢復完整點擊切換分頁功能) -->
+    <aside class="w-64 bg-white border-r border-gray-200 p-6 hidden md:block">
+      <h1 class="text-2xl font-bold text-gray-900 mb-1">AI 營運助理</h1>
+      <p class="text-sm text-gray-500 mb-8">韓國時尚智慧管理後台</p>
+      
+      <nav class="space-y-2">
+        <button onclick="switchTab('text-gen')" id="nav-text-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition">📄 文案生成</button>
+        <button onclick="switchTab('image-gen')" id="nav-image-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg bg-gray-900 text-white font-medium text-left transition">🖼️ 圖片生成文案</button>
+        <button onclick="switchTab('video-gen')" id="nav-video-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition">🎬 影片生成文案</button>
+        <button onclick="switchTab('trends')" id="nav-trends" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition">📊 韓國東大門流行趨勢</button>
+        <button onclick="switchTab('pricing')" id="nav-pricing" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition">💰 價格試算器</button>
+      </nav>
+      <div class="absolute bottom-6 text-xs text-gray-400">LovelyByKorea Admin v4.4</div>
+    </aside>
+
+    <!-- 主要內容區 -->
+    <main class="flex-1 overflow-y-auto p-8">
+      <header class="mb-8 flex justify-between items-center">
+        <div>
+          <h2 class="text-2xl font-bold" id="pageTitle">圖片生成文案與一鍵發佈</h2>
+          <p class="text-sm text-gray-500">CEO 專屬後台 | 支援 Meta (FB & IG) 智慧雙平台同步發布</p>
+        </div>
+      </header>
+
+      <!-- 1. 圖片生成文案分頁 (預設顯示) -->
+      <div id="tab-image-gen" class="tab-content">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">🖼️ 圖片視覺分析與文案生成</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">上傳商品圖片 (服飾/包款/鞋款/飾品)</label>
+              <input type="file" id="imageInput" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100">
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="text-sm font-medium text-gray-700">補充說明或推廣訴求</label>
+                <button onclick="deleteCustomPreset()" class="text-xs text-red-500 hover:underline flex items-center gap-1">❌ 刪除此自訂項目</button>
+              </div>
+              
+              <!-- 恢復原本的預設選單與自訂輸入欄 -->
+              <select id="presetSelect" onchange="onPresetChange()" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:outline-none mb-2 text-sm bg-white">
+                <option value="">-- 選擇常用或自訂項目 --</option>
+                <option value="顯瘦修身針織外套，韓國連線特惠">顯瘦修身針織外套，韓國連線特惠</option>
+                <option value="正韓東大門質感洋裝，氣質百搭">正韓東大門質感洋裝，氣質百搭</option>
+                <option value="秋冬保暖刷毛大學T，舒適推薦">秋冬保暖刷毛大學T，舒適推薦</option>
+              </select>
+
+              <div class="flex gap-2">
+                <input type="text" id="promptInput" placeholder="或直接在此輸入新的補充說明..." class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:outline-none text-sm">
+                <button onclick="savePreset()" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium border flex items-center gap-1">💾 儲存</button>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="generateContent()" class="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition">
+            ✨ 分析圖片並生成 3 組文案
+          </button>
+        </div>
+
+        <!-- 結果與一鍵發佈區 -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+          <h3 class="text-lg font-semibold mb-4">✨ AI 視覺分析與文案結果</h3>
+          <div id="resultOutput" class="p-4 bg-gray-50 rounded-lg text-gray-700 whitespace-pre-line min-h-[120px] mb-6">
+            尚未開始生成，請上傳圖片並點擊按鈕。
+          </div>
+
+          <!-- 🚀 Meta 一鍵發佈專區 -->
+          <div class="border-t pt-6">
+            <h4 class="text-md font-semibold mb-3">📱 Meta 智慧雙平台一鍵發佈</h4>
+            <p class="text-xs text-gray-500 mb-4">系統會自動將您上傳的圖片轉為公開連結，並將文案智慧改寫為 FB 與 IG 各自最適合的風格同步發布！</p>
+            
+            <button onclick="publishToMeta()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition flex items-center justify-center gap-2 w-full md:w-auto">
+              🚀 一鍵發佈至 FB 粉絲專頁與 IG 商業帳號
+            </button>
+
+            <div id="publishStatus" class="mt-4 text-sm font-medium"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 其他分頁佔位區 -->
+      <div id="tab-text-gen" class="tab-content hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold mb-4">📄 純文字文案生成設定</h3>
+          <p class="text-gray-500">此功能分頁建構中，您可以切換回「圖片生成文案」進行一鍵發佈！</p>
+        </div>
+      </div>
+
+      <div id="tab-video-gen" class="tab-content hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold mb-4">🎬 影片生成文案設定</h3>
+          <p class="text-gray-500">短影音 Reels 專屬腳本生成功能。</p>
+        </div>
+      </div>
+
+      <div id="tab-trends" class="tab-content hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold mb-4">📊 韓國東大門當季流行時尚趨勢分析</h3>
+          <p class="text-gray-500">實時 IG 爆款貼文爬取分析。</p>
+        </div>
+      </div>
+
+      <div id="tab-pricing" class="tab-content hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h3 class="text-lg font-semibold mb-4">💰 韓國商品價格試算表</h3>
+          <p class="text-gray-500">台幣成本與利潤即時計算。</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    let lastGeneratedText = "";
+
+    // 側邊欄分頁切換邏輯
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+      // 更新按鈕樣式
+      document.querySelectorAll('aside nav button').forEach(btn => {
+        btn.classList.remove('bg-gray-900', 'text-white', 'font-medium');
+        btn.classList.add('text-gray-600', 'hover:bg-gray-100');
+      });
+      const activeBtn = document.getElementById('nav-' + tabId);
+      activeBtn.classList.add('bg-gray-900', 'text-white', 'font-medium');
+      activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+    }
+
+    // 下拉選單連動輸入框
+    function onPresetChange() {
+      const select = document.getElementById('presetSelect');
+      const input = document.getElementById('promptInput');
+      if (select.value) {
+        input.value = select.value;
+      }
+    }
+
+    // 儲存自訂項目到下拉選單
+    function savePreset() {
+      const input = document.getElementById('promptInput');
+      const select = document.getElementById('presetSelect');
+      const val = input.value.trim();
+      if (!val) {
+        alert('請先在輸入框輸入內容再儲存！');
+        return;
+      }
+      // 檢查是否已存在
+      let exists = false;
+      for (let opt of select.options) {
+        if (opt.value === val) { exists = true; break; }
+      }
+      if (!exists) {
+        const newOpt = document.createElement('option');
+        newOpt.value = val;
+        newOpt.text = val;
+        select.add(newOpt);
+        select.value = val;
+        alert('已成功儲存至常用項目！');
+      } else {
+        alert('此項目已經在選單中了！');
+      }
+    }
+
+    // 刪除目前的自訂項目
+    function deleteCustomPreset() {
+      const select = document.getElementById('presetSelect');
+      const input = document.getElementById('promptInput');
+      if (select.selectedIndex > 0) {
+        select.remove(select.selectedIndex);
+        input.value = "";
+        alert('已刪除該項目');
+      } else {
+        alert('請先從上方下拉選單選擇要刪除的項目');
+      }
+    }
+
+    // 圖片生成 AI 文案
+    async function generateContent() {
+      const fileInput = document.getElementById('imageInput');
+      const promptInput = document.getElementById('promptInput').value;
+      const output = document.getElementById('resultOutput');
+
+      if (fileInput.files.length === 0) {
+        alert('請先上傳商品圖片！');
+        return;
+      }
+
+      output.innerText = "AI 正在努力分析圖片與生成文案中，請稍候...";
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = async function(e) {
+        const base64String = e.target.result.split(',')[1];
+
+        try {
+          const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: promptInput || "請為這款韓國女裝生成吸引人的銷售文案",
+              imageBase64: base64String
+            })
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+            lastGeneratedText = data.candidates[0].content.parts[0].text;
+            output.innerText = lastGeneratedText;
+          } else {
+            output.innerText = "生成失敗: " + (data.error || "未知錯誤");
+          }
+        } catch (err) {
+          output.innerText = "網路連線錯誤: " + err.message;
+        }
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    // Meta 一鍵發佈
+    async function publishToMeta() {
+      const fileInput = document.getElementById('imageInput');
+      const statusDiv = document.getElementById('publishStatus');
+
+      if (fileInput.files.length === 0) {
+        alert('請先上傳商品圖片！');
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const messageToUse = lastGeneratedText || document.getElementById('promptInput').value || "韓國女裝新品連線！";
+
+      statusDiv.innerHTML = "<span class='text-blue-600'>⏳ 正在自動處理圖片並透過 AI 分流文案，同步發布至 FB 與 IG，請稍候...</span>";
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const base64String = e.target.result.split(',')[1];
+
+        try {
+          const response = await fetch('/api/publish-meta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: messageToUse,
+              imageBase64: base64String
+            })
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            statusDiv.innerHTML = `
+              <div class="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 space-y-2">
+                <p class="font-bold">✅ 雙平台同步發布成功！</p>
+                <p class="text-xs text-gray-500">自動生成圖床網址: ${result.image_url_used}</p>
+                <p><strong>【FB 實際發布文案】:</strong> ${result.fb_caption_used}</p>
+                <p><strong>【IG 實際發布文案】:</strong> ${result.ig_caption_used}</p>
+              </div>
+            `;
+          } else {
+            statusDiv.innerHTML = `<span class='text-red-600'>❌ 發布失敗: ${result.error || JSON.stringify(result)}</span>`;
+          }
+        } catch (err) {
+          statusDiv.innerHTML = `<span class='text-red-600'>❌ 網路請求失敗: ${err.message}</span>`;
+        }
+      };
+
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>
