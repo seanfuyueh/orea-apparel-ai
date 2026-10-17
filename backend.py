@@ -81,23 +81,15 @@ async def get_realtime_trends():
             with open(target_file_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
-                    # 忽略空行與以 # 開頭的註解
                     if not line or line.startswith("#"):
                         continue
-                    
-                    # 確保網址開頭包含 https://
                     if not line.startswith("http://") and not line.startswith("https://"):
                         line = "https://" + line
-                    
-                    # 確保網址結尾有斜線 /
                     if not line.endswith("/"):
                         line += "/"
-
-                    # 驗證是否符合 Instagram 網址格式
                     if "instagram.com/" in line:
                         ig_urls.append(line)
 
-        # 若檔案無有效網址，使用預設帳號
         if not ig_urls:
             ig_urls = ["https://www.instagram.com/partysu_official/"]
 
@@ -123,9 +115,7 @@ async def get_realtime_trends():
             reverse=True
         )[:10]
 
-        # 4. 組成 Prompt 與爆款圖片供 Gemini 分析
         trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是實時抓取到的最新熱門 IG 爆款貼文數據與圖片：\n\n"
-        
         image_parts = []
         for idx, post in enumerate(sorted_posts, 1):
             likes = post.get('likesCount', 0)
@@ -153,37 +143,10 @@ async def get_realtime_trends():
 
         trend_summary_prompt += """
 請根據上述數據與圖片，產出一份結構清晰的「東大門流行趨勢與爆款 TOP 10 分析報告」。
-
-【⚠️ 格式排版極重要要求】：
-請對這 10 款爆款單品依次進行單獨分析。**每一款單品講解完畢後，請務必在其分析文字的正下方，直接貼上該單品的 IG 貼文連結按鈕（格式為：`[📸 查看 Instagram 貼文](該篇貼文的真實連結)`）！絕不要統一放在報告最後！**
-
-請嚴格按照以下結構格式撰寫：
-
-### 壹、本週東大門 IG 爆款單品 TOP 10 逐一解析
-
-【🔥 爆款 No.1：(給予精準單品名稱)】
-- **互動數據**：(列出按讚數與留言數)
-- **視覺與設計亮點**：(分析顏色、面料、剪裁與搭配方式)
-- **爆款原因分析**：(為什麼這款能在 IG 上引發話題與高觸及)
-
-[📸 查看 Instagram 貼文](第1篇貼文的真實連結)
-
----
-
-(請依此類推完整的列出 No.2 至 No.10，每款下方都必須帶有其專屬連結按鈕)
-
----
-
-### 貳、東大門當季流行趨勢總結與採購建議
-1. **整體視覺風格趨勢**：(總結這 10 款爆款的共通點與韓國女性最愛的風格)
-2. **賣家選品與行銷建議**：(提供給台灣女裝賣家的採購與粉專/IG 行銷切入點)
 """
-
         contents = [trend_summary_prompt] + image_parts
 
-        # 5. 呼叫 Gemini 3.8-Flash (含 503 重試)
-        max_retries = 3
-        for attempt in range(max_retries):
+        for attempt in range(3):
             try:
                 ai_response = client.models.generate_content(
                     model='gemini-3.8-flash',
@@ -191,47 +154,68 @@ async def get_realtime_trends():
                 )
                 return JSONResponse(content={"report": ai_response.text})
             except Exception as e:
-                if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
+                if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < 2:
                     time.sleep(2)
                     continue
                 return JSONResponse(status_code=500, content={"error": str(e)})
 
     except Exception as e:
-        print(f"Realtime trend error: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(status_code+len(str(e))*0 if False else 500, content={"error": str(e)})
 
 # ========================================================
-# 📱 Meta (FB / IG) 一鍵發布功能
+# 📱 Meta (FB / IG) 智慧雙平台一鍵發布功能 (自動客製化文案)
 # ========================================================
+def generate_platform_captions(base_message: str):
+    """利用 Gemini 自動將基礎文案改寫為適合 FB 與 IG 的不同風格"""
+    prompt = f"""
+你是一位專業的韓國女裝電商社群總監。請根據以下的原始文案內容，分別改寫出兩種截然不同風格的發文內容：
+
+【原始文案】
+{base_message}
+
+【要求】
+1. **Facebook 版本**：語氣親切、著重社群互動、適合引導粉絲留言詢問或私訊下單，排版清晰溫馨。
+2. **Instagram 版本**：精煉俐落、強調穿搭質感、排版具備時尚感，並在結尾附上 5 至 8 個熱門相關的 Hashtag（例如 #LovelyByKorea #韓國女裝 #東大門連線 等）。
+
+請嚴格按照以下 JSON 格式回傳（不要包含 markdown codeblock 標籤以外的多餘字串）：
+{{
+  "fb_caption": "這裡放改寫後的FB文案",
+  "ig_caption": "這裡放改寫後的IG文案"
+}}
+"""
+    try:
+        response = client.models.generate_content(
+            model='gemini-3.8-flash',
+            contents=prompt
+        )
+        import json
+        text = response.text.strip()
+        # 清理可能包覆的 markdown 標籤
+        text = re.sub(r"^```json\s*", "", text)
+        text = re.sub(r"\s*```$", "", text)
+        data = json.loads(text)
+        return data.get("fb_caption", base_message), data.get("ig_caption", base_message)
+    except Exception as e:
+        print(f"AI 文案智慧分流失敗，改用原文: {e}")
+        return base_message, base_message + "\n\n#LovelyByKorea #韓國女裝"
+
 def post_to_facebook(message, image_url=None):
-    """發布貼文至 Facebook 粉絲專頁"""
-    if image_url:
-        url = f"https://graph.facebook.com/{API_VERSION}/{FB_PAGE_ID}/photos"
-        payload = {
-            "url": image_url,
-            "caption": message,
-            "access_token": FB_PAGE_ACCESS_TOKEN,
-        }
-    else:
-        url = f"https://graph.facebook.com/{API_VERSION}/{FB_PAGE_ID}/feed"
-        payload = {
-            "message": message,
-            "access_token": FB_PAGE_ACCESS_TOKEN
-        }
-    
+    url = f"https://graph.facebook.com/{API_VERSION}/{FB_PAGE_ID}/photos"
+    payload = {
+        "url": image_url,
+        "caption": message,
+        "access_token": FB_PAGE_ACCESS_TOKEN,
+    }
     response = requests.post(url, data=payload)
     return response.json()
 
 def post_to_instagram(image_url, caption):
-    """發布圖片至 Instagram 商業帳號 (兩階段：建立容器 -> 發布)"""
-    # 步驟一：建立媒體容器
     container_url = f"https://graph.facebook.com/{API_VERSION}/{IG_USER_ID}/media"
     container_payload = {
         "image_url": image_url,
         "caption": caption,
         "access_token": FB_PAGE_ACCESS_TOKEN,
     }
-    
     res_container = requests.post(container_url, data=container_payload)
     container_result = res_container.json()
     
@@ -239,31 +223,34 @@ def post_to_instagram(image_url, caption):
         return {"error": "Instagram 容器建立失敗", "details": container_result}
         
     creation_id = container_result["id"]
-    time.sleep(3) # 等待 Meta 伺服器處理圖片
+    time.sleep(3)
     
-    # 步驟二：正式發布
     publish_url = f"https://graph.facebook.com/{API_VERSION}/{IG_USER_ID}/media_publish"
     publish_payload = {
         "creation_id": creation_id,
         "access_token": FB_PAGE_ACCESS_TOKEN
     }
-    
     res_publish = requests.post(publish_url, data=publish_payload)
     return res_publish.json()
 
 @app.post("/api/publish-meta")
 async def publish_to_meta(data: dict):
-    """前端呼叫此 API 即可同時發布至 FB 與 IG"""
-    message = data.get("message", "")
+    """前端呼叫此 API：自動智慧分流文案並同時發布至 FB 與 IG"""
+    base_message = data.get("message", "")
     image_url = data.get("imageUrl", "")
     
     if not image_url:
         return JSONResponse(status_code=400, content={"error": "發布至 Meta 必須提供公開的圖片網址 (imageUrl)"})
-        
-    fb_result = post_to_facebook(message, image_url)
-    ig_result = post_to_instagram(image_url, message)
+    
+    # 🧠 自動透過 AI 智慧選擇適合 FB 與 IG 的不同文案內容
+    fb_msg, ig_msg = generate_platform_captions(base_message)
+    
+    fb_result = post_to_facebook(fb_msg, image_url)
+    ig_result = post_to_instagram(image_url, ig_msg)
     
     return JSONResponse(content={
+        "fb_caption_used": fb_msg,
+        "ig_caption_used": ig_msg,
         "facebook": fb_result,
         "instagram": ig_result
     })
