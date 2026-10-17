@@ -27,6 +27,14 @@ client = genai.Client()
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 
 # ========================================================
+# 🔑 Meta Graph API 專屬設定與金鑰
+# ========================================================
+FB_PAGE_ACCESS_TOKEN = "EAAQQ8jHdbBkBSZCp6B6NNIUditPvnkd1BY95gHxcyoE2KkeOaJX6P8OdU7pQwhFxZCqKaaWBHYQCBJPRIlx9IH5yW3IsiwPWLyL4upxnWCfhY5KxUFFhnQYVwFi3oDbYA4HTycI8Yseu8t8NJTP9y4ZBqQV8Hkm7027KfQL5knduoQtEjTLQobE0PZCdTvz2bQZCYiGCJhCUy9RZCEfq1mIiYYJU41ZC9fvEyl0SKwmis1pYWBfigY5ZCUfjbTtySKhoSOYYV5R40HRk"
+FB_PAGE_ID = "459824997496522"      # Lovely 粉絲專頁 ID
+IG_USER_ID = "17841405459290595"      # @lovelybykorea Instagram 帳號 ID
+API_VERSION = "v26.0"
+
+# ========================================================
 # 🚀 處理前端的 AI 生成請求 (支援文字與圖片)
 # ========================================================
 @app.post("/api/generate")
@@ -191,6 +199,74 @@ async def get_realtime_trends():
     except Exception as e:
         print(f"Realtime trend error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+# ========================================================
+# 📱 Meta (FB / IG) 一鍵發布功能
+# ========================================================
+def post_to_facebook(message, image_url=None):
+    """發布貼文至 Facebook 粉絲專頁"""
+    if image_url:
+        url = f"https://graph.facebook.com/{API_VERSION}/{FB_PAGE_ID}/photos"
+        payload = {
+            "url": image_url,
+            "caption": message,
+            "access_token": FB_PAGE_ACCESS_TOKEN,
+        }
+    else:
+        url = f"https://graph.facebook.com/{API_VERSION}/{FB_PAGE_ID}/feed"
+        payload = {
+            "message": message,
+            "access_token": FB_PAGE_ACCESS_TOKEN
+        }
+    
+    response = requests.post(url, data=payload)
+    return response.json()
+
+def post_to_instagram(image_url, caption):
+    """發布圖片至 Instagram 商業帳號 (兩階段：建立容器 -> 發布)"""
+    # 步驟一：建立媒體容器
+    container_url = f"https://graph.facebook.com/{API_VERSION}/{IG_USER_ID}/media"
+    container_payload = {
+        "image_url": image_url,
+        "caption": caption,
+        "access_token": FB_PAGE_ACCESS_TOKEN,
+    }
+    
+    res_container = requests.post(container_url, data=container_payload)
+    container_result = res_container.json()
+    
+    if "id" not in container_result:
+        return {"error": "Instagram 容器建立失敗", "details": container_result}
+        
+    creation_id = container_result["id"]
+    time.sleep(3) # 等待 Meta 伺服器處理圖片
+    
+    # 步驟二：正式發布
+    publish_url = f"https://graph.facebook.com/{API_VERSION}/{IG_USER_ID}/media_publish"
+    publish_payload = {
+        "creation_id": creation_id,
+        "access_token": FB_PAGE_ACCESS_TOKEN
+    }
+    
+    res_publish = requests.post(publish_url, data=publish_payload)
+    return res_publish.json()
+
+@app.post("/api/publish-meta")
+async def publish_to_meta(data: dict):
+    """前端呼叫此 API 即可同時發布至 FB 與 IG"""
+    message = data.get("message", "")
+    image_url = data.get("imageUrl", "")
+    
+    if not image_url:
+        return JSONResponse(status_code=400, content={"error": "發布至 Meta 必須提供公開的圖片網址 (imageUrl)"})
+        
+    fb_result = post_to_facebook(message, image_url)
+    ig_result = post_to_instagram(image_url, message)
+    
+    return JSONResponse(content={
+        "facebook": fb_result,
+        "instagram": ig_result
+    })
 
 # ========================================================
 # 🚀 精準檔案路由
