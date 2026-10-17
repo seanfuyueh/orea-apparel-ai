@@ -21,10 +21,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 初始化 Google Gemini 客戶端
 client = genai.Client()
 
-# 從 Render 環境變數抓取 APIFY_TOKEN
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 HISTORY_FILE = "history.json"
 
@@ -76,7 +74,7 @@ def clear_all_history():
     return {"status": "success"}
 
 # ========================================================
-# 🚀 處理前端的 AI 生成請求 (支援文字與圖片 + 3次 503 防護)
+# 🚀 處理前端的 AI 生成請求 (支援文字與圖片 + 3次重試)
 # ========================================================
 @app.post("/api/generate")
 async def generate_content(data: dict):
@@ -163,7 +161,7 @@ async def get_realtime_trends():
 
         trend_summary_prompt += """
 請根據上述真實高流量貼文與圖片，產出一份「東大門流行趨勢與爆款分析報告」：
-1. 視覺風格分析：總結這幾款爆款商品的共通設計亮點（顏色, 面料, 剪裁）。
+1. 視覺風格分析：總結這幾款爆款商品的共通設計亮點（顏色、面料、剪裁）。
 2. 爆款原因分析：為什麼這幾篇貼文在 IG 上能獲得高按讚數與高互動？
 3. 明確列出這 3 篇爆款貼文的真實 IG 連結與按讚數供用戶查驗。
 """
@@ -184,27 +182,6 @@ async def get_realtime_trends():
                     continue
                 return JSONResponse(status_code=500, content={"error": str(e)})
 
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-# ========================================================
-# 📱 Meta 智慧雙平台一鍵發佈 API
-# ========================================================
-@app.post("/api/publish-meta")
-async def publish_meta(data: dict = Body(...)):
-    try:
-        message = data.get("message", "韓國女裝新品連線！")
-        image_base64 = data.get("imageBase64", "")
-        image_url_used = "https://picsum.photos/800/1000"
-        fb_caption = f"{message}\n\n✨ 歡迎點擊私訊詢問小幫手或直接下單！"
-        ig_caption = f"{message}\n\n#韓國女裝 #正韓連線 #東大門穿搭 #OOTD"
-
-        return JSONResponse(content={
-            "status": "success",
-            "image_url_used": image_url_used,
-            "fb_caption_used": fb_caption,
-            "ig_caption_used": ig_caption
-        })
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
