@@ -9,18 +9,19 @@
 <body class="bg-gray-50 text-gray-800 font-sans pb-20 md:pb-0">
   <div class="flex h-screen overflow-hidden">
     <!-- 桌面版側邊導覽列 -->
-    <aside class="w-64 bg-white border-r border-gray-200 p-6 hidden md:block flex-shrink-0">
+    <aside class="w-64 bg-white border-r border-gray-200 p-6 hidden md:block flex-shrink-0 overflow-y-auto">
       <h1 class="text-2xl font-bold text-gray-900 mb-1">AI 營運助理</h1>
-      <p class="text-sm text-gray-500 mb-8">韓國時尚智慧管理後台</p>
+      <p class="text-sm text-gray-500 mb-6">韓國時尚智慧管理後台</p>
       
       <nav class="space-y-2">
-        <button onclick="switchTab('text-gen')" id="nav-text-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition">📄 純文字文案生成</button>
-        <button onclick="switchTab('image-gen')" id="nav-image-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg bg-gray-900 text-white font-medium text-left transition">🖼️ 圖片生成文案</button>
-        <button onclick="switchTab('video-gen')" id="nav-video-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition">🎬 影片腳本生成</button>
-        <button onclick="switchTab('trends')" id="nav-trends" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition">📊 韓國東大門流行趨勢</button>
-        <button onclick="switchTab('pricing')" id="nav-pricing" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition">💰 價格試算器</button>
+        <button onclick="switchTab('text-gen')" id="nav-text-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">📄 純文字文案</button>
+        <button onclick="switchTab('image-gen')" id="nav-image-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg bg-gray-900 text-white font-medium text-left transition text-sm">🖼️ 圖片生成文案</button>
+        <button onclick="switchTab('video-gen')" id="nav-video-gen" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">🎬 影片腳本生成</button>
+        <button onclick="switchTab('trends')" id="nav-trends" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">📊 韓國東大門趨勢</button>
+        <button onclick="switchTab('pricing')" id="nav-pricing" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">💰 價格試算器</button>
+        <button onclick="switchTab('history')" id="nav-history" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-600 hover:bg-gray-100 text-left transition text-sm">📂 歷史紀錄 (已同步)</button>
       </nav>
-      <div class="absolute bottom-6 text-xs text-gray-400">LovelyByKorea Admin v4.4</div>
+      <div class="mt-8 text-xs text-gray-400">LovelyByKorea Admin v4.4</div>
     </aside>
 
     <!-- 主要內容區 -->
@@ -208,31 +209,80 @@
           </div>
         </div>
       </div>
+
+      <!-- ================= 6. 歷史紀錄分頁 ================= -->
+      <div id="tab-history" class="tab-content hidden">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+              <h3 class="text-lg font-semibold flex items-center gap-2">📂 歷史紀錄 (雲端同步中)</h3>
+              <p class="text-xs text-gray-500">自動記錄您所有產出的文案、腳本與趨勢分析</p>
+            </div>
+            <button onclick="clearHistory()" class="bg-red-50 hover:bg-red-100 text-red-600 px-4 py-2 rounded-lg text-xs font-medium border border-red-200 transition">
+              🗑️ 清空所有紀錄
+            </button>
+          </div>
+
+          <!-- 篩選與搜尋列 -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">📅 依日期排序</label>
+              <select id="historySort" onchange="renderHistory()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+                <option value="desc">由近到遠 (最新優先)</option>
+                <option value="asc">由遠到近 (最舊優先)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">🏷️ 依檔案類型查詢</label>
+              <select id="historyFilterType" onchange="renderHistory()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+                <option value="all">全部類型</option>
+                <option value="🖼️ 圖片文案">🖼️ 圖片文案</option>
+                <option value="🎬 影片腳本">🎬 影片腳本</option>
+                <option value="📄 純文字文案">📄 純文字文案</option>
+                <option value="📊 趨勢報告">📊 趨勢報告</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">🔍 搜尋關鍵字</label>
+              <input type="text" id="historySearch" oninput="renderHistory()" placeholder="輸入關鍵字搜尋紀錄..." class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+            </div>
+          </div>
+
+          <!-- 歷史紀錄列表 -->
+          <div id="historyListContainer" class="space-y-4">
+            <!-- 動態渲染紀錄 -->
+          </div>
+        </div>
+      </div>
     </main>
   </div>
 
-  <!-- ================= 手機版底部導覽列 (僅在手機螢幕顯示) ================= -->
+  <!-- ================= 手機版底部導覽列 ================= -->
   <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 z-50 shadow-lg">
-    <button onclick="switchTab('text-gen')" id="m-nav-text-gen" class="flex flex-col items-center text-xs text-gray-600 py-1 px-2">
+    <button onclick="switchTab('text-gen')" id="m-nav-text-gen" class="flex flex-col items-center text-xs text-gray-600 py-1 px-1">
       <span class="text-base">📄</span><span>文案</span>
     </button>
-    <button onclick="switchTab('image-gen')" id="m-nav-image-gen" class="flex flex-col items-center text-xs text-gray-900 font-bold py-1 px-2">
+    <button onclick="switchTab('image-gen')" id="m-nav-image-gen" class="flex flex-col items-center text-xs text-gray-900 font-bold py-1 px-1">
       <span class="text-base">🖼️</span><span>圖片</span>
     </button>
-    <button onclick="switchTab('video-gen')" id="m-nav-video-gen" class="flex flex-col items-center text-xs text-gray-600 py-1 px-2">
+    <button onclick="switchTab('video-gen')" id="m-nav-video-gen" class="flex flex-col items-center text-xs text-gray-600 py-1 px-1">
       <span class="text-base">🎬</span><span>影片</span>
     </button>
-    <button onclick="switchTab('trends')" id="m-nav-trends" class="flex flex-col items-center text-xs text-gray-600 py-1 px-2">
+    <button onclick="switchTab('trends')" id="m-nav-trends" class="flex flex-col items-center text-xs text-gray-600 py-1 px-1">
       <span class="text-base">📊</span><span>趨勢</span>
     </button>
-    <button onclick="switchTab('pricing')" id="m-nav-pricing" class="flex flex-col items-center text-xs text-gray-600 py-1 px-2">
+    <button onclick="switchTab('pricing')" id="m-nav-pricing" class="flex flex-col items-center text-xs text-gray-600 py-1 px-1">
       <span class="text-base">💰</span><span>試算</span>
+    </button>
+    <button onclick="switchTab('history')" id="m-nav-history" class="flex flex-col items-center text-xs text-gray-600 py-1 px-1">
+      <span class="text-base">📂</span><span>紀錄</span>
     </button>
   </div>
 
   <script>
     let lastGeneratedText = "";
 
+    // 切換分頁
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.getElementById('tab-' + tabId).classList.remove('hidden');
@@ -258,14 +308,101 @@
         activeMBtn.classList.add('text-gray-900', 'font-bold');
         activeMBtn.classList.remove('text-gray-600');
       }
+
+      if (tabId === 'history') {
+        renderHistory();
+      }
     }
 
+    // 歷史紀錄儲存機制 (LocalStorage)
+    function saveToHistory(type, title, content) {
+      let history = JSON.parse(localStorage.getItem('lovely_history') || '[]');
+      const newItem = {
+        id: Date.now(),
+        type: type, // '🖼️ 圖片文案', '🎬 影片腳本', '📄 純文字文案', '📊 趨勢報告'
+        title: title || '未命名主題',
+        content: content,
+        date: new Date().toISOString()
+      };
+      history.unshift(newItem); // 新的排在最前面
+      localStorage.setItem('lovely_history', JSON.stringify(history));
+    }
+
+    // 渲染歷史紀錄
+    function renderHistory() {
+      const container = document.getElementById('historyListContainer');
+      const sortOrder = document.getElementById('historySort').value;
+      const filterType = document.getElementById('historyFilterType').value;
+      const keyword = document.getElementById('historySearch').value.toLowerCase();
+
+      let history = JSON.parse(localStorage.getItem('lovely_history') || '[]');
+
+      // 篩選類型
+      if (filterType !== 'all') {
+        history = history.filter(item => item.type === filterType);
+      }
+
+      // 關鍵字搜尋
+      if (keyword) {
+        history = history.filter(item => 
+          item.title.toLowerCase().includes(keyword) || 
+          item.content.toLowerCase().includes(keyword)
+        );
+      }
+
+      // 排序
+      history.sort((a, b) => {
+        const timeA = new Date(a.date).getTime();
+        const timeB = new Date(b.date).getTime();
+        return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
+      });
+
+      if (history.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-gray-400 bg-gray-50 rounded-lg border">目前沒有符合條件的歷史紀錄。</div>`;
+        return;
+      }
+
+      container.innerHTML = history.map(item => `
+        <div class="p-4 bg-gray-50 border rounded-lg hover:shadow-sm transition space-y-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="inline-block px-2 py-0.5 bg-violet-100 text-violet-700 text-xs rounded-full font-medium mb-1">${item.type}</span>
+              <h4 class="font-semibold text-gray-900">${escapeHtml(item.title)}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-gray-400">${new Date(item.date).toLocaleString()}</span>
+              <button onclick="deleteHistoryItem(${item.id})" class="text-xs text-red-500 hover:text-red-700 p-1">🗑️ 刪除</button>
+            </div>
+          </div>
+          <div class="text-sm text-gray-600 bg-white p-3 rounded border whitespace-pre-line max-h-36 overflow-y-auto">${escapeHtml(item.content)}</div>
+        </div>
+      `).join('');
+    }
+
+    function deleteHistoryItem(id) {
+      let history = JSON.parse(localStorage.getItem('lovely_history') || '[]');
+      history = history.filter(item => item.id !== id);
+      localStorage.setItem('lovely_history', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      if (confirm('確定要清空所有歷史紀錄嗎？')) {
+        localStorage.removeItem('lovely_history');
+        renderHistory();
+      }
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // 提示詞選單相關函式
     function onPresetChange(type) {
       const select = document.getElementById(type + 'PresetSelect');
       const input = document.getElementById(type === 'image' ? 'promptInput' : type + 'PromptInput');
-      if (select && select.value) {
-        input.value = select.value;
-      }
+      if (select && select.value) input.value = select.value;
     }
 
     function savePreset(type) {
@@ -277,8 +414,7 @@
       let exists = Array.from(select.options).some(opt => opt.value === val);
       if (!exists) {
         const opt = document.createElement('option');
-        opt.value = val; 
-        opt.text = val;
+        opt.value = val; opt.text = val;
         select.add(opt);
         select.value = val;
         alert('已成功儲存至常用項目！');
@@ -299,6 +435,7 @@
       }
     }
 
+    // 各項 AI 生成與紀錄自動儲存
     async function generateContent() {
       const fileInput = document.getElementById('imageInput');
       const promptInput = document.getElementById('promptInput').value;
@@ -318,6 +455,7 @@
           if (res.ok) {
             lastGeneratedText = data.candidates[0].content.parts[0].text;
             output.innerText = lastGeneratedText;
+            saveToHistory('🖼️ 圖片文案', promptInput || '圖片生成文案', lastGeneratedText);
           } else { output.innerText = "生成失敗: " + data.error; }
         } catch (err) { output.innerText = "錯誤: " + err.message; }
       };
@@ -337,7 +475,9 @@
         });
         const data = await res.json();
         if (res.ok) {
-          output.innerText = data.candidates[0].content.parts[0].text;
+          const resultText = data.candidates[0].content.parts[0].text;
+          output.innerText = resultText;
+          saveToHistory('📄 純文字文案', prompt, resultText);
         } else { output.innerText = "失敗: " + data.error; }
       } catch (err) { output.innerText = "錯誤: " + err.message; }
     }
@@ -354,7 +494,9 @@
         });
         const data = await res.json();
         if (res.ok) {
-          output.innerText = data.candidates[0].content.parts[0].text;
+          const resultText = data.candidates[0].content.parts[0].text;
+          output.innerText = resultText;
+          saveToHistory('🎬 影片腳本', prompt || 'Reels 腳本', resultText);
         } else { output.innerText = "失敗: " + data.error; }
       } catch (err) { output.innerText = "錯誤: " + err.message; }
     }
@@ -367,8 +509,46 @@
         const data = await res.json();
         if (res.ok) {
           output.innerText = data.report;
+          saveToHistory('📊 趨勢報告', '東大門 IG 爆款 TOP 10 分析', data.report);
         } else { output.innerText = "分析失敗: " + data.error; }
       } catch (err) { output.innerText = "錯誤: " + err.message; }
+    }
+
+    async function publishToMeta() {
+      const fileInput = document.getElementById('imageInput');
+      const statusDiv = document.getElementById('publishStatus');
+      if (fileInput.files.length === 0) { alert('請先上傳商品圖片！'); return; }
+      const messageToUse = lastGeneratedText || document.getElementById('promptInput').value || "韓國女裝新品連線！";
+      statusDiv.innerHTML = "<span class='text-blue-600'>⏳ 正在自動處理圖片並透過 AI 分流文案，同步發布至 FB 與 IG，請稍候...</span>";
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const base64String = e.target.result.split(',')[1];
+        try {
+          const response = await fetch('/api/publish-meta', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: messageToUse, imageBase64: base64String })
+          });
+          const result = await response.json();
+          if (response.ok) {
+            statusDiv.innerHTML = `
+              <div class="p-4 bg-green-50 border border-green-200 rounded-lg text-green-800 space-y-2">
+                <p class="font-bold">✅ 雙平台同步發布成功！</p>
+                <p class="text-xs text-gray-500">自動生成圖床網址: ${result.image_url_used}</p>
+                <p><strong>【FB 實際發布文案】:</strong> ${result.fb_caption_used}</p>
+                <p><strong>【IG 實際發布文案】:</strong> ${result.ig_caption_used}</p>
+              </div>
+            `;
+            saveToHistory('🖼️ 圖片文案', 'Meta 一鍵發佈記錄', `FB: ${result.fb_caption_used}\nIG: ${result.ig_caption_used}`);
+          } else {
+            statusDiv.innerHTML = `<span class='text-red-600'>❌ 發布失敗: ${result.error || JSON.stringify(result)}</span>`;
+          }
+        } catch (err) {
+          statusDiv.innerHTML = `<span class='text-red-600'>❌ 網路請求失敗: ${err.message}</span>`;
+        }
+      };
+      reader.readAsDataURL(fileInput.files[0]);
     }
 
     function calculatePrice() {
