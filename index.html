@@ -6,9 +6,9 @@
   <title>AI 營運助理 - 韓國時尚智慧管理後台</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+<body class="bg-gray-50 text-gray-800 font-sans pb-20 md:pb-0">
   <div class="flex h-screen overflow-hidden">
-    <!-- 側邊導覽列 -->
+    <!-- 桌面版側邊導覽列 -->
     <aside class="w-64 bg-white border-r border-gray-200 p-6 hidden md:block flex-shrink-0">
       <h1 class="text-2xl font-bold text-gray-900 mb-1">AI 營運助理</h1>
       <p class="text-sm text-gray-500 mb-8">韓國時尚智慧管理後台</p>
@@ -24,17 +24,17 @@
     </aside>
 
     <!-- 主要內容區 -->
-    <main class="flex-1 overflow-y-auto p-8">
-      <header class="mb-8 flex justify-between items-center">
+    <main class="flex-1 overflow-y-auto p-4 md:p-8">
+      <header class="mb-6 md:mb-8 flex justify-between items-center">
         <div>
-          <h2 class="text-2xl font-bold" id="pageTitle">圖片生成文案與一鍵發佈</h2>
-          <p class="text-sm text-gray-500">CEO 專屬後台 | 支援 Meta (FB & IG) 智慧雙平台同步發布</p>
+          <h2 class="text-xl md:text-2xl font-bold" id="pageTitle">圖片生成文案與一鍵發佈</h2>
+          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 支援 Meta (FB & IG) 智慧雙平台同步發布</p>
         </div>
       </header>
 
       <!-- ================= 1. 圖片生成文案分頁 (含一鍵發佈) ================= -->
       <div id="tab-image-gen" class="tab-content">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">🖼️ 圖片視覺分析與文案生成</h3>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
@@ -47,14 +47,14 @@
                 <label class="text-sm font-medium text-gray-700">補充說明或推廣訴求</label>
                 <button onclick="deleteCustomPreset('image')" class="text-xs text-red-500 hover:underline">❌ 刪除此自訂項目</button>
               </div>
-              <select id="presetSelect" onchange="onPresetChange()" class="w-full px-4 py-2 border rounded-lg mb-2 text-sm bg-white">
+              <select id="imagePresetSelect" onchange="onPresetChange('image')" class="w-full px-4 py-2 border rounded-lg mb-2 text-sm bg-white">
                 <option value="">-- 選擇常用或自訂項目 --</option>
                 <option value="顯瘦修身針織外套，韓國連線特惠">顯瘦修身針織外套，韓國連線特惠</option>
                 <option value="正韓東大門質感洋裝，氣質百搭">正韓東大門質感洋裝，氣質百搭</option>
               </select>
               <div class="flex gap-2">
                 <input type="text" id="promptInput" placeholder="或直接在此輸入新的補充說明..." class="flex-1 px-4 py-2 border rounded-lg text-sm">
-                <button onclick="savePreset()" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium border">💾 儲存</button>
+                <button onclick="savePreset('image')" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium border">💾 儲存</button>
               </div>
             </div>
           </div>
@@ -64,7 +64,7 @@
           </button>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4">✨ AI 視覺分析與文案結果</h3>
           <div id="resultOutput" class="p-4 bg-gray-50 rounded-lg text-gray-700 whitespace-pre-line min-h-[120px] mb-6">
             尚未開始生成，請上傳圖片並點擊按鈕。
@@ -83,17 +83,31 @@
 
       <!-- ================= 2. 純文字文案生成分頁 ================= -->
       <div id="tab-text-gen" class="tab-content hidden">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4">📄 純文字文案生成設定</h3>
+          
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">商品主題 / 品項名稱</label>
-            <input type="text" id="textPromptInput" placeholder="例如：東大門羊毛大衣新品連線" class="w-full px-4 py-2 border rounded-lg text-sm">
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-sm font-medium text-gray-700">商品主題與風格訴求</label>
+              <button onclick="deleteCustomPreset('text')" class="text-xs text-red-500 hover:underline">❌ 刪除此自訂項目</button>
+            </div>
+            <select id="textPresetSelect" onchange="onPresetChange('text')" class="w-full px-4 py-2 border rounded-lg mb-2 text-sm bg-white">
+              <option value="">-- 選擇常用或自訂項目 --</option>
+              <option value="東大門羊毛大衣新品連線，高級質感推薦">東大門羊毛大衣新品連線，高級質感推薦</option>
+              <option value="春季百搭落地長褲，顯瘦修身必備">春季百搭落地長褲，顯瘦修身必備</option>
+            </select>
+            <div class="flex gap-2">
+              <input type="text" id="textPromptInput" placeholder="或直接在此輸入主題與風格..." class="flex-1 px-4 py-2 border rounded-lg text-sm">
+              <button onclick="savePreset('text')" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium border">💾 儲存</button>
+            </div>
           </div>
+
           <button onclick="generateTextOnly()" class="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition">
             ✨ 生成 3 組專屬文案
           </button>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
           <h3 class="text-lg font-semibold mb-4">✨ AI 執行結果</h3>
           <div id="textResultOutput" class="p-4 bg-gray-50 rounded-lg text-gray-700 whitespace-pre-line min-h-[120px]">
             尚未開始生成，請輸入主題並點擊按鈕。
@@ -103,21 +117,36 @@
 
       <!-- ================= 3. 影片腳本生成分頁 ================= -->
       <div id="tab-video-gen" class="tab-content hidden">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4">🎬 影片生成文案與 Reels 腳本設定</h3>
+          
           <div class="mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">上傳短影音 / Reels 檔案</label>
             <input type="file" id="videoInput" accept="video/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700">
           </div>
+
           <div class="mb-4">
-            <label class="block text-sm font-medium text-gray-700 mb-2">短影音腳本需求或特色</label>
-            <input type="text" id="videoPromptInput" placeholder="例如：前 3 秒吸引目光，強調穿搭質感..." class="w-full px-4 py-2 border rounded-lg text-sm">
+            <div class="flex justify-between items-center mb-2">
+              <label class="text-sm font-medium text-gray-700">短影音腳本需求或特色</label>
+              <button onclick="deleteCustomPreset('video')" class="text-xs text-red-500 hover:underline">❌ 刪除此自訂項目</button>
+            </div>
+            <select id="videoPresetSelect" onchange="onPresetChange('video')" class="w-full px-4 py-2 border rounded-lg mb-2 text-sm bg-white">
+              <option value="">-- 選擇常用或自訂項目 --</option>
+              <option value="前 3 秒強力吸睛，強調穿搭質感與細節">前 3 秒強力吸睛，強調穿搭質感與細節</option>
+              <option value="開箱試穿走秀風格，節奏明快動感">開箱試穿走秀風格，節奏明快動感</option>
+            </select>
+            <div class="flex gap-2">
+              <input type="text" id="videoPromptInput" placeholder="或直接在此輸入短影音腳本需求..." class="flex-1 px-4 py-2 border rounded-lg text-sm">
+              <button onclick="savePreset('video')" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium border">💾 儲存</button>
+            </div>
           </div>
+
           <button onclick="generateVideoScript()" class="w-full bg-gray-900 text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition">
             🎬 生成 Reels 專屬腳本
           </button>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
           <h3 class="text-lg font-semibold mb-4">🎬 AI 執行結果</h3>
           <div id="videoResultOutput" class="p-4 bg-gray-50 rounded-lg text-gray-700 whitespace-pre-line min-h-[120px]">
             尚未開始生成，請輸入需求並點擊按鈕。
@@ -127,14 +156,14 @@
 
       <!-- ================= 4. 韓國東大門流行趨勢分頁 ================= -->
       <div id="tab-trends" class="tab-content hidden">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-2">📊 韓國東大門當季流行時尚趨勢分析</h3>
           <p class="text-sm text-gray-500 mb-4">針對 30-40 歲女性簡約質感風格進行實時 IG 爆款貼文爬取與熱銷單品推薦。</p>
           <button onclick="fetchTrends()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition">
             📊 分析最新趨勢與網拍範例
           </button>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
           <h3 class="text-lg font-semibold mb-4">📈 東大門趨勢分析報告</h3>
           <div id="trendsOutput" class="p-4 bg-gray-50 rounded-lg text-gray-700 whitespace-pre-line min-h-[200px]">
             點擊上方按鈕開始分析。
@@ -144,7 +173,7 @@
 
       <!-- ================= 5. 價格試算器分頁 ================= -->
       <div id="tab-pricing" class="tab-content hidden">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-2">💰 韓國商品價格試算表</h3>
           <p class="text-sm text-gray-500 mb-6">所有數值皆可自由編輯，即時計算台幣成本、實際成本與利潤。</p>
           
@@ -182,6 +211,25 @@
     </main>
   </div>
 
+  <!-- ================= 手機版底部導覽列 (僅在手機螢幕顯示) ================= -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-2 z-50 shadow-lg">
+    <button onclick="switchTab('text-gen')" id="m-nav-text-gen" class="flex flex-col items-center text-xs text-gray-600 py-1 px-2">
+      <span class="text-base">📄</span><span>文案</span>
+    </button>
+    <button onclick="switchTab('image-gen')" id="m-nav-image-gen" class="flex flex-col items-center text-xs text-gray-900 font-bold py-1 px-2">
+      <span class="text-base">🖼️</span><span>圖片</span>
+    </button>
+    <button onclick="switchTab('video-gen')" id="m-nav-video-gen" class="flex flex-col items-center text-xs text-gray-600 py-1 px-2">
+      <span class="text-base">🎬</span><span>影片</span>
+    </button>
+    <button onclick="switchTab('trends')" id="m-nav-trends" class="flex flex-col items-center text-xs text-gray-600 py-1 px-2">
+      <span class="text-base">📊</span><span>趨勢</span>
+    </button>
+    <button onclick="switchTab('pricing')" id="m-nav-pricing" class="flex flex-col items-center text-xs text-gray-600 py-1 px-2">
+      <span class="text-base">💰</span><span>試算</span>
+    </button>
+  </div>
+
   <script>
     let lastGeneratedText = "";
 
@@ -189,46 +237,65 @@
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.getElementById('tab-' + tabId).classList.remove('hidden');
 
+      // 更新桌面版側邊欄按鈕樣式
       document.querySelectorAll('aside nav button').forEach(btn => {
         btn.classList.remove('bg-gray-900', 'text-white', 'font-medium');
         btn.classList.add('text-gray-600', 'hover:bg-gray-100');
       });
       const activeBtn = document.getElementById('nav-' + tabId);
-      activeBtn.classList.add('bg-gray-900', 'text-white', 'font-medium');
-      activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
-    }
+      if (activeBtn) {
+        activeBtn.classList.add('bg-gray-900', 'text-white', 'font-medium');
+        activeBtn.classList.remove('text-gray-600', 'hover:bg-gray-100');
+      }
 
-    function onPresetChange() {
-      const select = document.getElementById('presetSelect');
-      const input = document.getElementById('promptInput');
-      if (select.value) input.value = select.value;
-    }
-
-    function savePreset() {
-      const input = document.getElementById('promptInput');
-      const select = document.getElementById('presetSelect');
-      const val = input.value.trim();
-      if (!val) { alert('請先輸入內容！'); return; }
-      let exists = Array.from(select.options).some(opt => opt.value === val);
-      if (!exists) {
-        const opt = document.createElement('option');
-        opt.value = val; opt.text = val;
-        select.add(opt);
-        select.value = val;
-        alert('已儲存至常用項目！');
-      } else {
-        alert('項目已存在！');
+      // 更新手機版底部導覽列樣式
+      document.querySelectorAll('.md\\:hidden button').forEach(btn => {
+        btn.classList.remove('text-gray-900', 'font-bold');
+        btn.classList.add('text-gray-600');
+      });
+      const activeMBtn = document.getElementById('m-nav-' + tabId);
+      if (activeMBtn) {
+        activeMBtn.classList.add('text-gray-900', 'font-bold');
+        activeMBtn.classList.remove('text-gray-600');
       }
     }
 
-    function deleteCustomPreset() {
-      const select = document.getElementById('presetSelect');
+    function onPresetChange(type) {
+      const select = document.getElementById(type + 'PresetSelect');
+      const input = document.getElementById(type === 'image' ? 'promptInput' : type + 'PromptInput');
+      if (select && select.value) {
+        input.value = select.value;
+      }
+    }
+
+    function savePreset(type) {
+      const input = document.getElementById(type === 'image' ? 'promptInput' : type + 'PromptInput');
+      const select = document.getElementById(type + 'PresetSelect');
+      const val = input.value.trim();
+      if (!val) { alert('請先輸入內容再儲存！'); return; }
+      
+      let exists = Array.from(select.options).some(opt => opt.value === val);
+      if (!exists) {
+        const opt = document.createElement('option');
+        opt.value = val; 
+        opt.text = val;
+        select.add(opt);
+        select.value = val;
+        alert('已成功儲存至常用項目！');
+      } else {
+        alert('此項目已經在選單中了！');
+      }
+    }
+
+    function deleteCustomPreset(type) {
+      const select = document.getElementById(type + 'PresetSelect');
+      const input = document.getElementById(type === 'image' ? 'promptInput' : type + 'PromptInput');
       if (select.selectedIndex > 0) {
         select.remove(select.selectedIndex);
-        document.getElementById('promptInput').value = "";
-        alert('已刪除');
+        input.value = "";
+        alert('已刪除該項目');
       } else {
-        alert('請先選擇要刪除的項目');
+        alert('請先從上方下拉選單選擇要刪除的項目');
       }
     }
 
@@ -260,7 +327,7 @@
     async function generateTextOnly() {
       const prompt = document.getElementById('textPromptInput').value;
       const output = document.getElementById('textResultOutput');
-      if (!prompt) { alert('請輸入主題！'); return; }
+      if (!prompt) { alert('請輸入主題或風格訴求！'); return; }
       output.innerText = "AI 正在生成文案...";
       try {
         const res = await fetch('/api/generate', {
