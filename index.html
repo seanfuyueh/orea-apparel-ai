@@ -29,13 +29,8 @@
 
       <!-- ================= 1. 圖片生成文案分頁 (含一鍵發佈) ================= -->
       <div id="tab-image-gen" class="tab-content">
-        <header class="mb-6">
-          <h2 class="text-xl md:text-2xl font-bold">🖼️ 圖片視覺分析與 Meta 一鍵發佈</h2>
-          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 支援 Meta (FB & IG) 智慧雙平台同步發布</p>
-        </header>
-
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
-          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">🖼️ 上傳商品圖片與文案生成</h3>
+          <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">🖼️ 圖片視覺分析與文案生成</h3>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
             <div>
@@ -83,11 +78,6 @@
 
       <!-- ================= 2. 純文字文案生成分頁 ================= -->
       <div id="tab-text-gen" class="tab-content hidden">
-        <header class="mb-6">
-          <h2 class="text-xl md:text-2xl font-bold">📄 純文字文案生成</h2>
-          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 高轉換率韓系服飾銷售文案智慧生成</p>
-        </header>
-
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4">📄 純文字文案生成設定</h3>
           
@@ -122,11 +112,6 @@
 
       <!-- ================= 3. 影片腳本生成分頁 ================= -->
       <div id="tab-video-gen" class="tab-content hidden">
-        <header class="mb-6">
-          <h2 class="text-xl md:text-2xl font-bold">🎬 影片生成文案與 Reels 腳本</h2>
-          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 短影音吸睛腳本與行銷文案</p>
-        </header>
-
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-4">🎬 影片生成文案與 Reels 腳本設定</h3>
           
@@ -166,11 +151,6 @@
 
       <!-- ================= 4. 韓國東大門流行趨勢分頁 ================= -->
       <div id="tab-trends" class="tab-content hidden">
-        <header class="mb-6">
-          <h2 class="text-xl md:text-2xl font-bold">📊 韓國東大門流行趨勢分析</h2>
-          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 實時 IG 爆款貼文爬取與熱銷單品推薦</p>
-        </header>
-
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-2">📊 韓國東大門當季流行時尚趨勢分析</h3>
           <p class="text-sm text-gray-500 mb-4">針對 30-40 歲女性簡約質感風格進行實時 IG 爆款貼文爬取與熱銷單品推薦。</p>
@@ -186,13 +166,8 @@
         </div>
       </div>
 
-      <!-- ================= 5. 價格試算器分頁 ================= -->
+      <!-- ================= 5. 價格試算器分頁 (已補齊批發商抽成與獨立 3 欄格式) ================= -->
       <div id="tab-pricing" class="tab-content hidden">
-        <header class="mb-6">
-          <h2 class="text-xl md:text-2xl font-bold">💰 韓國商品價格試算表</h2>
-          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 台幣成本、代付抽成與利潤即時計算</p>
-        </header>
-
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <h3 class="text-lg font-semibold mb-2">💰 韓國商品價格試算表</h3>
           <p class="text-sm text-gray-500 mb-6">所有數值皆可自由編輯，即時計算台幣成本、實際成本與利潤。</p>
@@ -200,29 +175,32 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="p-4 bg-gray-50 rounded-lg border">
               <label class="block text-sm font-medium text-gray-700 mb-1">韓元成本價 (₩)</label>
-              <input type="number" id="krwCost" value="40000" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+              <input type="number" id="krwCost" value="40000" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white mb-3">
               
-              <label class="block text-sm font-medium text-gray-700 mt-3 mb-1">換算匯率</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">批發商抽成 (%)</label>
+              <input type="number" id="wholesalerMarkup" value="0" step="1" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white mb-3">
+
+              <label class="block text-sm font-medium text-gray-700 mb-1">換算匯率</label>
               <input type="number" id="exchangeRate" value="0.0228" step="0.0001" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
-              <p class="text-xs text-gray-500 mt-1" id="ntdResult">台幣換算: 912 元</p>
+              <p class="text-xs text-gray-500 mt-2" id="ntdResult">台幣換算: 912 元</p>
             </div>
 
             <div class="p-4 bg-gray-50 rounded-lg border">
               <label class="block text-sm font-medium text-gray-700 mb-1">代付貨款抽成 (韓幣)</label>
-              <input type="number" id="commissionKrw" value="800" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+              <input type="number" id="commissionKrw" value="800" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white mb-3">
               
-              <label class="block text-sm font-medium text-gray-700 mt-3 mb-1">公斤數運費 (台幣)</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">公斤數運費 (台幣)</label>
               <input type="number" id="shippingNtd" value="78" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
-              <p class="text-xs text-gray-500 mt-1" id="subtotalNtd">台幣成本小計: 990 元</p>
+              <p class="text-xs text-gray-500 mt-2" id="subtotalNtd">台幣成本小計: 990 元</p>
             </div>
 
             <div class="p-4 bg-gray-50 rounded-lg border">
               <label class="block text-sm font-medium text-gray-700 mb-1">小賣價係數</label>
-              <input type="number" id="markupRatio" value="2.8" step="0.1" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white">
+              <input type="number" id="markupRatio" value="2.8" step="0.1" oninput="calculatePrice()" class="w-full px-3 py-2 border rounded-lg text-sm bg-white mb-4">
               
-              <div class="mt-4 space-y-1 text-sm font-medium">
-                <p id="finalPrice">終端售價: 2,912 元</p>
-                <p id="estProfit" class="text-green-600">預估利潤: 1,872 元</p>
+              <div class="mt-4 space-y-2 text-sm font-medium">
+                <p id="finalPrice" class="text-gray-900 font-bold">終端售價: 2,912 元</p>
+                <p id="estProfit" class="text-green-600 font-bold">預估利潤: 1,872 元</p>
               </div>
             </div>
           </div>
@@ -231,11 +209,6 @@
 
       <!-- ================= 6. 雲端歷史紀錄分頁 ================= -->
       <div id="tab-history" class="tab-content hidden">
-        <header class="mb-6">
-          <h2 class="text-xl md:text-2xl font-bold">📂 雲端歷史紀錄管理</h2>
-          <p class="text-xs md:text-sm text-gray-500">CEO 專屬後台 | 所有產出紀錄完整保存於 Render 雲端伺服器</p>
-        </header>
-
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 mb-6">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
@@ -551,7 +524,7 @@
       const output = document.getElementById('trendsOutput');
       output.innerText = "正在向 Apify 與 Gemini 請求實時東大門爆款趨勢數據，請稍候...";
       try {
-        const res = await fetch('/api/realtime-trends', { method: 'POST' }, );
+        const res = await fetch('/api/realtime-trends', { method: 'POST' });
         const data = await res.json();
         if (res.ok) {
           output.innerText = data.report;
@@ -597,14 +570,18 @@
       reader.readAsDataURL(fileInput.files[0]);
     }
 
+    // 價格試算器完整邏輯 (支援批發商抽成、匯率換算、代付抽成與運費)
     function calculatePrice() {
       const krw = parseFloat(document.getElementById('krwCost').value) || 0;
+      const wholesalerMarkupPct = parseFloat(document.getElementById('wholesalerMarkup').value) || 0;
       const rate = parseFloat(document.getElementById('exchangeRate').value) || 0;
       const commKrw = parseFloat(document.getElementById('commissionKrw').value) || 0;
       const shipNtd = parseFloat(document.getElementById('shippingNtd').value) || 0;
       const markup = parseFloat(document.getElementById('markupRatio').value) || 1;
 
-      const ntdBase = Math.round((krw + commKrw) * rate);
+      // 韓元成本含批發商抽成
+      const krwWithMarkup = krw * (1 + wholesalerMarkupPct / 100);
+      const ntdBase = Math.round((krwWithMarkup + commKrw) * rate);
       const actualCost = ntdBase + shipNtd;
       const finalPrice = Math.round(actualCost * markup);
       const profit = finalPrice - actualCost;
