@@ -70,7 +70,7 @@
             <button type="button" onclick="switchTab('history')" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2 cursor-pointer">
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
-            <div class="text-sm text-gray-400 text-center">LovelyByKorea Admin v4.7</div>
+            <div class="text-sm text-gray-400 text-center">LovelyByKorea Admin v4.8</div>
         </div>
     </aside>
 
@@ -136,7 +136,7 @@
                 </div>
             </div>
 
-            <!-- 其他分頁略 (維持原樣) -->
+            <!-- 2. 其他分頁 (保留完整結構) -->
             <div id="tab-general-copy" class="hidden space-y-6 pt-2"></div>
             <div id="tab-video-copy" class="hidden space-y-6 pt-2"></div>
             <div id="tab-trend" class="hidden space-y-6 pt-2"></div>
@@ -147,12 +147,12 @@
 
     <!-- 手機底部導航列 -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-1 py-2.5 flex justify-around items-center shrink-0 z-30 shadow-lg">
-        <button type="button" onclick="switchTab('copywriting')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📄</span><span class="text-xs">文案</span></button>
-        <button type="button" onclick="switchTab('image-copy')" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer"><span class="text-lg">🖼️</span><span class="text-xs">圖片</span></button>
-        <button type="button" onclick="switchTab('video-copy')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">🎬</span><span class="text-xs">影片</span></button>
-        <button type="button" onclick="switchTab('trend')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📊</span><span class="text-xs">趨勢</span></button>
-        <button type="button" onclick="switchTab('pricing')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">💰</span><span class="text-xs">試算</span></button>
-        <button type="button" onclick="switchTab('history')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📂</span><span class="text-xs">紀錄</span></button>
+        <button type="button" onclick="switchTab('copywriting')" id="mobile-nav-copywriting" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📄</span><span class="text-xs">文案</span></button>
+        <button type="button" onclick="switchTab('image-copy')" id="mobile-nav-image-copy" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer"><span class="text-lg">🖼️</span><span class="text-xs">圖片</span></button>
+        <button type="button" onclick="switchTab('video-copy')" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">🎬</span><span class="text-xs">影片</span></button>
+        <button type="button" onclick="switchTab('trend')" id="mobile-nav-trend" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📊</span><span class="text-xs">趨勢</span></button>
+        <button type="button" onclick="switchTab('pricing')" id="mobile-nav-pricing" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">💰</span><span class="text-xs">試算</span></button>
+        <button type="button" onclick="switchTab('history')" id="mobile-nav-history" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📂</span><span class="text-xs">紀錄</span></button>
     </nav>
 
     <!-- 2. FB / IG / Threads 多平台一鍵發佈與預覽彈跳視窗 -->
@@ -202,6 +202,52 @@
 
         const FB_FIXED_FOOTER = `\n\n👇來去逛逛👇\n🏷 https://www.lovelybykorea.com/\n\n🤖𝙇𝙄𝙉𝙀@客服\n▪️ https://lin.ee/lld53QP\n\n#業界唯一超20年韓國女裝代購經驗  \n#限時95折優惠中\n#韓國代購 #韓國製\n#時尚的盡頭是簡約\n#簡約不簡單`;
 
+        // 📌 完整修復的分頁切換函式
+        window.switchTab = function(tab, saveState = true) {
+            ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
+            ['desktop-nav-image-copy', 'desktop-nav-copywriting', 'desktop-nav-video-copy', 'desktop-nav-trend', 'desktop-nav-pricing', 'desktop-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer';
+            });
+            ['mobile-nav-image-copy', 'mobile-nav-copywriting', 'mobile-nav-video-copy', 'mobile-nav-trend', 'mobile-nav-pricing', 'mobile-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer';
+            });
+
+            let targetNavName = tab === 'copywriting' ? 'copywriting' : tab;
+            let currentDesktopNav = document.getElementById(`desktop-nav-${targetNavName}`);
+            let currentMobileNav = document.getElementById(`mobile-nav-${targetNavName}`);
+
+            if (tab === 'image-copy') {
+                document.getElementById('tab-image-copy').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '圖片生成文案';
+            } else if (tab === 'copywriting') {
+                document.getElementById('tab-general-copy').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '文案生成';
+            } else if (tab === 'video-copy') {
+                document.getElementById('tab-video-copy').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '影片生成文案';
+            } else if (tab === 'trend') {
+                document.getElementById('tab-trend').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '韓國東大門流行趨勢';
+            } else if (tab === 'pricing') {
+                document.getElementById('tab-pricing').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '韓國商品價格試算器';
+            } else if (tab === 'history') {
+                document.getElementById('tab-history').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '歷史紀錄查詢';
+                if (typeof window.renderHistory === 'function') window.renderHistory();
+            }
+
+            if (currentDesktopNav) currentDesktopNav.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left cursor-pointer';
+            if (currentMobileNav) currentMobileNav.className = 'flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer';
+
+            if (saveState) localStorage.setItem('active_tab', tab);
+        };
+
         // 📌 智慧解析：將 AI 回傳內容完美拆分為各情境的 FB、IG、Threads 獨立文案
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
@@ -227,13 +273,11 @@
             }
 
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
-                // 將視覺分析標題前面的數字「1.」拔掉
                 el.innerHTML = el.innerHTML.replace(/<h[1-3]>\s*1\.\s*【/g, '<h3>【').replace(/<strong>\s*1\.\s*【/g, '<strong>【');
 
-                // 抓取各個情境區塊
                 const blocks = text.split(/(?=【情境\s*[A-Z])/g);
                 if (blocks.length > 1) {
-                    let visualAnalysisHtml = blocks[0]; // 頂部視覺分析
+                    let visualAnalysisHtml = blocks[0]; 
                     visualAnalysisHtml = visualAnalysisHtml.replace(/1\.\s*【/, '【');
 
                     el.innerHTML = `<div class="mb-6 pb-4 border-b border-gray-200">${marked.parse(visualAnalysisHtml)}</div>`;
@@ -276,11 +320,10 @@
         window.openPublishModalSingle = function(encodedText) {
             const rawBlockText = decodeURIComponent(encodedText);
             
-            // 清理結構標籤
             let cleanBody = rawBlockText.replace(/【情境\s*[A-Z].*?】/g, "").trim();
             cleanBody = cleanBody.replace(/文案標題：/g, "").replace(/內文：/g, "").replace(/Hashtags：/g, "");
 
-            // 針對三大平台量身打造獨立文案內容
+            // 針對三大平台量身打造各自獨立的文案內容
             const fbText = `✨【新品上市熱銷中】✨\n\n` + cleanBody + FB_FIXED_FOOTER;
             const igText = cleanBody + `\n\n#韓國連線 #東大門代購 #OOTD #穿搭分享`;
             const threadsText = `今天這套真的超好看！大家覺得怎麼樣？💬\n\n` + cleanBody;
@@ -386,9 +429,10 @@
             }
         };
 
-        window.switchTab = function(tab) {
-            localStorage.setItem('active_tab', tab);
-        };
+        window.addEventListener('DOMContentLoaded', () => { 
+            const lastTab = localStorage.getItem('active_tab') || 'image-copy';
+            window.switchTab(lastTab, false);
+        });
     </script>
 </body>
 </html>
