@@ -25,7 +25,7 @@ app.add_middleware(
 # 初始化 Google Gemini 客戶端
 client = genai.Client()
 
-# 從 Render 環境變數抓取 APIFY_TOKEN 與 Instagram 存取設定
+# 從 Render 環境變數抓取 APIFY_TOKEN 與 Meta 存取設定
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 INSTAGRAM_ACCESS_TOKEN = os.environ.get(
     "INSTAGRAM_ACCESS_TOKEN",

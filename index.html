@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>韓國女裝 AI 智慧後台</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Marked.js 解析器 (用於將 Markdown 語法轉為 HTML 超連結與表格) -->
+    <!-- 引入 Marked.js 解析器 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -13,7 +13,7 @@
         html, body { width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; margin: 0; padding: 0; }
         *, *:before, *:after { box-sizing: inherit; }
 
-        /* 📌 Markdown 報告與對話框防跑版樣式 */
+        /* 📌 Markdown 防跑版樣式 */
         .markdown-body {
             width: 100%;
             max-width: 100%;
@@ -22,7 +22,6 @@
             line-height: 1.7;
         }
 
-        /* 📌 一般連結樣式 */
         .markdown-body a {
             color: #2563eb;
             text-decoration: underline;
@@ -30,7 +29,7 @@
             word-break: break-all;
         }
 
-        /* 📸 IG 爆款連結：專屬漸層按鈕樣式 (桌機/手機一致，手機點擊自動開啟 IG App) */
+        /* 📸 IG 爆款連結：專屬漸層按鈕 */
         .markdown-body a[href*="instagram.com"], .markdown-body a.ig-btn-link {
             display: inline-flex !important;
             align-items: center !important;
@@ -55,7 +54,6 @@
             opacity: 0.9;
         }
 
-        /* 📊 響應式表格防跑版 */
         .markdown-body table {
             width: 100% !important;
             max-width: 100% !important;
@@ -102,7 +100,7 @@
             margin: 1.25rem 0;
         }
 
-        /* 📱 手機版專屬優化 (Modal 彈窗與文字縮放) */
+        /* 📱 手機版專屬優化 */
         @media (max-width: 768px) {
             #modal-content-box, #publish-modal-content-box {
                 width: 95vw !important;
@@ -118,7 +116,6 @@
             }
         }
     </style>
-    <!-- 強制註銷舊版 Service Worker 快取 -->
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -548,7 +545,7 @@
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
 
-        // 📌 FB 固定頁尾內容定義
+        // 📌 FB 固定頁尾定義
         const FB_FIXED_FOOTER = `
 👇來去逛逛👇
 🏷 https://www.lovelybykorea.com/
@@ -562,10 +559,34 @@
 #時尚的盡頭是簡約
 #簡約不簡單`;
 
-        // 📌 全效能 Markdown 渲染輔助函式 (自動轉為 IG 漸層按鈕 & 綁定 target="_blank" 以利手機開啟 IG App)
+        // 📌 智慧清洗邏輯：自動清除 AI 結構標籤 (大標題、情境標頭、文案標題、內文、Hashtags 標籤)
+        function cleanSingleOptionCopy(rawText) {
+            if (!rawText) return "";
+
+            let text = rawText.trim();
+
+            // 1. 刪除大標題，例如: 3.【3組高質感網拍文案與 Hashtags】
+            text = text.replace(/^\d+\.\s*【.*?】/g, "");
+
+            // 2. 刪除情境抬頭，例如: 【情境 A | 週末漫步：傭懶隨性的 Effortless Chic】
+            text = text.replace(/【情境\s*[A-Z].*?】/g, "");
+
+            // 3. 清理「文案標題：」、「內文：」、「Hashtags：」這類結構欄位名稱
+            text = text.replace(/文案標題：/g, "");
+            text = text.replace(/內文：/g, "");
+            text = text.replace(/Hashtags：/g, "");
+
+            // 4. 清理多餘的連續空行
+            text = text.replace(/\n\s*\n\s*\n/g, "\n\n").trim();
+
+            return text;
+        }
+
+        // 📌 全效能 Markdown 渲染輔助函式 (自動切割 3 組文案並於各自下方附上一鍵發佈按鈕)
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
             if (!el) return;
+
             if (typeof marked !== 'undefined' && text) {
                 marked.setOptions({ gfm: true, breaks: true });
                 let htmlContent = marked.parse(text);
@@ -590,32 +611,65 @@
                 el.innerText = text || '';
             }
 
-            // 在生成結果下方自動附加上「🚀 一鍵發佈至 FB / IG」按鈕區塊
+            // 在生成結果中，為【情境 A】、【情境 B】與【情境 C】的各自下方插入獨立的一鍵發佈按鈕
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
-                const pubBtnDiv = document.createElement('div');
-                pubBtnDiv.className = 'mt-6 pt-4 border-t border-gray-200 flex justify-end';
-                pubBtnDiv.innerHTML = `
-                    <button type="button" onclick="openPublishModalFromBox('${elementId}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold shadow-md text-sm md:text-base transition-all transform active:scale-95 cursor-pointer flex items-center gap-2">
-                        🚀 一鍵發佈至 FB / IG (預覽與發佈)
-                    </button>
-                `;
-                el.appendChild(pubBtnDiv);
+                // 正則匹配分割「【情境 A...】」、「【情境 B...】」、「【情境 C...】」的區塊
+                const blocks = text.split(/(?=【情境\s*[A-Z])/g);
+
+                if (blocks.length > 1) {
+                    el.innerHTML = ''; // 清空原本的大區塊
+
+                    blocks.forEach((blockText, idx) => {
+                        if (!blockText.trim()) return;
+
+                        const cardDiv = document.createElement('div');
+                        cardDiv.className = 'bg-white p-4 md:p-5 rounded-xl border border-gray-200 shadow-sm mb-4 space-y-3';
+                        
+                        // 渲染單個情境卡片
+                        marked.setOptions({ gfm: true, breaks: true });
+                        cardDiv.innerHTML = marked.parse(blockText);
+
+                        // 按鈕區塊
+                        const btnDiv = document.createElement('div');
+                        btnDiv.className = 'pt-3 border-t border-gray-100 flex justify-end';
+                        
+                        // 將該情境區塊的文字綁定至按鈕的點擊事件中
+                        const escapedBlockText = encodeURIComponent(blockText);
+                        btnDiv.innerHTML = `
+                            <button type="button" onclick="openPublishModalSingle('${escapedBlockText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-bold shadow-md text-sm transition-transform active:scale-95 cursor-pointer flex items-center gap-2">
+                                🚀 一鍵發佈選中此文案至 FB / IG
+                            </button>
+                        `;
+                        cardDiv.appendChild(btnDiv);
+                        el.appendChild(cardDiv);
+                    });
+                } else {
+                    // 單一結果的備用處理
+                    const pubBtnDiv = document.createElement('div');
+                    pubBtnDiv.className = 'mt-6 pt-4 border-t border-gray-200 flex justify-end';
+                    const escapedText = encodeURIComponent(text);
+                    pubBtnDiv.innerHTML = `
+                        <button type="button" onclick="openPublishModalSingle('${escapedText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold shadow-md text-sm md:text-base transition-all transform active:scale-95 cursor-pointer flex items-center gap-2">
+                            🚀 一鍵發佈至 FB / IG (預覽與發佈)
+                        </button>
+                    `;
+                    el.appendChild(pubBtnDiv);
+                }
             }
         };
 
-        // 🚀 開啟一鍵發佈預覽 Modal
-        window.openPublishModalFromBox = function(elementId) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
+        // 🚀 開啟選中的「單一文案」發佈預覽 Modal
+        window.openPublishModalSingle = function(encodedText) {
+            const rawBlockText = decodeURIComponent(encodedText);
             
-            // 抓取純文字內容
-            let rawText = el.innerText.replace("🚀 一鍵發佈至 FB / IG (預覽與發佈)", "").trim();
+            // 執行智慧清洗，過濾掉 AI 提示詞與欄位名稱
+            const cleanedText = cleanSingleOptionCopy(rawBlockText);
 
-            // 生成 FB 版：原始 AI 文字 + 自動拼接 FB 固定頁尾
-            let fbText = rawText + "\n\n" + FB_FIXED_FOOTER;
+            // FB 版：清洗後的單一純內容 + 拼接 FB 專屬固定頁尾
+            const fbText = cleanedText + "\n\n" + FB_FIXED_FOOTER;
 
-            // 生成 IG 版：優化行距並保持美觀
-            let igText = rawText;
+            // IG 版：清洗後的單一純內容
+            const igText = cleanedText;
 
             document.getElementById('pub-fb-text').value = fbText;
             document.getElementById('pub-ig-text').value = igText;
@@ -945,10 +999,10 @@
             const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
             const getGroup = (num) => {
                 const s = styles.splice(Math.floor(Math.random() * styles.length), 1)[0];
-                return `[第 ${num} 組：${s}風格]\n👤「${pick(hooks)}${pick(benefits)}${pick(endings)}\n${pick(hashtagsList)}」`;
+                return `【情境 ${num === 1 ? 'A' : num === 2 ? 'B' : 'C'} | ${s}風格】\n文案標題：${pick(hooks)}\n內文：${pick(benefits)}\nHashtags：${pick(hashtagsList)}`;
             };
 
-            return `【✨ AI 視覺分析生成 ( 備用模擬 AI - ${timeStamp} )】\n\n📌 系統已辨識並套用相應視角：${query || '質感日常搭配'}\n\n${getGroup(1)}\n\n${getGroup(2)}\n\n${getGroup(3)}`;
+            return `3.【3組高質感網拍文案與 Hashtags】\n\n${getGroup(1)}\n\n${getGroup(2)}\n\n${getGroup(3)}`;
         }
 
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
@@ -1002,7 +1056,7 @@
 1. 【嚴格品項辨識】：請先仔細看圖，這究竟是「衣服、褲子、包包、鞋子還是飾品配件」？
 2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用「揹起來、手提、戴上、百搭、容量實用、皮革質感、五金細節」等正確詞彙。
 3. 【真實細節描繪】：根據圖片中展示的真實顏色、材質與設計結構進行客觀描述。
-4. 【生成 3 組高質感文案】：撰寫 3 組不同情境（如：職場通勤、週末約會、高級質感）的網拍文案與 Hashtags。
+4. 【生成 3 組高質感文案】：撰寫 3 組不同情境（如：【情境 A | 職場通勤】、【情境 B | 週末約會】、【情境 C | 高級質感】）的網拍文案與 Hashtags。請嚴格包含「文案標題：」、「內文：」、「Hashtags：」欄位名稱。
 補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
@@ -1030,8 +1084,8 @@
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
             
-            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別（服飾、包款或配件），撰寫 3 組針對 30-40 歲女性的精緻網拍行銷文案與熱門標籤。
-【重要】：如果主題是包包或飾品，請勿使用「好穿、修飾身形」等服飾用詞。${variationRequirement}
+            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別，撰寫 3 組針對 30-40 歲女性的精緻網拍行銷文案與熱門標籤。
+請嚴格分成【情境 A】、【情境 B】與【情境 C】，並包含「文案標題：」、「內文：」、「Hashtags：」欄位名稱。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
             const resText = await window.callGeminiAPI(fullPrompt);
@@ -1056,7 +1110,7 @@
             submitBtn.disabled = true; 
             submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'AI 生成中...';
 
-            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點，展現不同的短影音爆款公式！】" : "";
+            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點！】" : "";
             
             const fullPrompt = `身為專業的短影音編導，請針對韓國時尚短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
@@ -1073,7 +1127,6 @@
             submitBtn.innerText = '重新生成';
         };
 
-        // 🚀【東大門實時流行趨勢，支援 Markdown 渲染超連結與手機防跑版】
         window.fetchTrend = async function() {
             const resultBox = document.getElementById('trend-result-box');
             const trendBtn = document.getElementById('trend-btn');
