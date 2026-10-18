@@ -1,10 +1,9 @@
 import base64
-import json
 import os
+import re
 import time
-from datetime import datetime
 import requests
-from fastapi import FastAPI, Body
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from google import genai
@@ -21,60 +20,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# 初始化 Google Gemini 客戶端
 client = genai.Client()
 
+# 從 Render 環境變數抓取 APIFY_TOKEN
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
-HISTORY_FILE = "history.json"
 
 # ========================================================
-# 📂 雲端歷史紀錄 (Render 持久化 JSON 儲存)
-# ========================================================
-def load_cloud_history():
-    if os.path.exists(HISTORY_FILE):
-        try:
-            with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"歷史紀錄讀取失敗: {e}")
-            return []
-    return []
-
-def save_cloud_history(history_data):
-    try:
-        with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-            json.dump(history_data, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        print(f"歷史紀錄儲存失敗: {e}")
-
-@app.get("/api/history")
-def get_history():
-    return load_cloud_history()
-
-@app.post("/api/history")
-def add_history_item(item: dict = Body(...)):
-    history = load_cloud_history()
-    if "id" not in item:
-        item["id"] = int(time.time() * 1000)
-    if "date" not in item:
-        item["date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    history.insert(0, item)
-    save_cloud_history(history)
-    return {"status": "success", "item": item}
-
-@app.delete("/api/history/{item_id}")
-def delete_history_item(item_id: int):
-    history = load_cloud_history()
-    history = [h for h in history if h.get("id") != item_id]
-    save_cloud_history(history)
-    return {"status": "success"}
-
-@app.delete("/api/history")
-def clear_all_history():
-    save_cloud_history([])
-    return {"status": "success"}
-
-# ========================================================
-# 🚀 處理前端的 AI 生成請求 (支援文字與圖片 + 3次重試)
+# 🚀 處理前端的 AI 生成請求 (支援文字與圖片)
 # ========================================================
 @app.post("/api/generate")
 async def generate_content(data: dict):
@@ -105,7 +58,7 @@ async def generate_content(data: dict):
             return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📊 韓國東大門 IG 實時爆款趨勢分析
+# 📊 韓國東大門 IG 實時爆款趨勢分析 (TOP 10 格式清洗版)
 # ========================================================
 @app.post("/api/realtime-trends")
 async def get_realtime_trends():
@@ -113,10 +66,38 @@ async def get_realtime_trends():
         if not APIFY_TOKEN:
             return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
 
+        # 1. 自動從根目錄讀取 ig_targets.txt 並嚴格清洗網址格式
+        target_file_path = os.path.join(os.path.dirname(__file__), "ig_targets.txt")
+        ig_urls = []
+        if os.path.exists(target_file_path):
+            with open(target_file_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    # 忽略空行與以 # 開頭的註解
+                    if not line or line.startswith("#"):
+                        continue
+                    
+                    # 確保網址開頭包含 https://
+                    if not line.startswith("http://") and not line.startswith("https://"):
+                        line = "https://" + line
+                    
+                    # 確保網址結尾有斜線 /
+                    if not line.endswith("/"):
+                        line += "/"
+
+                    # 驗證是否符合 Instagram 網址格式
+                    if "instagram.com/" in line:
+                        ig_urls.append(line)
+
+        # 若檔案無有效網址，使用預設帳號
+        if not ig_urls:
+            ig_urls = ["https://www.instagram.com/partysu_official/"]
+
+        # 2. 呼叫 Apify Instagram Scraper
         apify_url = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
         payload = {
-            "directUrls": ["https://www.instagram.com/partysu_official/"],
-            "resultsLimit": 15,
+            "directUrls": ig_urls,
+            "resultsLimit": 20,
             "searchType": "user"
         }
         
@@ -124,15 +105,18 @@ async def get_realtime_trends():
         items = response.json()
         
         if not isinstance(items, list) or len(items) == 0:
-            return JSONResponse(status_code=500, content={"error": "無法取得 IG 貼文數據，請確認 Apify 額度或帳號狀態。"})
+            error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據，請確認 ig_targets.txt 網址或 Apify 狀態。"
+            return JSONResponse(status_code=500, content={"error": error_msg})
 
+        # 3. 依照 (愛心數 + 留言數*2) 排序，挑選前 10 名
         sorted_posts = sorted(
             items, 
             key=lambda x: (x.get('likesCount', 0) or 0) + (x.get('commentsCount', 0) or 0) * 2, 
             reverse=True
-        )[:3]
+        )[:10]
 
-        trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是從韓國熱門 IG 帳號 @partysu_official 實時抓取到的本週最高流量貼文數據與圖片：\n\n"
+        # 4. 組成 Prompt 與爆款圖片供 Gemini 分析
+        trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是實時抓取到的最新熱門 IG 爆款貼文數據與圖片：\n\n"
         
         image_parts = []
         for idx, post in enumerate(sorted_posts, 1):
@@ -142,9 +126,9 @@ async def get_realtime_trends():
             post_url = post.get('url', '')
             display_url = post.get('displayUrl', '')
 
-            trend_summary_prompt += f"【🔥 爆款第 {idx} 名】\n"
-            trend_summary_prompt += f"- 貼文連結: {post_url}\n"
-            trend_summary_prompt += f"- 按讚數: {likes} | 留言數: {comments}\n"
+            trend_summary_prompt += f"【🔥 爆款單品第 {idx} 名】\n"
+            trend_summary_prompt += f"- 貼文真實連結: {post_url}\n"
+            trend_summary_prompt += f"- 互動數據: 按讚 {likes} | 留言 {comments}\n"
             trend_summary_prompt += f"- 貼文內文: {caption[:150]}...\n\n"
 
             if display_url:
@@ -160,14 +144,36 @@ async def get_realtime_trends():
                     print(f"圖片下載失敗: {img_err}")
 
         trend_summary_prompt += """
-請根據上述真實高流量貼文與圖片，產出一份「東大門流行趨勢與爆款分析報告」：
-1. 視覺風格分析：總結這幾款爆款商品的共通設計亮點（顏色、面料、剪裁）。
-2. 爆款原因分析：為什麼這幾篇貼文在 IG 上能獲得高按讚數與高互動？
-3. 明確列出這 3 篇爆款貼文的真實 IG 連結與按讚數供用戶查驗。
+請根據上述數據與圖片，產出一份結構清晰的「東大門流行趨勢與爆款 TOP 10 分析報告」。
+
+【⚠️ 格式排版極重要要求】：
+請對這 10 款爆款單品依次進行單獨分析。**每一款單品講解完畢後，請務必在其分析文字的正下方，直接貼上該單品的 IG 貼文連結按鈕（格式為：`[📸 查看 Instagram 貼文](該篇貼文的真實連結)`）！絕不要統一放在報告最後！**
+
+請嚴格按照以下結構格式撰寫：
+
+### 壹、本週東大門 IG 爆款單品 TOP 10 逐一解析
+
+【🔥 爆款 No.1：(給予精準單品名稱)】
+- **互動數據**：(列出按讚數與留言數)
+- **視覺與設計亮點**：(分析顏色、面料、剪裁與搭配方式)
+- **爆款原因分析**：(為什麼這款能在 IG 上引發話題與高觸及)
+
+[📸 查看 Instagram 貼文](第1篇貼文的真實連結)
+
+---
+
+(請依此類推完整的列出 No.2 至 No.10，每款下方都必須帶有其專屬連結按鈕)
+
+---
+
+### 貳、東大門當季流行趨勢總結與採購建議
+1. **整體視覺風格趨勢**：(總結這 10 款爆款的共通點與韓國女性最愛的風格)
+2. **賣家選品與行銷建議**：(提供給台灣女裝賣家的採購與粉專/IG 行銷切入點)
 """
 
         contents = [trend_summary_prompt] + image_parts
 
+        # 5. 呼叫 Gemini 3.8-Flash (含 503 重試)
         max_retries = 3
         for attempt in range(max_retries):
             try:
@@ -183,6 +189,7 @@ async def get_realtime_trends():
                 return JSONResponse(status_code=500, content={"error": str(e)})
 
     except Exception as e:
+        print(f"Realtime trend error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
@@ -205,6 +212,9 @@ async def read_manifest():
 async def read_sw():
     return FileResponse("sw.js", media_type="application/javascript")
 
+# ========================================================
+# 啟動設定
+# ========================================================
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
