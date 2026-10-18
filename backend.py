@@ -33,6 +33,7 @@ INSTAGRAM_ACCESS_TOKEN = os.environ.get(
 )
 INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595")
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
+FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")  # 專屬粉專 Token (若有設定則優先使用)
 IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
 
 # ========================================================
@@ -131,7 +132,7 @@ async def publish_post(request: Request, data: dict):
 
         results = {}
 
-        # 2. 發布至 Instagram
+        # 2. 發布至 Instagram (加入 3 秒緩衝等待，解決 9007 錯誤)
         if publish_ig:
             if not public_image_url:
                 results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
@@ -149,6 +150,10 @@ async def publish_post(request: Request, data: dict):
                     creation_id = c_res.get("id")
 
                     if creation_id:
+                        # ⏳ 等待 3 秒讓 IG 伺服器準備好圖片素材
+                        print("⏳ [IG Wait] 等待 3 秒讓 IG 處理圖片素材...")
+                        time.sleep(3)
+
                         pub_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media_publish"
                         pub_payload = {
                             "creation_id": creation_id,
@@ -163,21 +168,22 @@ async def publish_post(request: Request, data: dict):
                     print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
-        # 3. 發布至 Facebook 粉絲專頁 (含詳細錯誤捕獲)
+        # 3. 發布至 Facebook 粉絲專頁 (優先使用獨立設定的 FB_PAGE_ACCESS_TOKEN)
         if publish_fb:
             try:
-                me_url = f"https://graph.facebook.com/v22.0/me/accounts"
-                me_params = {"access_token": INSTAGRAM_ACCESS_TOKEN}
-                me_res = requests.get(me_url, params=me_params, timeout=10).json()
-                print(f"📘 [FB Me/Accounts Response]: {me_res}")
-                
-                page_access_token = INSTAGRAM_ACCESS_TOKEN
-                if "data" in me_res:
-                    for page in me_res["data"]:
-                        if str(page.get("id")) == str(FB_PAGE_ID):
-                            page_access_token = page.get("access_token")
-                            print(f"✅ [FB Token Auto-Fetch] 成功自動取得粉專 {FB_PAGE_ID} 的專屬存取權杖！")
-                            break
+                page_access_token = FB_PAGE_ACCESS_TOKEN
+                if not page_access_token:
+                    # 若未設定獨立粉專 Token，嘗試自動抓取
+                    me_url = f"https://graph.facebook.com/v22.0/me/accounts"
+                    me_params = {"access_token": INSTAGRAM_ACCESS_TOKEN}
+                    me_res = requests.get(me_url, params=me_params, timeout=10).json()
+                    if "data" in me_res:
+                        for page in me_res["data"]:
+                            if str(page.get("id")) == str(FB_PAGE_ID):
+                                page_access_token = page.get("access_token")
+                                break
+                    if not page_access_token:
+                        page_access_token = INSTAGRAM_ACCESS_TOKEN  # 最後備用
 
                 if public_image_url:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
