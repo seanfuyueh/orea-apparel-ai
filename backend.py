@@ -2,10 +2,12 @@ import base64
 import os
 import re
 import time
+import uuid
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from google import genai
 from google.genai import types
 
@@ -30,6 +32,12 @@ INSTAGRAM_ACCESS_TOKEN = os.environ.get(
     "IGAANdMmdoT1pBZAFp5aFAta3FDY3ZAvWW9aSS1aaTg0U29ObGdjZAHlfV29vYjE4TG5MQVJVSWhpa2k5NjZAtR2FNTFgwdTYyNWlOYkNVcDJyeEJvVnN4b0dncEZAwUDlGSzZAoVjlzN3dZAUkJqMUxDZAHVsTC1TTG04YlUzZA2ZAjRHJQQQZDZD"
 )
 INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595")
+FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
+
+# 建立並掛載圖片公開暫存目錄 (A 方案：自動產生 Meta 可存取的公開圖片網址)
+TEMP_UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "temp_uploads")
+os.makedirs(TEMP_UPLOAD_DIR, exist_ok=True)
+app.mount("/temp_uploads", StaticFiles(directory=TEMP_UPLOAD_DIR), name="temp_uploads")
 
 # ========================================================
 # 🔄 Instagram 權杖自動續期機制 (方案 A：自動延長 60 天)
@@ -94,6 +102,100 @@ async def generate_content(data: dict):
             return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
+# 📱 雙平台（FB / IG）一鍵貼文 API 接口
+# ========================================================
+@app.post("/api/publish-post")
+async def publish_post(request: Request, data: dict):
+    try:
+        publish_fb = data.get("publishFb", False)
+        publish_ig = data.get("publishIg", False)
+        fb_caption = data.get("fbCaption", "")
+        ig_caption = data.get("igCaption", "")
+        image_base64 = data.get("imageBase64", None)
+
+        if not publish_fb and not publish_ig:
+            return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台 (FB 或 IG)"})
+
+        # 1. 處理圖片暫存並取得公網 URL
+        public_image_url = None
+        temp_file_path = None
+        if image_base64:
+            img_filename = f"{uuid.uuid4().hex}.jpg"
+            temp_file_path = os.path.join(TEMP_UPLOAD_DIR, img_filename)
+            img_data = base64.b64decode(image_base64)
+            with open(temp_file_path, "wb") as f:
+                f.write(img_data)
+            
+            # 組成可供 Meta Graph API 下載的公開 URL
+            base_url = str(request.base_url).rstrip("/")
+            public_image_url = f"{base_url}/temp_uploads/{img_filename}"
+
+        results = {}
+
+        # 2. 發布至 Instagram
+        if publish_ig:
+            if not public_image_url:
+                results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
+            else:
+                try:
+                    # 建立媒體容器
+                    container_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media"
+                    container_payload = {
+                        "image_url": public_image_url,
+                        "caption": ig_caption,
+                        "access_token": INSTAGRAM_ACCESS_TOKEN
+                    }
+                    c_res = requests.post(container_url, data=container_payload, timeout=20).json()
+                    creation_id = c_res.get("id")
+
+                    if creation_id:
+                        # 發佈媒體
+                        pub_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media_publish"
+                        pub_payload = {
+                            "creation_id": creation_id,
+                            "access_token": INSTAGRAM_ACCESS_TOKEN
+                        }
+                        p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
+                        results["instagram"] = {"status": "success", "data": p_res}
+                    else:
+                        results["instagram"] = {"status": "error", "message": c_res}
+                except Exception as ig_err:
+                    results["instagram"] = {"status": "error", "message": str(ig_err)}
+
+        # 3. 發布至 Facebook 粉絲專頁
+        if publish_fb:
+            try:
+                if public_image_url:
+                    fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
+                    fb_payload = {
+                        "url": public_image_url,
+                        "message": fb_caption,
+                        "access_token": INSTAGRAM_ACCESS_TOKEN
+                    }
+                else:
+                    fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/feed"
+                    fb_payload = {
+                        "message": fb_caption,
+                        "access_token": INSTAGRAM_ACCESS_TOKEN
+                    }
+                fb_res = requests.post(fb_url, data=fb_payload, timeout=20).json()
+                results["facebook"] = {"status": "success", "data": fb_res}
+            except Exception as fb_err:
+                results["facebook"] = {"status": "error", "message": str(fb_err)}
+
+        # 4. 發布完畢後自動清理暫存圖檔
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                os.remove(temp_file_path)
+            except Exception:
+                pass
+
+        return JSONResponse(content={"status": "complete", "results": results})
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+# ========================================================
 # 📊 韓國東大門 IG 實時爆款趨勢分析 (TOP 10 格式清洗版)
 # ========================================================
 @app.post("/api/realtime-trends")
@@ -109,23 +211,15 @@ async def get_realtime_trends():
             with open(target_file_path, "r", encoding="utf-8") as f:
                 for line in f:
                     line = line.strip()
-                    # 忽略空行與以 # 開頭的註解
                     if not line or line.startswith("#"):
                         continue
-                    
-                    # 確保網址開頭包含 https://
                     if not line.startswith("http://") and not line.startswith("https://"):
                         line = "https://" + line
-                    
-                    # 確保網址結尾有斜線 /
                     if not line.endswith("/"):
                         line += "/"
-
-                    # 驗證是否符合 Instagram 網址格式
                     if "instagram.com/" in line:
                         ig_urls.append(line)
 
-        # 若檔案無有效網址，使用預設帳號
         if not ig_urls:
             ig_urls = ["https://www.instagram.com/partysu_official/"]
 

@@ -104,12 +104,12 @@
 
         /* 📱 手機版專屬優化 (Modal 彈窗與文字縮放) */
         @media (max-width: 768px) {
-            #modal-content-box {
+            #modal-content-box, #publish-modal-content-box {
                 width: 95vw !important;
                 max-height: 88vh !important;
                 margin: 0 auto;
             }
-            #modal-body {
+            #modal-body, #publish-modal-body {
                 padding: 1rem !important;
             }
             .markdown-body th, .markdown-body td {
@@ -475,7 +475,7 @@
         </button>
     </nav>
 
-    <!-- 滿版大尺寸彈跳視窗 (手機版特化縮放) -->
+    <!-- 1. 歷史紀錄檢視彈跳視窗 -->
     <div id="expand-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
         <div id="modal-content-box" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[90vh]">
             <div class="px-4 md:px-6 py-3.5 bg-gray-900 text-white flex justify-between items-center shrink-0">
@@ -483,6 +483,59 @@
                 <button type="button" onclick="closeModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-medium border border-gray-700 cursor-pointer shrink-0">❌ 關閉視窗</button>
             </div>
             <div id="modal-body" class="p-4 md:p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50 markdown-body"></div>
+        </div>
+    </div>
+
+    <!-- 2. FB / IG 雙平台一鍵發佈預覽彈跳視窗 -->
+    <div id="publish-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
+        <div id="publish-modal-content-box" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[90vh]">
+            <div class="px-4 md:px-6 py-3.5 bg-gray-900 text-white flex justify-between items-center shrink-0">
+                <div class="font-semibold text-sm md:text-lg flex items-center gap-2">🚀 FB / IG 一鍵貼文同步發佈</div>
+                <button type="button" onclick="closePublishModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-medium border border-gray-700 cursor-pointer shrink-0">❌ 取消</button>
+            </div>
+            <div id="publish-modal-body" class="p-4 md:p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50">
+                
+                <!-- 選擇發布平台 -->
+                <div class="bg-white p-4 rounded-xl border border-gray-200 flex flex-wrap gap-6 items-center">
+                    <span class="font-bold text-gray-800 text-sm md:text-base">📍 發佈目標平台：</span>
+                    <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-blue-600">
+                        <input type="checkbox" id="pub-target-fb" checked class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
+                        📘 Facebook 粉絲專頁
+                    </label>
+                    <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-pink-600">
+                        <input type="checkbox" id="pub-target-ig" checked class="w-5 h-5 rounded text-pink-600 focus:ring-pink-500 cursor-pointer">
+                        📸 Instagram 商業帳號
+                    </label>
+                </div>
+
+                <!-- 雙平台排版分頁/編輯區 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- FB 專屬預覽編輯區 -->
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 shadow-sm">
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                            <h4 class="font-bold text-blue-600 flex items-center gap-1.5 text-base">📘 FB 貼文預覽 (已帶入專屬固定頁尾)</h4>
+                            <span class="text-xs text-gray-400">可自由編輯修字</span>
+                        </div>
+                        <textarea id="pub-fb-text" rows="12" class="w-full border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-blue-600 focus:outline-none"></textarea>
+                    </div>
+
+                    <!-- IG 專屬預覽編輯區 -->
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 shadow-sm">
+                        <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+                            <h4 class="font-bold text-pink-600 flex items-center gap-1.5 text-base">📸 IG 貼文預覽 (自動優化置底標籤)</h4>
+                            <span class="text-xs text-gray-400">可自由編輯修字</span>
+                        </div>
+                        <textarea id="pub-ig-text" rows="12" class="w-full border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-pink-600 focus:outline-none"></textarea>
+                    </div>
+                </div>
+
+                <!-- 發佈按鈕 -->
+                <div class="pt-2">
+                    <button type="button" onclick="executePublishing()" id="pub-submit-btn" class="w-full bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-95 text-white py-4 rounded-xl font-bold shadow-lg text-base md:text-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2">
+                        🚀 確定同步發佈至選取平台
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -495,6 +548,20 @@
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
 
+        // 📌 FB 固定頁尾內容定義
+        const FB_FIXED_FOOTER = `
+👇來去逛逛👇
+🏷 https://www.lovelybykorea.com/
+
+🤖𝙇𝙄𝙉𝙀@客服
+▪️ https://lin.ee/lld53QP
+
+#業界唯一超20年韓國女裝代購經驗  
+#限時95折優惠中
+#韓國代購 #韓國製
+#時尚的盡頭是簡約
+#簡約不簡單`;
+
         // 📌 全效能 Markdown 渲染輔助函式 (自動轉為 IG 漸層按鈕 & 綁定 target="_blank" 以利手機開啟 IG App)
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
@@ -503,7 +570,6 @@
                 marked.setOptions({ gfm: true, breaks: true });
                 let htmlContent = marked.parse(text);
 
-                // 強制後處理 DOM，確保所有連結都變成點擊可開啟 IG App 的專屬按鈕
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = htmlContent;
 
@@ -522,6 +588,82 @@
                 el.innerHTML = tempDiv.innerHTML;
             } else {
                 el.innerText = text || '';
+            }
+
+            // 在生成結果下方自動附加上「🚀 一鍵發佈至 FB / IG」按鈕區塊
+            if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
+                const pubBtnDiv = document.createElement('div');
+                pubBtnDiv.className = 'mt-6 pt-4 border-t border-gray-200 flex justify-end';
+                pubBtnDiv.innerHTML = `
+                    <button type="button" onclick="openPublishModalFromBox('${elementId}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold shadow-md text-sm md:text-base transition-all transform active:scale-95 cursor-pointer flex items-center gap-2">
+                        🚀 一鍵發佈至 FB / IG (預覽與發佈)
+                    </button>
+                `;
+                el.appendChild(pubBtnDiv);
+            }
+        };
+
+        // 🚀 開啟一鍵發佈預覽 Modal
+        window.openPublishModalFromBox = function(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            // 抓取純文字內容
+            let rawText = el.innerText.replace("🚀 一鍵發佈至 FB / IG (預覽與發佈)", "").trim();
+
+            // 生成 FB 版：原始 AI 文字 + 自動拼接 FB 固定頁尾
+            let fbText = rawText + "\n\n" + FB_FIXED_FOOTER;
+
+            // 生成 IG 版：優化行距並保持美觀
+            let igText = rawText;
+
+            document.getElementById('pub-fb-text').value = fbText;
+            document.getElementById('pub-ig-text').value = igText;
+            document.getElementById('publish-modal').classList.remove('hidden');
+        };
+
+        window.closePublishModal = function() {
+            document.getElementById('publish-modal').classList.add('hidden');
+        };
+
+        // 🚀 執行一鍵發佈呼叫
+        window.executePublishing = async function() {
+            const pubFb = document.getElementById('pub-target-fb').checked;
+            const pubIg = document.getElementById('pub-target-ig').checked;
+            const fbCaption = document.getElementById('pub-fb-text').value;
+            const igCaption = document.getElementById('pub-ig-text').value;
+            const submitBtn = document.getElementById('pub-submit-btn');
+
+            if (!pubFb && !pubIg) { alert('請至少勾選一個發布目標平台！'); return; }
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = '⏳ 貼文同步發佈中，請稍候約 10-15 秒...';
+
+            try {
+                const response = await fetch('/api/publish-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        publishFb: pubFb,
+                        publishIg: pubIg,
+                        fbCaption: fbCaption,
+                        igCaption: igCaption,
+                        imageBase64: currentUploadedImageBase64
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    alert('🎉 貼文發佈完成！請至選取的粉專/帳號確認。');
+                    window.closePublishModal();
+                } else {
+                    alert('發佈失敗：' + (data.error || '未知的錯誤'));
+                }
+            } catch (error) {
+                alert('連線發生錯誤：' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '🚀 確定同步發佈至選取平台';
             }
         };
 
