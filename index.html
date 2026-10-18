@@ -53,7 +53,7 @@
             <button type="button" onclick="switchTab('history')" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2 cursor-pointer">
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
-            <div class="text-sm text-gray-400 text-center">LovelyByKorea Admin v5.0</div>
+            <div class="text-sm text-gray-400 text-center">LovelyByKorea Admin v5.1</div>
         </div>
     </aside>
 
@@ -229,6 +229,8 @@
     <!-- ================= 核心腳本區 ================= -->
     <script>
         let currentUploadedImageBase64 = null;
+        
+        // 📌 您指定的完整正確 FB 固定尾巴格式
         const FB_FIXED_FOOTER = `\n\n👇來去逛逛👇\n🏷 https://www.lovelybykorea.com/\n\n🤖𝙇𝙄𝙉𝙀@客服\n▪️ https://lin.ee/lld53QP\n\n#業界唯一超20年韓國女裝代購經驗  \n#限時95折優惠中\n#韓國代購 #韓國製\n#時尚的盡頭是簡約\n#簡約不簡單`;
 
         window.switchTab = function(tab) {
@@ -240,7 +242,6 @@
             localStorage.setItem('active_tab', tab);
         };
 
-        // 📌 智慧解析：精準將指定情境的 FB、IG、Threads 內容帶入預覽視窗
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -288,32 +289,35 @@
             }
         };
 
-        // 📌 核心修復：只抓取「當前點擊的那一個情境卡片」，並精準對應 FB、IG、Threads 專屬文字
+        // 📌 核心精準分流：點擊哪個情境卡片的發佈，就只抓該情境的內容並對應填入三平台框
         window.openPublishModalSingle = function(encodedText) {
             const rawBlockText = decodeURIComponent(encodedText);
 
-            // 分別萃取該情境中 AI 產出的 FB、IG、Threads 專屬段落
             let fbContent = "";
             let igContent = "";
             let threadsContent = "";
 
-            if (rawBlockText.includes("【📘 FB 專屬文案】")) {
-                const parts = rawBlockText.split(/【[📸🧵] /);
-                fbContent = parts[0].replace(/【📘 FB 專屬文案】/g, "").trim();
-                if (parts[1]) igContent = parts[1].replace(/IG 專屬文案】/g, "").trim();
-                if (parts[2]) threadsContent = parts[2].replace(/Threads 專屬文案】/g, "").trim();
-            } else {
-                // 備用防護：若 AI 格式沒對齊，則將該情境內文做智慧分流
-                fbContent = rawBlockText.trim();
-                igContent = rawBlockText.trim();
-                threadsContent = rawBlockText.trim();
+            if (rawBlockText.includes("【📘 FB 專屬文案】") || rawBlockText.includes("【📸 IG 專屬文案】")) {
+                const parts = rawBlockText.split(/【[📘📸🧵] /);
+                for (let part of parts) {
+                    if (part.startsWith("📘 FB 專屬文案")) {
+                        fbContent = part.replace("📘 FB 專屬文案", "").replace(/】/g, "").trim();
+                    } else if (part.startsWith("📸 IG 專屬文案")) {
+                        igContent = part.replace("📸 IG 專屬文案", "").replace(/】/g, "").trim();
+                    } else if (part.startsWith("🧵 Threads 專屬文案")) {
+                        threadsContent = part.replace("🧵 Threads 專屬文案", "").replace(/】/g, "").trim();
+                    }
+                }
             }
 
-            // FB 套用您的正確固定尾巴
+            // 防護：若未抓到則使用該情境的整體文字
+            if (!fbContent) fbContent = rawBlockText;
+            if (!igContent) igContent = rawBlockText;
+            if (!threadsContent) threadsContent = rawBlockText;
+
+            // 填入視窗並為 FB 加上您指定的固定尾巴
             document.getElementById('pub-fb-text').value = fbContent + FB_FIXED_FOOTER;
-            // IG 套用精煉內文
             document.getElementById('pub-ig-text').value = igContent;
-            // Threads 套用對話感內文
             document.getElementById('pub-threads-text').value = threadsContent;
 
             document.getElementById('publish-modal').classList.remove('hidden');
