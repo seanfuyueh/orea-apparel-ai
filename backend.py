@@ -163,13 +163,14 @@ async def publish_post(request: Request, data: dict):
                     print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
-        # 3. 發布至 Facebook 粉絲專頁 (自動向 Meta 查詢並換取粉專專屬 Token)
+        # 3. 發布至 Facebook 粉絲專頁 (加入詳細錯誤捕獲與列印)
         if publish_fb:
             try:
                 # 步驟 A: 以管理者 Token 查詢用戶管理的粉專清單與對應 Token
                 me_url = f"https://graph.facebook.com/v22.0/me/accounts"
                 me_params = {"access_token": INSTAGRAM_ACCESS_TOKEN}
                 me_res = requests.get(me_url, params=me_params, timeout=10).json()
+                print(f"📘 [FB Me/Accounts Response]: {me_res}")
                 
                 page_access_token = INSTAGRAM_ACCESS_TOKEN  # 預設備用
                 if "data" in me_res:
@@ -193,19 +194,19 @@ async def publish_post(request: Request, data: dict):
                         "message": fb_caption,
                         "access_token": page_access_token
                     }
-                fb_res = requests.post(fb_url, data=fb_payload, timeout=20).json()
-                print(f"📘 [FB Publish Response]: {fb_res}")
-                results["facebook"] = {"status": "success", "data": fb_res}
+                
+                fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
+                fb_res = fb_response.json()
+                print(f"📘 [FB Publish HTTP Status]: {fb_response.status_code}")
+                print(f"📘 [FB Publish Response JSON]: {fb_res}")
+                
+                if fb_response.status_code == 200 and "id" in fb_res:
+                    results["facebook"] = {"status": "success", "data": fb_res}
+                else:
+                    results["facebook"] = {"status": "error", "message": fb_res}
             except Exception as fb_err:
-                print(f"⚠️ [FB Publish Exception]: {str(fb_err)}")
+                print(f"🔥 [FB Publish Exception Error]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
-
-        return JSONResponse(content={"status": "complete", "results": results})
-
-    except Exception as e:
-        print(f"🔥 [Publish General Error]: {str(e)}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
 # ========================================================
 # 📊 韓國東大門 IG 實時爆款趨勢分析
 # ========================================================
