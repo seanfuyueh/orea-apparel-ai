@@ -159,7 +159,7 @@
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
             <div class="text-sm text-gray-400 text-center">
-                LovelyByKorea Admin v4.5
+                LovelyByKorea Admin v4.6
             </div>
         </div>
     </aside>
@@ -488,7 +488,6 @@
         <div id="publish-modal-content-box" class="bg-white w-full max-w-5xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[92vh]">
             <div class="px-4 md:px-6 py-3.5 bg-gray-900 text-white flex justify-between items-center shrink-0">
                 <div class="font-semibold text-sm md:text-lg flex items-center gap-2">
-                    <svg class="w-5 h-5 text-pink-500 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
                     多平台一鍵貼文同步發佈與預覽
                 </div>
                 <button type="button" onclick="closePublishModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-medium border border-gray-700 cursor-pointer shrink-0">❌ 取消</button>
@@ -501,55 +500,40 @@
                     <span class="font-bold text-gray-800 text-sm md:text-base">📍 發佈目標平台：</span>
                     <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-blue-600">
                         <input type="checkbox" id="pub-target-fb" checked class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
-                        <svg class="w-5 h-5 text-blue-600 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                        Facebook 粉絲專頁
+                        📘 Facebook 粉絲專頁
                     </label>
                     <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-pink-600">
                         <input type="checkbox" id="pub-target-ig" checked class="w-5 h-5 rounded text-pink-600 focus:ring-pink-500 cursor-pointer">
-                        <svg class="w-5 h-5 text-pink-600 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                        Instagram 商業帳號
+                        📸 Instagram 商業帳號
                     </label>
                     <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-gray-900 opacity-80">
                         <input type="checkbox" id="pub-target-threads" class="w-5 h-5 rounded text-gray-900 focus:ring-gray-700 cursor-pointer">
-                        <svg class="w-5 h-5 text-gray-900 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12.186 24h-.007c-3.582-.025-6.314-1.182-8.121-3.456C2.396 18.441 1.5 15.65 1.5 12.152c0-3.528.896-6.32 2.558-8.392C5.865 1.486 8.597.327 12.179.3h.014c3.555.025 6.275 1.178 8.086 3.442 1.722 2.186 2.621 4.975 2.621 8.303 0 3.527-.899 6.319-2.561 8.391-1.808 2.273-4.538 3.434-8.129 3.459zm-.015-2.203c2.97-.021 5.21-.97 6.657-2.822 1.393-1.776 2.115-4.321 2.115-7.575 0-3.21-.722-5.748-2.115-7.525-1.447-1.853-3.687-2.802-6.657-2.822h-.01c-2.97.02-5.21.969-6.657 2.822-1.393 1.777-2.115 4.315-2.115 7.525 0 3.254.722 5.799 2.115 7.575 1.447 1.852 3.687 2.801 6.657 2.822h.01z"/></svg>
-                        Threads 個人檔案 (預覽展示)
+                        🧵 Threads 個人檔案 (預覽展示)
                     </label>
                 </div>
 
-                <!-- 三平台排版分頁/編輯區 (桌面三欄，手機垂直堆疊) -->
+                <!-- 三平台獨立預覽編輯區 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                    <!-- FB 專屬預覽編輯區 -->
                     <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 shadow-sm flex flex-col">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-2">
-                            <h4 class="font-bold text-blue-600 flex items-center gap-1.5 text-sm md:text-base">
-                                <svg class="w-4 h-4 text-blue-600 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                                FB 文案 (帶固定尾巴)
-                            </h4>
-                            <span class="text-xs text-gray-400">可自由修字</span>
+                            <h4 class="font-bold text-blue-600 flex items-center gap-1.5 text-sm md:text-base">📘 FB 專屬文案</h4>
+                            <span class="text-xs text-gray-400">含固定尾巴</span>
                         </div>
                         <textarea id="pub-fb-text" rows="12" class="w-full border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-blue-600 focus:outline-none flex-1"></textarea>
                     </div>
 
-                    <!-- IG 專屬預覽編輯區 -->
                     <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 shadow-sm flex flex-col">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-2">
-                            <h4 class="font-bold text-pink-600 flex items-center gap-1.5 text-sm md:text-base">
-                                <svg class="w-4 h-4 text-pink-600 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-                                IG 文案 (精簡排版)
-                            </h4>
-                            <span class="text-xs text-gray-400">可自由修字</span>
+                            <h4 class="font-bold text-pink-600 flex items-center gap-1.5 text-sm md:text-base">📸 IG 專屬文案</h4>
+                            <span class="text-xs text-gray-400">精簡排版</span>
                         </div>
                         <textarea id="pub-ig-text" rows="12" class="w-full border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-pink-600 focus:outline-none flex-1"></textarea>
                     </div>
 
-                    <!-- Threads 專屬預覽編輯區 (樣式佔位展示) -->
                     <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-3 shadow-sm flex flex-col">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-2">
-                            <h4 class="font-bold text-gray-900 flex items-center gap-1.5 text-sm md:text-base">
-                                <svg class="w-4 h-4 text-gray-900 inline" fill="currentColor" viewBox="0 0 24 24"><path d="M12.186 24h-.007c-3.582-.025-6.314-1.182-8.121-3.456C2.396 18.441 1.5 15.65 1.5 12.152c0-3.528.896-6.32 2.558-8.392C5.865 1.486 8.597.327 12.179.3h.014c3.555.025 6.275 1.178 8.086 3.442 1.722 2.186 2.621 4.975 2.621 8.303 0 3.527-.899 6.319-2.561 8.391-1.808 2.273-4.538 3.434-8.129 3.459zm-.015-2.203c2.97-.021 5.21-.97 6.657-2.822 1.393-1.776 2.115-4.321 2.115-7.575 0-3.21-.722-5.748-2.115-7.525-1.447-1.853-3.687-2.802-6.657-2.822h-.01c-2.97.02-5.21.969-6.657 2.822-1.393 1.777-2.115 4.315-2.115 7.525 0 3.254.722 5.799 2.115 7.575 1.447 1.852 3.687 2.801 6.657 2.822h.01z"/></svg>
-                                Threads 文案 (預覽樣式)
-                            </h4>
-                            <span class="text-xs text-gray-400">暫不串接 API</span>
+                            <h4 class="font-bold text-gray-900 flex items-center gap-1.5 text-sm md:text-base">🧵 Threads 文案</h4>
+                            <span class="text-xs text-gray-400">預覽展示</span>
                         </div>
                         <textarea id="pub-threads-text" rows="12" class="w-full border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-gray-900 focus:outline-none flex-1 bg-gray-50/50"></textarea>
                     </div>
@@ -558,7 +542,7 @@
                 <!-- 發佈按鈕 -->
                 <div class="pt-2">
                     <button type="button" onclick="executePublishing()" id="pub-submit-btn" class="w-full bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-95 text-white py-4 rounded-xl font-bold shadow-lg text-base md:text-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2">
-                        🚀 確定同步發佈至選取平台
+                        🚀 一鍵發佈
                     </button>
                 </div>
             </div>
@@ -574,7 +558,6 @@
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
 
-        // 📌 FB 固定頁尾定義
         const FB_FIXED_FOOTER = `
 👇來去逛逛👇
 🏷 https://www.lovelybykorea.com/
@@ -588,7 +571,6 @@
 #時尚的盡頭是簡約
 #簡約不簡單`;
 
-        // 📌 智慧清洗邏輯：自動清除 AI 結構標籤
         function cleanSingleOptionCopy(rawText) {
             if (!rawText) return "";
             let text = rawText.trim();
@@ -601,7 +583,6 @@
             return text;
         }
 
-        // 📌 全效能 Markdown 渲染輔助函式 (結合真實社群 LOGO 與獨立發布按鈕)
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -630,7 +611,6 @@
                 el.innerText = text || '';
             }
 
-            // 在生成結果中，為每一個情境區塊各自下方插入獨立的一鍵發佈按鈕與真實 LOGO
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
                 const blocks = text.split(/(?=【情境\s*[A-Z])/g);
 
@@ -646,30 +626,23 @@
                         marked.setOptions({ gfm: true, breaks: true });
                         cardDiv.innerHTML = marked.parse(blockText);
 
-                        // 按鈕區塊 (附帶真實社群 Logo 識別)
                         const btnDiv = document.createElement('div');
                         btnDiv.className = 'pt-4 border-t border-gray-100 flex flex-wrap justify-between items-center gap-3';
                         
-                        // 社群圖標辨識區
+                        // 帶有 FB、IG、Threads 標籤與精簡「一鍵發佈」按鈕
                         const logosHtml = `
                             <div class="flex items-center gap-2 text-xs font-bold text-gray-500">
                                 <span>支援發佈：</span>
-                                <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md border border-blue-200">
-                                    <svg class="w-3.5 h-3.5 text-blue-600" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> FB
-                                </span>
-                                <span class="inline-flex items-center gap-1 bg-pink-50 text-pink-700 px-2.5 py-1 rounded-md border border-pink-200">
-                                    <svg class="w-3.5 h-3.5 text-pink-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg> IG
-                </span>
-                <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-800 px-2.5 py-1 rounded-md border border-gray-300">
-                    <svg class="w-3.5 h-3.5 text-gray-900" fill="currentColor" viewBox="0 0 24 24"><path d="M12.186 24h-.007c-3.582-.025-6.314-1.182-8.121-3.456C2.396 18.441 1.5 15.65 1.5 12.152c0-3.528.896-6.32 2.558-8.392C5.865 1.486 8.597.327 12.179.3h.014c3.555.025 6.275 1.178 8.086 3.442 1.722 2.186 2.621 4.975 2.621 8.303 0 3.527-.899 6.319-2.561 8.391-1.808 2.273-4.538 3.434-8.129 3.459zm-.015-2.203c2.97-.021 5.21-.97 6.657-2.822 1.393-1.776 2.115-4.321 2.115-7.575 0-3.21-.722-5.748-2.115-7.525-1.447-1.853-3.687-2.802-6.657-2.822h-.01c-2.97.02-5.21.969-6.657 2.822-1.393 1.777-2.115 4.315-2.115 7.525 0 3.254.722 5.799 2.115 7.575 1.447 1.852 3.687 2.801 6.657 2.822h.01z"/></svg> Threads
-                </span>
-            </div>
+                                <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md border border-blue-200">📘 FB</span>
+                                <span class="inline-flex items-center gap-1 bg-pink-50 text-pink-700 px-2.5 py-1 rounded-md border border-pink-200">📸 IG</span>
+                                <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-800 px-2.5 py-1 rounded-md border border-gray-300">🧵 Threads</span>
+                            </div>
                         `;
 
                         const escapedBlockText = encodeURIComponent(blockText);
                         btnDiv.innerHTML = logosHtml + `
                             <button type="button" onclick="openPublishModalSingle('${escapedBlockText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-bold shadow-md text-sm transition-transform active:scale-95 cursor-pointer flex items-center gap-2">
-                                🚀 一鍵發佈此文案至 FB / IG
+                                🚀 一鍵發佈
                             </button>
                         `;
                         cardDiv.appendChild(btnDiv);
@@ -679,15 +652,14 @@
             }
         };
 
-        // 🚀 開啟選中的「單一文案」多平台獨立預覽 Modal
         window.openPublishModalSingle = function(encodedText) {
             const rawBlockText = decodeURIComponent(encodedText);
             const cleanedText = cleanSingleOptionCopy(rawBlockText);
 
-            // 各平台擁有各自獨立的文案邏輯
+            // 分流三平台獨立文案
             const fbText = cleanedText + "\n\n" + FB_FIXED_FOOTER;
             const igText = cleanedText;
-            const threadsText = cleanedText; // Threads 前台預覽文字
+            const threadsText = cleanedText;
 
             document.getElementById('pub-fb-text').value = fbText;
             document.getElementById('pub-ig-text').value = igText;
@@ -699,7 +671,6 @@
             document.getElementById('publish-modal').classList.add('hidden');
         };
 
-        // 🚀 執行一鍵發佈呼叫 (完美保留您已打通的 FB / IG API)
         window.executePublishing = async function() {
             const pubFb = document.getElementById('pub-target-fb').checked;
             const pubIg = document.getElementById('pub-target-ig').checked;
@@ -744,7 +715,7 @@
                 alert('連線發生錯誤：' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = '🚀 確定同步發佈至選取平台';
+                submitBtn.innerText = '🚀 一鍵發佈';
             }
         };
 
@@ -1016,16 +987,14 @@
         };
 
         function getDynamicMockResult(type, query = '') {
-            const timeStamp = new Date().toLocaleTimeString('zh-TW', {hour12: false});
-            const hooks = ["一眼就被精緻的細節吸引！", "實物質感真的太棒了，完全超出期待。", "一拿到手就忍不住想立刻搭配出門！", "設計感與實用性完美結合的命定款。"];
-            const benefits = ["無論通勤或週末約會，都能完美點綴妳的整體造型。", "設計簡約卻充滿高級感，是本季不可錯過的百搭首選！", "兼具美感與實用度！隨手一搭就非常有型。"];
-            const endings = ["首批現貨熱銷中🔥", "韓國連線少量追加到貨🛒", "千萬別錯過這波上新✨"];
-            const hashtagsList = ["#韓國連線 #質感單品 #OOTD", "#東大門代購 #職場搭配 #時尚必備", "#每日穿搭 #社長推薦 #韓國熱賣"];
-            const styles = ['法式簡約', '韓系知性', '日常慵懶', '高級時髦', '氣質溫柔'];
+            const hooks = ["一眼就被精緻的細節吸引！", "實物質感真的太棒了，完全超出期待。", "一拿到手就忍不住想立刻搭配出門！"];
+            const benefits = ["無論通勤或週末約會，都能完美點綴妳的整體造型。", "設計簡約卻充滿高級感，是本季不可錯過的百搭首選！"];
+            const hashtagsList = ["#韓國連線 #質感單品 #OOTD", "#東大門代購 #職場搭配 #時尚必備"];
+            const styles = ['法式簡約', '韓系知性', '日常慵懶'];
             
             const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
             const getGroup = (num) => {
-                const s = styles.splice(Math.floor(Math.random() * styles.length), 1)[0];
+                const s = styles[num - 1];
                 return `【情境 ${num === 1 ? 'A' : num === 2 ? 'B' : 'C'} | ${s}風格】\n文案標題：${pick(hooks)}\n內文：${pick(benefits)}\nHashtags：${pick(hashtagsList)}`;
             };
 
@@ -1077,13 +1046,11 @@
             submitBtn.disabled = true; 
             submitBtn.innerText = isRegen ? '🎲 重新分析與生成中...' : 'AI 視覺分析中...';
 
-            let variationRequirement = isRegen ? "\n【極度重要要求：使用者點擊了重新生成，請務必換一套截然不同的情境訴求、排版結構與表達風格，絕不可與上一版重複！】" : "";
+            let variationRequirement = isRegen ? "\n【極度重要要求：請務必換一套截然不同的情境訴求、排版結構與表達風格！】" : "";
             
             const fullPrompt = `你是一位專業的韓國時尚品牌行銷總監。請針對這張圖片進行「真實視覺分析與文案生成」：
-1. 【嚴格品項辨識】：請先仔細看圖，這究竟是「衣服、褲子、包包、鞋子還是飾品配件」？
-2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用「揹起來、手提、戴上、百搭、容量實用、皮革質感、五金細節」等正確詞彙。
-3. 【真實細節描繪】：根據圖片中展示的真實顏色、材質與設計結構進行客觀描述。
-4. 【生成 3 組高質感文案】：撰寫 3 組不同情境（如：【情境 A | 職場通勤】、【情境 B | 週末約會】、【情境 C | 高級質感】）的網拍文案與 Hashtags。請嚴格包含「文案標題：」、「內文：」、「Hashtags：」欄位名稱。
+1. 【嚴格品項辨識】：請先仔細看圖，確認品項（衣服、包包、鞋子或飾品）並使用正確動詞。
+2. 【生成 3 組高質感文案】：撰寫 3 組不同情境（如：【情境 A】、【情境 B】、【情境 C】）。請包含「文案標題：」、「內文：」、「Hashtags：」欄位名稱。
 補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
@@ -1109,9 +1076,9 @@
             submitBtn.disabled = true; 
             submitBtn.innerText = isRegen ? '🎲 重新生成全新創意...' : 'AI 生成中...';
 
-            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
+            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度與風格！】" : "";
             
-            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別，撰寫 3 組針對 30-40 歲女性的精緻網拍行銷文案與熱門標籤。
+            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，撰寫 3 組針對 30-40 歲女性的精緻網拍行銷文案與熱門標籤。
 請嚴格分成【情境 A】、【情境 B】與【情境 C】，並包含「文案標題：」、「內文：」、「Hashtags：」欄位名稱。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
@@ -1137,9 +1104,9 @@
             submitBtn.disabled = true; 
             submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'AI 生成中...';
 
-            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點！】" : "";
+            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場與口白風格！】" : "";
             
-            const fullPrompt = `身為專業的短影音編導，請針對韓國時尚短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
+            const fullPrompt = `身為專業的短影音編導，請針對韓國時尚短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
             const resText = await window.callGeminiAPI(fullPrompt);
