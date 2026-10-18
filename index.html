@@ -11,8 +11,9 @@
         body { font-family: 'Noto Sans TC', sans-serif; font-size: 1.15rem; }
         html, body { width: 100%; max-width: 100vw; overflow-x: hidden; box-sizing: border-box; margin: 0; padding: 0; }
         *, *:before, *:after { box-sizing: inherit; }
+
         .markdown-body { width: 100%; max-width: 100%; word-break: break-word; overflow-wrap: anywhere; line-height: 1.7; }
-        .markdown-body a { color: #2563eb; text-decoration: underline; font-weight: 500; }
+        .markdown-body a { color: #2563eb; text-decoration: underline; font-weight: 500; word-break: break-all; }
         .markdown-body a[href*="instagram.com"], .markdown-body a.ig-btn-link {
             display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 4px !important;
             background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
@@ -53,7 +54,7 @@
             <button type="button" onclick="switchTab('history')" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2 cursor-pointer">
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
-            <div class="text-sm text-gray-400 text-center">LovelyByKorea Admin v5.1</div>
+            <div class="text-sm text-gray-400 text-center">LovelyByKorea Admin v5.2</div>
         </div>
     </aside>
 
@@ -185,12 +186,12 @@
 
     <!-- 手機底部導航列 -->
     <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-1 py-2.5 flex justify-around items-center shrink-0 z-30 shadow-lg">
-        <button type="button" onclick="switchTab('copywriting')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2"><span class="text-lg">📄</span><span class="text-xs">文案</span></button>
-        <button type="button" onclick="switchTab('image-copy')" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 bg-gray-100 font-bold"><span class="text-lg">🖼️</span><span class="text-xs">圖片</span></button>
-        <button type="button" onclick="switchTab('video-copy')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2"><span class="text-lg">🎬</span><span class="text-xs">影片</span></button>
-        <button type="button" onclick="switchTab('trend')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2"><span class="text-lg">📊</span><span class="text-xs">趨勢</span></button>
-        <button type="button" onclick="switchTab('pricing')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2"><span class="text-lg">💰</span><span class="text-xs">試算</span></button>
-        <button type="button" onclick="switchTab('history')" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2"><span class="text-lg">📂</span><span class="text-xs">紀錄</span></button>
+        <button type="button" onclick="switchTab('copywriting')" id="mobile-nav-copywriting" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📄</span><span class="text-xs">文案</span></button>
+        <button type="button" onclick="switchTab('image-copy')" id="mobile-nav-image-copy" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer"><span class="text-lg">🖼️</span><span class="text-xs">圖片</span></button>
+        <button type="button" onclick="switchTab('video-copy')" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">🎬</span><span class="text-xs">影片</span></button>
+        <button type="button" onclick="switchTab('trend')" id="mobile-nav-trend" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📊</span><span class="text-xs">趨勢</span></button>
+        <button type="button" onclick="switchTab('pricing')" id="mobile-nav-pricing" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">💰</span><span class="text-xs">試算</span></button>
+        <button type="button" onclick="switchTab('history')" id="mobile-nav-history" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📂</span><span class="text-xs">紀錄</span></button>
     </nav>
 
     <!-- FB / IG / Threads 預覽發佈彈跳視窗 -->
@@ -237,8 +238,25 @@
             ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
                 document.getElementById(id)?.classList.add('hidden');
             });
+            ['desktop-nav-image-copy', 'desktop-nav-copywriting', 'desktop-nav-video-copy', 'desktop-nav-trend', 'desktop-nav-pricing', 'desktop-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer';
+            });
+            ['mobile-nav-image-copy', 'mobile-nav-copywriting', 'mobile-nav-video-copy', 'mobile-nav-trend', 'mobile-nav-pricing', 'mobile-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer';
+            });
+
+            let targetNavName = tab === 'copywriting' ? 'copywriting' : tab;
+            let currentDesktopNav = document.getElementById(`desktop-nav-${targetNavName}`);
+            let currentMobileNav = document.getElementById(`mobile-nav-${targetNavName}`);
+
             let targetId = tab === 'copywriting' ? 'tab-general-copy' : `tab-${tab}`;
             document.getElementById(targetId)?.classList.remove('hidden');
+
+            if (currentDesktopNav) currentDesktopNav.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left cursor-pointer';
+            if (currentMobileNav) currentMobileNav.className = 'flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer';
+
             localStorage.setItem('active_tab', tab);
         };
 
@@ -254,6 +272,8 @@
             }
 
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
+                el.innerHTML = el.innerHTML.replace(/<h[1-3]>\s*1\.\s*【/g, '<h3>【').replace(/<strong>\s*1\.\s*【/g, '<strong>【');
+
                 const blocks = text.split(/(?=【情境\s*[A-Z])/g);
                 if (blocks.length > 1) {
                     let visualAnalysisHtml = blocks[0].replace(/1\.\s*【/, '【');
@@ -310,12 +330,10 @@
                 }
             }
 
-            // 防護：若未抓到則使用該情境的整體文字
             if (!fbContent) fbContent = rawBlockText;
             if (!igContent) igContent = rawBlockText;
             if (!threadsContent) threadsContent = rawBlockText;
 
-            // 填入視窗並為 FB 加上您指定的固定尾巴
             document.getElementById('pub-fb-text').value = fbContent + FB_FIXED_FOOTER;
             document.getElementById('pub-ig-text').value = igContent;
             document.getElementById('pub-threads-text').value = threadsContent;
