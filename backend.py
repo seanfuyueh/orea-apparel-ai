@@ -33,7 +33,7 @@ INSTAGRAM_ACCESS_TOKEN = os.environ.get(
 )
 INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595")
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
-IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")  # 內建免費公開 Imgur Client ID
+IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
 
 # ========================================================
 # 🔄 Instagram 權杖自動續期機制
@@ -96,7 +96,7 @@ async def generate_content(data: dict):
             return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📱 雙平台（FB / IG）一鍵貼文 API 接口 (整合 Imgur 圖床與 FB 權杖自動換取)
+# 📱 雙平台（FB / IG）一鍵貼文 API 接口
 # ========================================================
 @app.post("/api/publish-post")
 async def publish_post(request: Request, data: dict):
@@ -110,7 +110,7 @@ async def publish_post(request: Request, data: dict):
         if not publish_fb and not publish_ig:
             return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台 (FB 或 IG)"})
 
-        # 1. 上傳圖片至 Imgur 取得 100% 穩定的永久對外公開 URL (解決 Render 休眠問題)
+        # 1. 上傳圖片至 Imgur 圖床
         public_image_url = None
         if image_base64:
             try:
@@ -134,7 +134,7 @@ async def publish_post(request: Request, data: dict):
         # 2. 發布至 Instagram
         if publish_ig:
             if not public_image_url:
-                results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文 (圖床上傳失敗)"}
+                results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
                 print("❌ [IG Publish Error] 缺少圖床圖片網址")
             else:
                 try:
@@ -163,16 +163,15 @@ async def publish_post(request: Request, data: dict):
                     print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
-        # 3. 發布至 Facebook 粉絲專頁 (加入詳細錯誤捕獲與列印)
+        # 3. 發布至 Facebook 粉絲專頁 (含詳細錯誤捕獲)
         if publish_fb:
             try:
-                # 步驟 A: 以管理者 Token 查詢用戶管理的粉專清單與對應 Token
                 me_url = f"https://graph.facebook.com/v22.0/me/accounts"
                 me_params = {"access_token": INSTAGRAM_ACCESS_TOKEN}
                 me_res = requests.get(me_url, params=me_params, timeout=10).json()
                 print(f"📘 [FB Me/Accounts Response]: {me_res}")
                 
-                page_access_token = INSTAGRAM_ACCESS_TOKEN  # 預設備用
+                page_access_token = INSTAGRAM_ACCESS_TOKEN
                 if "data" in me_res:
                     for page in me_res["data"]:
                         if str(page.get("id")) == str(FB_PAGE_ID):
@@ -180,7 +179,6 @@ async def publish_post(request: Request, data: dict):
                             print(f"✅ [FB Token Auto-Fetch] 成功自動取得粉專 {FB_PAGE_ID} 的專屬存取權杖！")
                             break
 
-                # 步驟 B: 使用正確的粉專權杖發布貼文或照片
                 if public_image_url:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
                     fb_payload = {
@@ -207,6 +205,13 @@ async def publish_post(request: Request, data: dict):
             except Exception as fb_err:
                 print(f"🔥 [FB Publish Exception Error]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
+
+        return JSONResponse(content={"status": "complete", "results": results})
+
+    except Exception as e:
+        print(f"🔥 [Publish General Error]: {str(e)}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
 # ========================================================
 # 📊 韓國東大門 IG 實時爆款趨勢分析
 # ========================================================
