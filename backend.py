@@ -25,7 +25,7 @@ app.add_middleware(
 # 初始化 Google Gemini 客戶端
 client = genai.Client()
 
-# 從 Render 環境變數抓取 APIFY_TOKEN 與 Meta 存取設定
+# 從 Render 環境變數抓取設定
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 INSTAGRAM_ACCESS_TOKEN = os.environ.get(
     "INSTAGRAM_ACCESS_TOKEN",
@@ -33,17 +33,12 @@ INSTAGRAM_ACCESS_TOKEN = os.environ.get(
 )
 INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595")
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
-
-# 建立並掛載圖片公開暫存目錄 (A 方案：自動產生 Meta 可存取的公開圖片網址)
-TEMP_UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "temp_uploads")
-os.makedirs(TEMP_UPLOAD_DIR, exist_ok=True)
-app.mount("/temp_uploads", StaticFiles(directory=TEMP_UPLOAD_DIR), name="temp_uploads")
+IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")  # 內建免費公開 Imgur Client ID
 
 # ========================================================
-# 🔄 Instagram 權杖自動續期機制 (方案 A：自動延長 60 天)
+# 🔄 Instagram 權杖自動續期機制
 # ========================================================
 def refresh_instagram_token(current_token: str) -> str:
-    """自動呼叫 Meta API 將 60 天長效權杖重新延長 60 天"""
     if not current_token:
         return current_token
     
@@ -66,12 +61,11 @@ def refresh_instagram_token(current_token: str) -> str:
 
 @app.on_event("startup")
 async def startup_event():
-    """伺服器啟動時自動執行權杖續期"""
     global INSTAGRAM_ACCESS_TOKEN
     INSTAGRAM_ACCESS_TOKEN = refresh_instagram_token(INSTAGRAM_ACCESS_TOKEN)
 
 # ========================================================
-# 🚀 處理前端的 AI 生成請求 (支援文字與圖片)
+# 🚀 處理前端的 AI 生成請求
 # ========================================================
 @app.post("/api/generate")
 async def generate_content(data: dict):
@@ -102,7 +96,7 @@ async def generate_content(data: dict):
             return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📱 雙平台（FB / IG）一鍵貼文 API 接口 (含詳細除錯日誌)
+# 📱 雙平台（FB / IG）一鍵貼文 API 接口 (整合 Imgur 圖床與 FB 權杖自動換取)
 # ========================================================
 @app.post("/api/publish-post")
 async def publish_post(request: Request, data: dict):
@@ -116,27 +110,32 @@ async def publish_post(request: Request, data: dict):
         if not publish_fb and not publish_ig:
             return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台 (FB 或 IG)"})
 
-        # 1. 處理圖片暫存並取得公網 URL
+        # 1. 上傳圖片至 Imgur 取得 100% 穩定的永久對外公開 URL (解決 Render 休眠問題)
         public_image_url = None
-        temp_file_path = None
         if image_base64:
-            img_filename = f"{uuid.uuid4().hex}.jpg"
-            temp_file_path = os.path.join(TEMP_UPLOAD_DIR, img_filename)
-            img_data = base64.b64decode(image_base64)
-            with open(temp_file_path, "wb") as f:
-                f.write(img_data)
-            
-            base_url = str(request.base_url).rstrip("/")
-            public_image_url = f"{base_url}/temp_uploads/{img_filename}"
-            print(f"📁 [Meta Publish] 暫存圖片已建立，公網網址: {public_image_url}")
+            try:
+                imgur_url = "https://api.imgur.com/3/image"
+                headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
+                payload = {
+                    "image": image_base64,
+                    "type": "base64"
+                }
+                img_res = requests.post(imgur_url, headers=headers, data=payload, timeout=20).json()
+                if img_res.get("success"):
+                    public_image_url = img_res["data"]["link"]
+                    print(f"✅ [Imgur Upload] 圖片成功上傳至圖床，永久公開網址: {public_image_url}")
+                else:
+                    print(f"⚠️ [Imgur Upload Failed]: {img_res}")
+            except Exception as img_err:
+                print(f"⚠️ [Imgur Exception]: {str(img_err)}")
 
         results = {}
 
         # 2. 發布至 Instagram
         if publish_ig:
             if not public_image_url:
-                results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
-                print("❌ [IG Publish Error] 缺少圖片")
+                results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文 (圖床上傳失敗)"}
+                print("❌ [IG Publish Error] 缺少圖床圖片網址")
             else:
                 try:
                     container_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media"
@@ -164,21 +163,35 @@ async def publish_post(request: Request, data: dict):
                     print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
-        # 3. 發布至 Facebook 粉絲專頁
+        # 3. 發布至 Facebook 粉絲專頁 (自動向 Meta 查詢並換取粉專專屬 Token)
         if publish_fb:
             try:
+                # 步驟 A: 以管理者 Token 查詢用戶管理的粉專清單與對應 Token
+                me_url = f"https://graph.facebook.com/v22.0/me/accounts"
+                me_params = {"access_token": INSTAGRAM_ACCESS_TOKEN}
+                me_res = requests.get(me_url, params=me_params, timeout=10).json()
+                
+                page_access_token = INSTAGRAM_ACCESS_TOKEN  # 預設備用
+                if "data" in me_res:
+                    for page in me_res["data"]:
+                        if str(page.get("id")) == str(FB_PAGE_ID):
+                            page_access_token = page.get("access_token")
+                            print(f"✅ [FB Token Auto-Fetch] 成功自動取得粉專 {FB_PAGE_ID} 的專屬存取權杖！")
+                            break
+
+                # 步驟 B: 使用正確的粉專權杖發布貼文或照片
                 if public_image_url:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
                     fb_payload = {
                         "url": public_image_url,
                         "message": fb_caption,
-                        "access_token": INSTAGRAM_ACCESS_TOKEN
+                        "access_token": page_access_token
                     }
                 else:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/feed"
                     fb_payload = {
                         "message": fb_caption,
-                        "access_token": INSTAGRAM_ACCESS_TOKEN
+                        "access_token": page_access_token
                     }
                 fb_res = requests.post(fb_url, data=fb_payload, timeout=20).json()
                 print(f"📘 [FB Publish Response]: {fb_res}")
@@ -187,13 +200,6 @@ async def publish_post(request: Request, data: dict):
                 print(f"⚠️ [FB Publish Exception]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
 
-        # 4. 清理暫存檔案
-        if temp_file_path and os.path.exists(temp_file_path):
-            try:
-                os.remove(temp_file_path)
-            except Exception:
-                pass
-
         return JSONResponse(content={"status": "complete", "results": results})
 
     except Exception as e:
@@ -201,7 +207,7 @@ async def publish_post(request: Request, data: dict):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📊 韓國東大門 IG 實時爆款趨勢分析 (TOP 10 格式清洗版)
+# 📊 韓國東大門 IG 實時爆款趨勢分析
 # ========================================================
 @app.post("/api/realtime-trends")
 async def get_realtime_trends():
