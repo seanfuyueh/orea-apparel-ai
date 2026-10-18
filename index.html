@@ -70,7 +70,7 @@
             <button type="button" onclick="switchTab('history')" id="desktop-nav-history" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2 cursor-pointer">
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
-            <div class="text-sm text-gray-400 text-center">LovelyByKorea Admin v4.8</div>
+            <div class="text-sm text-gray-400 text-center">LovelyByKorea Admin v4.9</div>
         </div>
     </aside>
 
@@ -136,12 +136,221 @@
                 </div>
             </div>
 
-            <!-- 2. 其他分頁 (保留完整結構) -->
-            <div id="tab-general-copy" class="hidden space-y-6 pt-2"></div>
-            <div id="tab-video-copy" class="hidden space-y-6 pt-2"></div>
-            <div id="tab-trend" class="hidden space-y-6 pt-2"></div>
-            <div id="tab-pricing" class="hidden space-y-6 pt-2"></div>
-            <div id="tab-history" class="hidden space-y-6 pt-2"></div>
+            <!-- 2. 純文字文案生成 -->
+            <div id="tab-general-copy" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">📄 純文字文案生成設定</h3>
+                        <button type="button" onclick="resetModule('gen')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
+                    </div>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">商品主題 / 品項名稱</label>
+                            <input type="text" id="gen-topic" placeholder="例如：韓國真皮托特包、早秋針織外套、復古金屬耳環..." class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="block text-sm md:text-base font-medium text-gray-700">風格要求與訴求</label>
+                                <button type="button" onclick="deleteSelectedPrompt('gen')" id="delete-prompt-btn-gen" class="text-xs text-red-500 hover:text-red-700 font-medium hidden cursor-pointer">❌ 刪除此自訂項目</button>
+                            </div>
+                            <div class="mb-2.5">
+                                <select id="preset-prompts-gen" onchange="selectPresetPrompt('gen')" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <option value="">-- 選擇常用或自訂項目 --</option>
+                                </select>
+                            </div>
+                            <div class="flex flex-col md:flex-row gap-2">
+                                <input type="text" id="gen-style" placeholder="或直接在此輸入新的風格要求與訴求..." class="w-full md:flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                <button type="button" onclick="saveCustomPrompt('gen')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                            <button type="button" onclick="generateTextOnly()" id="submit-btn-gen" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
+                                ✨ 生成 3 組專屬文案
+                            </button>
+                            <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
+                                <input type="checkbox" id="mock-ai-toggle-gen" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                <span class="text-xs md:text-sm font-bold text-gray-700 text-center">⚡ 使用模擬備用 AI</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 執行結果</h3>
+                    <div id="result-box-gen" class="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-5 text-sm md:text-base text-gray-700 min-h-[240px] leading-relaxed markdown-body">尚未開始生成，請輸入主題與風格並點擊按鈕。</div>
+                </div>
+            </div>
+
+            <!-- 3. 影片生成文案 -->
+            <div id="tab-video-copy" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 影片生成文案設定</h3>
+                        <button type="button" onclick="resetModule('vid')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+                        <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
+                            <div id="preview-placeholder-vid" class="text-center text-gray-400">
+                                <span class="text-4xl">🎬</span>
+                                <p class="text-sm mt-2 font-medium">上傳的影片預覽</p>
+                            </div>
+                            <video id="video-preview" src="" controls class="absolute inset-0 w-full h-full object-contain hidden bg-black/5"></video>
+                        </div>
+                        <div class="md:col-span-8 space-y-5">
+                            <div>
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳短影音 / Reels 檔案</label>
+                                <input type="file" id="video-file" accept="video/*" onchange="previewFile(event, 'video')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <label class="block text-sm md:text-base font-medium text-gray-700">補充說明或短影音腳本需求</label>
+                                    <button type="button" onclick="deleteSelectedPrompt('vid')" id="delete-prompt-btn-vid" class="text-xs text-red-500 hover:text-red-700 font-medium hidden cursor-pointer">❌ 刪除此自訂項目</button>
+                                </div>
+                                <div class="mb-2.5">
+                                    <select id="preset-prompts-vid" onchange="selectPresetPrompt('vid')" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                        <option value="">-- 選擇常用或自訂項目 --</option>
+                                    </select>
+                                </div>
+                                <div class="flex flex-col md:flex-row gap-2">
+                                    <input type="text" id="prompt-text-vid" placeholder="或直接在此輸入新的補充說明..." class="w-full md:flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                                    <button type="button" onclick="saveCustomPrompt('vid')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                                <button type="button" onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
+                                    🎬 生成 Reels 專屬腳本
+                                </button>
+                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
+                                    <input type="checkbox" id="mock-ai-toggle-vid" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
+                                    <span class="text-xs md:text-sm font-bold text-gray-700 text-center">⚡ 使用模擬備用 AI</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>🎬</span> AI 執行結果</h3>
+                    <div id="result-box-vid" class="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-5 text-sm md:text-base text-gray-700 min-h-[240px] leading-relaxed markdown-body">尚未開始生成，請上傳影片並點擊按鈕。</div>
+                </div>
+            </div>
+
+            <!-- 4. 韓國東大門流行趨勢 -->
+            <div id="tab-trend" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div>
+                        <h3 class="font-medium text-gray-900 text-base md:text-lg">韓國東大門當季流行時尚趨勢分析</h3>
+                        <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行實時 IG 爆款貼文爬取與熱銷單品推薦。</p>
+                    </div>
+                    <div class="flex gap-2.5 w-full md:w-auto">
+                        <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
+                            📊 分析最新趨勢與網拍範例
+                        </button>
+                        <button type="button" onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap cursor-pointer">
+                            🔄 重置
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告</h3>
+                    <div id="trend-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-5 text-sm md:text-base text-gray-700 min-h-[380px] leading-relaxed markdown-body max-w-full">點擊上方按鈕開始分析。</div>
+                </div>
+            </div>
+
+            <!-- 5. 價格試算器 -->
+            <div id="tab-pricing" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                    <div class="border-b border-gray-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <div>
+                            <h3 class="font-bold text-gray-900 text-lg">💰 韓國商品價格試算表</h3>
+                            <p class="text-sm text-gray-500 mt-1">所有數值皆可自由編輯，即時計算台幣成本、實際成本與利潤。</p>
+                        </div>
+                        <div class="flex gap-2.5">
+                            <button type="button" onclick="fetchBankRate()" id="fetch-rate-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors cursor-pointer">🔄 同步台銀即時匯率</button>
+                            <button type="button" onclick="resetPricing()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 cursor-pointer">🔄 恢復預設值</button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                            <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 1. 基礎成本與匯率</h4>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">韓元成本價 (₩)</label>
+                                <input type="number" id="calc-krw" value="40000" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white font-bold text-red-600 focus:outline-none focus:ring-2 focus:ring-gray-900">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">換算匯率 (自動串聯台銀)</label>
+                                <input type="number" step="0.0001" id="calc-rate" value="0.0228" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                                <div class="text-xs text-gray-400 mt-1.5">= 台幣換算: <span id="res-rate">912</span> 元 <span id="rate-source" class="text-blue-500 font-medium"></span></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                            <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 2. 抽成與運費計算</h4>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">代付貨款抽成 (韓幣金額)</label>
+                                <input type="number" step="0.01" id="calc-commission-rate" value="0.02" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                                <div class="text-xs text-gray-400 mt-1.5">= 抽成金額: <span id="res-commission-krw">800</span> ₩ (<span id="res-commission-twd">18</span> 元)</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">公斤數費用 (固定金額台幣)</label>
+                                <input type="number" id="calc-shipping" value="60" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                            </div>
+                            <div class="pt-2 border-t border-gray-200">
+                                <div class="text-sm font-bold text-gray-800">台幣成本價 (小計): <span id="res-subtotal" class="text-blue-600 text-base">990</span> 元</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                            <h4 class="text-sm font-bold text-gray-700 border-b border-gray-200 pb-2">📍 3. 定價與利潤試算</h4>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">批發商抽成</label>
+                                <input type="number" step="0.01" id="calc-boss-multiplier" value="1.05" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                            </div>
+                            <div class="pt-2 border-t border-gray-200 bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-1">
+                                <div class="text-sm font-bold text-gray-900">實際成本: <span id="res-boss-cost" class="text-amber-600 font-bold text-lg">1,040</span> 元</div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-1.5">小賣價係數</label>
+                                <input type="number" step="0.01" id="calc-retail-multiplier" value="2.8" oninput="calculatePrice()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-base bg-white focus:outline-none focus:ring-2 focus:ring-gray-900">
+                            </div>
+                            <div class="pt-2 border-t border-gray-200 bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-1">
+                                <div class="text-sm font-bold text-gray-900">終端售價: <span id="res-retail-price" class="text-amber-600 font-bold text-lg">2,912</span> 元</div>
+                            </div>
+                            <div class="pt-2 border-t border-gray-200 bg-yellow-50 p-3 rounded-xl border border-yellow-200 space-y-1">
+                                <div class="text-sm font-bold text-gray-900">預估利潤: <span id="res-profit" class="text-green-600 font-bold text-lg">1,872</span> 元</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. 歷史紀錄查詢 -->
+            <div id="tab-history" class="hidden space-y-6 pt-2">
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">📅 依日期排序</label>
+                            <select id="sort-date" onchange="renderHistory()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:outline-none">
+                                <option value="desc">由近到遠 (最新優先)</option>
+                                <option value="asc">由遠到近 (最舊優先)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">📁 依檔案類型查詢</label>
+                            <select id="filter-type" onchange="renderHistory()" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base bg-white focus:outline-none">
+                                <option value="all">全部類型</option>
+                                <option value="image">🖼️ 圖片文案</option>
+                                <option value="video">🎬 影片腳本</option>
+                                <option value="text">📄 純文字</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">🔍 搜尋關鍵字</label>
+                            <input type="text" id="search-keyword" oninput="renderHistory()" placeholder="輸入關鍵字..." class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:outline-none">
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-4" id="history-list-container"></div>
+            </div>
         </div>
     </main>
 
@@ -154,6 +363,17 @@
         <button type="button" onclick="switchTab('pricing')" id="mobile-nav-pricing" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">💰</span><span class="text-xs">試算</span></button>
         <button type="button" onclick="switchTab('history')" id="mobile-nav-history" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer"><span class="text-lg">📂</span><span class="text-xs">紀錄</span></button>
     </nav>
+
+    <!-- 1. 歷史紀錄檢視彈跳視窗 -->
+    <div id="expand-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
+        <div id="modal-content-box" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[90vh]">
+            <div class="px-4 md:px-6 py-3.5 bg-gray-900 text-white flex justify-between items-center shrink-0">
+                <div id="modal-title" class="font-semibold text-sm md:text-lg flex items-center gap-2 truncate pr-2">🔍 紀錄檢視</div>
+                <button type="button" onclick="closeModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-medium border border-gray-700 cursor-pointer shrink-0">❌ 關閉視窗</button>
+            </div>
+            <div id="modal-body" class="p-4 md:p-6 overflow-y-auto space-y-6 flex-1 bg-gray-50 markdown-body"></div>
+        </div>
+    </div>
 
     <!-- 2. FB / IG / Threads 多平台一鍵發佈與預覽彈跳視窗 -->
     <div id="publish-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
@@ -195,14 +415,18 @@
         </div>
     </div>
 
+    <!-- ================= 核心腳本區 ================= -->
     <script>
         let currentUploadedImageBase64 = null;
+        let currentUploadedImageFilename = null;
+        let currentUploadedVideoBlobUrl = null;
+        let currentUploadedVideoFilename = null;
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
 
         const FB_FIXED_FOOTER = `\n\n👇來去逛逛👇\n🏷 https://www.lovelybykorea.com/\n\n🤖𝙇𝙄𝙉𝙀@客服\n▪️ https://lin.ee/lld53QP\n\n#業界唯一超20年韓國女裝代購經驗  \n#限時95折優惠中\n#韓國代購 #韓國製\n#時尚的盡頭是簡約\n#簡約不簡單`;
 
-        // 📌 完整修復的分頁切換函式
+        // 📌 完整分頁切換函式
         window.switchTab = function(tab, saveState = true) {
             ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
                 const el = document.getElementById(id);
@@ -248,7 +472,32 @@
             if (saveState) localStorage.setItem('active_tab', tab);
         };
 
-        // 📌 智慧解析：將 AI 回傳內容完美拆分為各情境的 FB、IG、Threads 獨立文案
+        window.closeModal = function() {
+            document.getElementById('expand-modal').classList.add('hidden');
+        };
+
+        window.openModal = function(index) {
+            const item = globalHistoryRecords[index];
+            if (!item) return;
+            document.getElementById('modal-title').innerHTML = `🔍 紀錄檢視 - ${item.title || '歷史紀錄'}`;
+            let mediaHtml = '';
+            if (item.type === 'image' && item.mediaSrc) {
+                mediaHtml = `<div class="mb-4 text-center"><img src="${item.mediaSrc}" class="max-h-72 mx-auto rounded-xl border border-gray-200 shadow-sm object-contain"></div>`;
+            } else if (item.type === 'video' && item.mediaSrc) {
+                mediaHtml = `<div class="mb-4 text-center"><video src="${item.mediaSrc}" controls class="max-h-72 mx-auto rounded-xl border border-gray-200 shadow-sm"></video></div>`;
+            }
+            
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = `
+                <div class="text-xs text-gray-400 mb-2">建立時間：${item.dateStr || ''}</div>
+                ${mediaHtml}
+                <div id="modal-text-content" class="bg-white border border-gray-200 rounded-xl p-4 md:p-5 text-gray-800 leading-relaxed shadow-inner markdown-body"></div>
+            `;
+            window.renderMarkdownContent('modal-text-content', item.content || '無內容');
+            document.getElementById('expand-modal').classList.remove('hidden');
+        };
+
+        // 📌 Markdown 解析與情境卡片、按鈕生成
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -317,16 +566,21 @@
             }
         };
 
+        // 📌 智慧分流：針對 FB、IG、Threads 產出截然不同的精準語氣與排版
         window.openPublishModalSingle = function(encodedText) {
             const rawBlockText = decodeURIComponent(encodedText);
             
             let cleanBody = rawBlockText.replace(/【情境\s*[A-Z].*?】/g, "").trim();
             cleanBody = cleanBody.replace(/文案標題：/g, "").replace(/內文：/g, "").replace(/Hashtags：/g, "");
 
-            // 針對三大平台量身打造各自獨立的文案內容
-            const fbText = `✨【新品上市熱銷中】✨\n\n` + cleanBody + FB_FIXED_FOOTER;
-            const igText = cleanBody + `\n\n#韓國連線 #東大門代購 #OOTD #穿搭分享`;
-            const threadsText = `今天這套真的超好看！大家覺得怎麼樣？💬\n\n` + cleanBody;
+            // 1. 📘 FB 專屬文案：詳細導購、質感信任感與固定尾綴
+            const fbText = `✨【質感首選・新品上線】✨\n\n` + cleanBody + FB_FIXED_FOOTER;
+
+            // 2. IG 專屬文案：精煉美感、高級感與熱門 Hashtags 堆疊
+            const igText = cleanBody + `\n\n#韓國連線 #東大門代購 #OOTD #穿搭分享 #質感選品 #韓國女裝`;
+
+            // 3. Threads 專屬文案：生活碎碎念、對話感強、引發互動或投票
+            const threadsText = `今天這套私服搭配真的燒到不行🔥 大家覺得這個版型可以給幾分？💬\n\n` + cleanBody;
 
             document.getElementById('pub-fb-text').value = fbText;
             document.getElementById('pub-ig-text').value = igText;
@@ -382,6 +636,7 @@
         window.previewFile = function(event, type) {
             const file = event.target.files[0];
             if (type === 'image' && file) {
+                currentUploadedImageFilename = file.name;
                 const reader = new FileReader();
                 reader.onload = e => {
                     const img = new Image();
@@ -429,7 +684,92 @@
             }
         };
 
+        window.generateTextOnly = async function() {
+            const topic = document.getElementById('gen-topic').value;
+            const style = document.getElementById('gen-style').value;
+            if (!topic) { alert('請輸入商品主題！'); return; }
+            const submitBtn = document.getElementById('submit-btn-gen');
+            submitBtn.disabled = true; submitBtn.innerText = 'AI 生成中...';
+            const prompt = `針對品項「${topic}」，風格「${style || '簡約質感'}」，撰寫 3 組不同情境（【情境 A】、【情境 B】、【情境 C】）的精緻網拍行銷文案。`;
+            try {
+                const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) });
+                const data = await res.json();
+                window.renderMarkdownContent('result-box-gen', data.candidates?.[0]?.content?.parts?.[0]?.text || "生成失敗");
+            } catch (e) { alert('發生錯誤'); } finally { submitBtn.disabled = false; submitBtn.innerText = '✨ 生成 3 組專屬文案'; }
+        };
+
+        window.generateVideoText = async function() {
+            const submitBtn = document.getElementById('submit-btn-vid');
+            submitBtn.disabled = true; submitBtn.innerText = 'AI 生成中...';
+            const prompt = `請編寫一份 30 秒高流量的短影音 Reels 腳本。`;
+            try {
+                const res = await fetch('/api/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt }) });
+                const data = await res.json();
+                window.renderMarkdownContent('result-box-vid', data.candidates?.[0]?.content?.parts?.[0]?.text || "生成失敗");
+            } catch (e) { alert('發生錯誤'); } finally { submitBtn.disabled = false; submitBtn.innerText = '🎬 生成 Reels 專屬腳本'; }
+        };
+
+        window.fetchTrend = async function() {
+            const trendBtn = document.getElementById('trend-btn');
+            trendBtn.disabled = true; trendBtn.innerText = '抓取數據中...';
+            try {
+                const res = await fetch('/api/realtime-trends', { method: 'POST' });
+                const data = await res.json();
+                window.renderMarkdownContent('trend-result-box', data.report || "無資料");
+            } catch (e) { alert('發生錯誤'); } finally { trendBtn.disabled = false; trendBtn.innerText = '📊 分析最新趨勢與網拍範例'; }
+        };
+
+        window.fetchBankRate = async function() {
+            try {
+                const res = await fetch('https://open.er-api.com/v6/latest/KRW');
+                const data = await res.json();
+                if (data?.rates?.TWD) {
+                    document.getElementById('calc-rate').value = parseFloat(data.rates.TWD).toFixed(4);
+                    calculatePrice();
+                }
+            } catch (e) {}
+        };
+
+        window.calculatePrice = function() {
+            const krw = parseFloat(document.getElementById('calc-krw').value) || 0;
+            const rate = parseFloat(document.getElementById('calc-rate').value) || 0;
+            const commRate = parseFloat(document.getElementById('calc-commission-rate').value) || 0;
+            const shipping = parseFloat(document.getElementById('calc-shipping').value) || 0;
+            const bossMultiplier = parseFloat(document.getElementById('calc-boss-multiplier').value) || 0;
+            const retailMultiplier = parseFloat(document.getElementById('calc-retail-multiplier').value) || 0;
+            const rateAmount = krw * rate;                  
+            const commKrw = krw * commRate;                 
+            const commTwd = commKrw * rate;                 
+            const subtotal = rateAmount + commTwd + shipping; 
+            const bossCost = Math.round(subtotal * bossMultiplier); 
+            const retailPrice = Math.round(bossCost * retailMultiplier); 
+            const profit = retailPrice - bossCost;
+            document.getElementById('res-rate').innerText = Math.round(rateAmount);
+            document.getElementById('res-commission-krw').innerText = Math.round(commKrw).toLocaleString();
+            document.getElementById('res-commission-twd').innerText = Math.round(commTwd);
+            document.getElementById('res-subtotal').innerText = Math.round(subtotal);
+            document.getElementById('res-boss-cost').innerText = bossCost.toLocaleString();
+            document.getElementById('res-retail-price').innerText = retailPrice.toLocaleString();
+            document.getElementById('res-profit').innerText = profit.toLocaleString();
+        };
+
+        window.resetPricing = function() {
+            document.getElementById('calc-krw').value = 40000;
+            document.getElementById('calc-rate').value = 0.0228;
+            document.getElementById('calc-commission-rate').value = 0.02;
+            document.getElementById('calc-shipping').value = 60;
+            document.getElementById('calc-boss-multiplier').value = 1.05;
+            document.getElementById('calc-retail-multiplier').value = 2.8;
+            calculatePrice();
+        };
+
+        window.renderHistory = async function() {
+            const container = document.getElementById('history-list-container');
+            if (container) container.innerHTML = '<div class="text-center text-gray-400 py-12">歷史紀錄載入中...</div>';
+        };
+
         window.addEventListener('DOMContentLoaded', () => { 
+            window.fetchBankRate();
             const lastTab = localStorage.getItem('active_tab') || 'image-copy';
             window.switchTab(lastTab, false);
         });

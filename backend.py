@@ -66,14 +66,33 @@ async def startup_event():
     INSTAGRAM_ACCESS_TOKEN = refresh_instagram_token(INSTAGRAM_ACCESS_TOKEN)
 
 # ========================================================
-# 🚀 處理前端的 AI 生成請求
+# 🚀 處理前端的 AI 生成請求（整合三平台專屬差異化提示詞）
 # ========================================================
 @app.post("/api/generate")
 async def generate_content(data: dict):
-    prompt = data.get("prompt", "")
+    user_prompt = data.get("prompt", "")
     image_base64 = data.get("imageBase64", None)
 
-    contents = [prompt]
+    # 結合您要求的黃金提示詞，確保 AI 針對三大平台產出深度差異化內容
+    system_strategy_prompt = """
+你是一位資深的韓國時尚品牌社群總監。請針對這項商品，分別為【Facebook】、【Instagram】與【Threads】量身打造三個截然不同風格、語氣與結構的專屬文案：
+
+1. 【📘 FB 專屬文案要求】：
+- 語氣：專業、詳細、具備強烈的信任感與導購說服力。
+- 結構：吸睛導購標題 + 詳細材質/版型/穿搭情境說明 + 完整導購引導。
+
+2. 【📸 IG 專屬文案要求】：
+- 語氣：視覺導向、精煉、時尚、高級感。
+- 結構：短而美的主打金句 + 乾淨俐落的穿搭亮點 + 5-8個熱門穿搭 Hashtags。
+
+3. 【🧵 Threads 專屬文案要求】：
+- 語氣：極度日常、對話感強、像朋友聊天或老闆娘真實碎碎念、帶有互動感或發問。
+- 結構：一句直擊心坎的生活化開場 + 輕鬆的商品亮點分享 + 引發粉絲留言互動的結尾（例如問大家喜歡哪個顏色）。
+"""
+
+    full_prompt = f"{user_prompt}\n\n{system_strategy_prompt}"
+
+    contents = [full_prompt]
     if image_base64:
         image_bytes = base64.b64decode(image_base64)
         image_part = types.Part.from_bytes(
