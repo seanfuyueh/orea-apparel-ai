@@ -102,7 +102,7 @@ async def generate_content(data: dict):
             return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📱 雙平台（FB / IG）一鍵貼文 API 接口
+# 📱 雙平台（FB / IG）一鍵貼文 API 接口 (含詳細除錯日誌)
 # ========================================================
 @app.post("/api/publish-post")
 async def publish_post(request: Request, data: dict):
@@ -126,9 +126,9 @@ async def publish_post(request: Request, data: dict):
             with open(temp_file_path, "wb") as f:
                 f.write(img_data)
             
-            # 組成可供 Meta Graph API 下載的公開 URL
             base_url = str(request.base_url).rstrip("/")
             public_image_url = f"{base_url}/temp_uploads/{img_filename}"
+            print(f"📁 [Meta Publish] 暫存圖片已建立，公網網址: {public_image_url}")
 
         results = {}
 
@@ -136,9 +136,9 @@ async def publish_post(request: Request, data: dict):
         if publish_ig:
             if not public_image_url:
                 results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
+                print("❌ [IG Publish Error] 缺少圖片")
             else:
                 try:
-                    # 建立媒體容器
                     container_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media"
                     container_payload = {
                         "image_url": public_image_url,
@@ -146,20 +146,22 @@ async def publish_post(request: Request, data: dict):
                         "access_token": INSTAGRAM_ACCESS_TOKEN
                     }
                     c_res = requests.post(container_url, data=container_payload, timeout=20).json()
+                    print(f"📸 [IG Container Response]: {c_res}")
                     creation_id = c_res.get("id")
 
                     if creation_id:
-                        # 發佈媒體
                         pub_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media_publish"
                         pub_payload = {
                             "creation_id": creation_id,
                             "access_token": INSTAGRAM_ACCESS_TOKEN
                         }
                         p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
+                        print(f"🚀 [IG Publish Response]: {p_res}")
                         results["instagram"] = {"status": "success", "data": p_res}
                     else:
                         results["instagram"] = {"status": "error", "message": c_res}
                 except Exception as ig_err:
+                    print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
         # 3. 發布至 Facebook 粉絲專頁
@@ -179,11 +181,13 @@ async def publish_post(request: Request, data: dict):
                         "access_token": INSTAGRAM_ACCESS_TOKEN
                     }
                 fb_res = requests.post(fb_url, data=fb_payload, timeout=20).json()
+                print(f"📘 [FB Publish Response]: {fb_res}")
                 results["facebook"] = {"status": "success", "data": fb_res}
             except Exception as fb_err:
+                print(f"⚠️ [FB Publish Exception]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
 
-        # 4. 發布完畢後自動清理暫存圖檔
+        # 4. 清理暫存檔案
         if temp_file_path and os.path.exists(temp_file_path):
             try:
                 os.remove(temp_file_path)
@@ -193,6 +197,7 @@ async def publish_post(request: Request, data: dict):
         return JSONResponse(content={"status": "complete", "results": results})
 
     except Exception as e:
+        print(f"🔥 [Publish General Error]: {str(e)}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
@@ -204,7 +209,6 @@ async def get_realtime_trends():
         if not APIFY_TOKEN:
             return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
 
-        # 1. 自動從根目錄讀取 ig_targets.txt 並嚴格清洗網址格式
         target_file_path = os.path.join(os.path.dirname(__file__), "ig_targets.txt")
         ig_urls = []
         if os.path.exists(target_file_path):
@@ -223,7 +227,6 @@ async def get_realtime_trends():
         if not ig_urls:
             ig_urls = ["https://www.instagram.com/partysu_official/"]
 
-        # 2. 呼叫 Apify Instagram Scraper
         apify_url = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
         payload = {
             "directUrls": ig_urls,
@@ -238,14 +241,12 @@ async def get_realtime_trends():
             error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據，請確認 ig_targets.txt 網址或 Apify 狀態。"
             return JSONResponse(status_code=500, content={"error": error_msg})
 
-        # 3. 依照 (愛心數 + 留言數*2) 排序，挑選前 10 名
         sorted_posts = sorted(
             items, 
             key=lambda x: (x.get('likesCount', 0) or 0) + (x.get('commentsCount', 0) or 0) * 2, 
             reverse=True
         )[:10]
 
-        # 4. 組成 Prompt 與爆款圖片供 Gemini 分析
         trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是實時抓取到的最新熱門 IG 爆款貼文數據與圖片：\n\n"
         
         image_parts = []
@@ -303,7 +304,6 @@ async def get_realtime_trends():
 
         contents = [trend_summary_prompt] + image_parts
 
-        # 5. 呼叫 Gemini 3.8-Flash (含 503 重試)
         max_retries = 3
         for attempt in range(max_retries):
             try:
