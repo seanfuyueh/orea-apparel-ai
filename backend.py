@@ -23,8 +23,44 @@ app.add_middleware(
 # 初始化 Google Gemini 客戶端
 client = genai.Client()
 
-# 從 Render 環境變數抓取 APIFY_TOKEN
+# 從 Render 環境變數抓取 APIFY_TOKEN 與 Instagram 存取設定
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
+INSTAGRAM_ACCESS_TOKEN = os.environ.get(
+    "INSTAGRAM_ACCESS_TOKEN",
+    "IGAANdMmdoT1pBZAFp5aFAta3FDY3ZAvWW9aSS1aaTg0U29ObGdjZAHlfV29vYjE4TG5MQVJVSWhpa2k5NjZAtR2FNTFgwdTYyNWlOYkNVcDJyeEJvVnN4b0dncEZAwUDlGSzZAoVjlzN3dZAUkJqMUxDZAHVsTC1TTG04YlUzZA2ZAjRHJQQQZDZD"
+)
+INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595")
+
+# ========================================================
+# 🔄 Instagram 權杖自動續期機制 (方案 A：自動延長 60 天)
+# ========================================================
+def refresh_instagram_token(current_token: str) -> str:
+    """自動呼叫 Meta API 將 60 天長效權杖重新延長 60 天"""
+    if not current_token:
+        return current_token
+    
+    url = "https://graph.instagram.com/refresh_access_token"
+    params = {
+        "grant_type": "ig_refresh_token",
+        "access_token": current_token
+    }
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        data = response.json()
+        if "access_token" in data:
+            print("✅ [Instagram API] 成功自動延長 IG 權杖期限（重新倒數 60 天）")
+            return data["access_token"]
+        else:
+            print(f"ℹ️ [Instagram API] 權杖續期回應: {data}")
+    except Exception as e:
+        print(f"⚠️ [Instagram API] 權杖自動續期失敗，繼續使用現有權杖: {e}")
+    return current_token
+
+@app.on_event("startup")
+async def startup_event():
+    """伺服器啟動時自動執行權杖續期"""
+    global INSTAGRAM_ACCESS_TOKEN
+    INSTAGRAM_ACCESS_TOKEN = refresh_instagram_token(INSTAGRAM_ACCESS_TOKEN)
 
 # ========================================================
 # 🚀 處理前端的 AI 生成請求 (支援文字與圖片)
