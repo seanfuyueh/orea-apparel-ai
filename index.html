@@ -604,17 +604,13 @@
 
         // 📌 手機版發布 Modal 切換邏輯
         window.switchPubTab = function(platform) {
-            // 重置按鈕狀態
             document.getElementById('pub-tab-fb').className = 'pub-tab-btn';
             document.getElementById('pub-tab-ig').className = 'pub-tab-btn';
             document.getElementById('pub-tab-th').className = 'pub-tab-btn';
-            
-            // 隱藏所有面板
             document.getElementById('pub-panel-fb').classList.remove('active');
             document.getElementById('pub-panel-ig').classList.remove('active');
             document.getElementById('pub-panel-th').classList.remove('active');
 
-            // 啟用選取的平台
             if (platform === 'fb') {
                 document.getElementById('pub-tab-fb').classList.add('active-fb');
                 document.getElementById('pub-panel-fb').classList.add('active');
@@ -627,39 +623,37 @@
             }
         };
 
-        // 📌 新版清洗邏輯：從合併的結果中，精準擷取 FB、IG、Threads 三區塊內容
+        // 📌 新版清洗邏輯：剝離 Markdown 標題等雜訊
         function extractPlatformContent(rawText) {
             let fbText = "";
             let igText = "";
             let thText = "";
 
-            // 嘗試透過正則匹配各平台的專屬區塊
-            // 匹配 【📘 Facebook 專屬文案】到下一個平台標籤或結尾
-            const fbMatch = rawText.match(/【📘 Facebook.*?】([\s\S]*?)(?=【📸 Instagram|【🧵 Threads|$)/i);
-            // 匹配 【📸 Instagram 專屬文案】到下一個平台標籤或結尾
-            const igMatch = rawText.match(/【📸 Instagram.*?】([\s\S]*?)(?=【📘 Facebook|【🧵 Threads|$)/i);
-            // 匹配 【🧵 Threads 專屬文案】到下一個平台標籤或結尾
-            const thMatch = rawText.match(/【🧵 Threads.*?】([\s\S]*?)(?=【📘 Facebook|【📸 Instagram|$)/i);
+            // 移除最上層可能包含的「# 【情境 A...】」
+            let cleanedRawText = rawText.replace(/^(?:#+\s*)?【情境\s*[A-Z].*?】\s*/i, '');
 
-            // 清理結構標籤輔助函數
+            const fbMatch = cleanedRawText.match(/【📘 Facebook.*?】([\s\S]*?)(?=【📸 Instagram|【🧵 Threads|$)/i);
+            const igMatch = cleanedRawText.match(/【📸 Instagram.*?】([\s\S]*?)(?=【📘 Facebook|【🧵 Threads|$)/i);
+            const thMatch = cleanedRawText.match(/【🧵 Threads.*?】([\s\S]*?)(?=【📘 Facebook|【📸 Instagram|$)/i);
+
             const cleanText = (text) => {
                 if (!text) return "";
-                let cleaned = text.trim();
+                let cleaned = text;
                 cleaned = cleaned.replace(/文案標題：/g, "");
                 cleaned = cleaned.replace(/內文：/g, "");
                 cleaned = cleaned.replace(/Hashtags：/g, "");
-                cleaned = cleaned.replace(/^\s*-\s*/gm, ""); // 移除可能的清單符號
+                cleaned = cleaned.replace(/^\s*-\s*/gm, ""); 
                 return cleaned.trim();
             };
 
-            fbText = fbMatch ? cleanText(fbMatch[1]) : rawText.trim();
-            igText = igMatch ? cleanText(igMatch[1]) : rawText.trim();
-            thText = thMatch ? cleanText(thMatch[1]) : rawText.trim();
+            fbText = fbMatch ? cleanText(fbMatch[1]) : "";
+            igText = igMatch ? cleanText(igMatch[1]) : "";
+            thText = thMatch ? cleanText(thMatch[1]) : "";
 
             return { fbText, igText, thText };
         }
 
-        // 📌 全效能 Markdown 渲染輔助函式 (為每組結果加上一鍵發佈按鈕)
+        // 📌 全效能 Markdown 渲染輔助函式 (精準切割情境並產生對應按鈕)
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -688,18 +682,45 @@
                 el.innerText = text || '';
             }
 
-            // 在生成結果中插入發佈按鈕
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
-                // 將整個產出視為一組完整的提案，提供一個總結的發布按鈕
-                const pubBtnDiv = document.createElement('div');
-                pubBtnDiv.className = 'mt-6 pt-4 border-t border-gray-200 flex justify-end';
-                const escapedText = encodeURIComponent(text);
-                pubBtnDiv.innerHTML = `
-                    <button type="button" onclick="openPublishModalSingle('${escapedText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold shadow-md text-sm md:text-base transition-all transform active:scale-95 cursor-pointer flex items-center gap-2">
-                        🚀 打開三平台發佈預覽視窗
-                    </button>
-                `;
-                el.appendChild(pubBtnDiv);
+                // 正確按照【情境 A】、【情境 B】去切割區塊
+                const blocks = text.split(/(?=(?:#+\s*)?【情境\s*[A-Z])/g);
+
+                if (blocks.length > 1) {
+                    el.innerHTML = ''; 
+
+                    blocks.forEach((blockText) => {
+                        if (!blockText.trim()) return;
+
+                        const cardDiv = document.createElement('div');
+                        cardDiv.className = 'bg-white p-4 md:p-5 rounded-xl border border-gray-200 shadow-sm mb-4 space-y-3';
+                        
+                        marked.setOptions({ gfm: true, breaks: true });
+                        cardDiv.innerHTML = marked.parse(blockText);
+
+                        const btnDiv = document.createElement('div');
+                        btnDiv.className = 'pt-3 border-t border-gray-100 flex justify-end';
+                        
+                        const escapedBlockText = encodeURIComponent(blockText);
+                        btnDiv.innerHTML = `
+                            <button type="button" onclick="openPublishModalSingle('${escapedBlockText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-bold shadow-md text-sm transition-transform active:scale-95 cursor-pointer flex items-center gap-2">
+                                🚀 一鍵發佈選中此文案至 FB / IG
+                            </button>
+                        `;
+                        cardDiv.appendChild(btnDiv);
+                        el.appendChild(cardDiv);
+                    });
+                } else {
+                    const pubBtnDiv = document.createElement('div');
+                    pubBtnDiv.className = 'mt-6 pt-4 border-t border-gray-200 flex justify-end';
+                    const escapedText = encodeURIComponent(text);
+                    pubBtnDiv.innerHTML = `
+                        <button type="button" onclick="openPublishModalSingle('${escapedText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold shadow-md text-sm md:text-base transition-all transform active:scale-95 cursor-pointer flex items-center gap-2">
+                            🚀 一鍵發佈至 FB / IG (預覽與發佈)
+                        </button>
+                    `;
+                    el.appendChild(pubBtnDiv);
+                }
             }
         };
 
@@ -707,17 +728,13 @@
         window.openPublishModalSingle = function(encodedText) {
             const rawBlockText = decodeURIComponent(encodedText);
             
-            // 執行智慧擷取與清洗
             const { fbText, igText, thText } = extractPlatformContent(rawBlockText);
-
-            // FB 版：拼接專屬固定頁尾
             const finalFbText = fbText ? (fbText + "\n\n" + FB_FIXED_FOOTER) : "";
 
             document.getElementById('pub-fb-text').value = finalFbText;
             document.getElementById('pub-ig-text').value = igText;
             document.getElementById('pub-th-text').value = thText;
             
-            // 手機版預設切換到 FB
             if (window.innerWidth < 768) {
                 switchPubTab('fb');
             }
@@ -731,7 +748,6 @@
 
         // 🚀 執行一鍵發佈呼叫
         window.executePublishing = async function() {
-            // 同步手機版的勾選狀態到桌面版的 checkbox (以防萬一)
             if (window.innerWidth < 768) {
                  document.getElementById('pub-target-fb').checked = document.getElementById('pub-target-fb-mobile').checked;
                  document.getElementById('pub-target-ig').checked = document.getElementById('pub-target-ig-mobile').checked;
@@ -1050,7 +1066,8 @@
             const igContent = pick(["高級感拉滿✨ 隨手一搭就非常有型！", "氣質歐膩必備款🛒 實物質感超棒！"]);
             const thContent = pick(["大家覺得這件拿來當上班戰袍會不會太浮誇？我一拿到手就忍不住想包色了！", "韓國連線現場真的搶翻天... 這款的材質我給 100 分！妳們喜歡哪一色？"]);
             
-            return `【📘 Facebook 專屬文案】\n文案標題：${fbTitle}\n內文：${fbContent}\nHashtags：#韓國連線 #質感單品 #OOTD\n\n【📸 Instagram 專屬文案】\n內文：${igContent}\nHashtags：#東大門代購 #時尚必備\n\n【🧵 Threads 專屬文案】\n內文：${thContent}`;
+            const group = `【📘 Facebook 專屬文案】\n文案標題：${fbTitle}\n內文：${fbContent}\nHashtags：#韓國連線 #質感單品\n\n【📸 Instagram 專屬文案】\n內文：${igContent}\nHashtags：#東大門代購\n\n【🧵 Threads 專屬文案】\n內文：${thContent}`;
+            return `【情境 A | 法式簡約】\n${group}\n\n【情境 B | 韓系知性】\n${group}\n\n【情境 C | 日常慵懶】\n${group}`;
         }
 
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
@@ -1104,11 +1121,11 @@
 1. 【嚴格品項辨識】：請先仔細看圖，這究竟是「衣服、褲子、包包、鞋子還是飾品配件」？
 2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用「揹起來、手提、戴上、百搭、容量實用、皮革質感、五金細節」等正確詞彙。
 3. 【真實細節描繪】：根據圖片中展示的真實顏色、材質與設計結構進行客觀描述。
-4. 【多平台差異化生成】：請根據圖片內容，同時產出「【📘 Facebook 專屬文案】、【📸 Instagram 專屬文案】、【🧵 Threads 專屬文案】」三種截然不同平台基因的文案：
-
-- 📘 【Facebook 專屬文案】：語氣重視信任感、詳細與 CP 值。具備吸引力的痛點開頭、詳細的版型與面料說明、完整的穿搭建議。包含「文案標題：」、「內文：」、「Hashtags：」欄位。
-- 📸 【Instagram 專屬文案】：語氣極致簡約、重視視覺美感。前三行抓眼球，內文精煉不囉嗦，善用空白與精緻符號（✨、🛒），附上 5-8 個熱門 Hashtags。包含「內文：」、「Hashtags：」欄位。
-- 🧵 【Threads 專屬文案】：極具「真實對話感」、「生活碎碎念」或「老闆娘視角」。短平快，絕對不要寫成嚴肅的商品說明書！必須帶有一句「引發留言討論」或「直擊靈魂」的互動提問。包含「內文：」欄位。
+4. 【生成 3 組情境文案】：請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
+在每一個情境區塊內，都必須同時產出以下三個平台的專屬文案：
+- 【📘 Facebook 專屬文案】：語氣重視信任感、詳細與 CP 值。包含「文案標題：」、「內文：」、「Hashtags：」欄位。
+- 【📸 Instagram 專屬文案】：語氣極致簡約、重視視覺美感。包含「內文：」、「Hashtags：」欄位。
+- 【🧵 Threads 專屬文案】：極具「真實對話感」、「生活碎碎念」。包含「內文：」欄位。
 
 補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
@@ -1137,11 +1154,12 @@
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
             
-            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別，並同時產出「【📘 Facebook 專屬文案】、【📸 Instagram 專屬文案】、【🧵 Threads 專屬文案】」三種截然不同平台基因的文案：
-
-- 📘 【Facebook 專屬文案】：語氣重視信任感、詳細與 CP 值。具備吸引力的痛點開頭、詳細的版型與面料說明、完整的穿搭建議。包含「文案標題：」、「內文：」、「Hashtags：」欄位。
-- 📸 【Instagram 專屬文案】：語氣極致簡約、重視視覺美感。前三行抓眼球，內文精煉不囉嗦，善用空白與精緻符號（✨、🛒），附上 5-8 個熱門 Hashtags。包含「內文：」、「Hashtags：」欄位。
-- 🧵 【Threads 專屬文案】：極具「真實對話感」、「生活碎碎念」或「老闆娘視角」。短平快，絕對不要寫成嚴肅的商品說明書！必須帶有一句「引發留言討論」或「直擊靈魂」的互動提問。包含「內文：」欄位。
+            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別。
+請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
+在每一個情境區塊內，都必須同時產出以下三個平台的專屬文案：
+- 【📘 Facebook 專屬文案】：語氣重視信任感、詳細與 CP 值。包含「文案標題：」、「內文：」、「Hashtags：」欄位。
+- 【📸 Instagram 專屬文案】：語氣極致簡約、重視視覺美感。包含「內文：」、「Hashtags：」欄位。
+- 【🧵 Threads 專屬文案】：極具「真實對話感」、「生活碎碎念」。包含「內文：」欄位。
 
 ${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
