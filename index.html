@@ -602,7 +602,6 @@
 #時尚的盡頭是簡約
 #簡約不簡單`;
 
-        // 📌 手機版發布 Modal 切換邏輯
         window.switchPubTab = function(platform) {
             document.getElementById('pub-tab-fb').className = 'pub-tab-btn';
             document.getElementById('pub-tab-ig').className = 'pub-tab-btn';
@@ -623,13 +622,11 @@
             }
         };
 
-        // 📌 精準清洗與擷取邏輯（相容多種標題格式並自動帶入）
         function extractPlatformContent(rawText) {
             let fbText = "";
             let igText = "";
             let thText = "";
 
-            // 支援【Facebook 專屬文案】或【📘 Facebook 專屬文案】等各種變化
             const fbMatch = rawText.match(/(?:【[^】]*Facebook[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Instagram|Threads)[^】]*】)|$)/i);
             const igMatch = rawText.match(/(?:【[^】]*Instagram[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Facebook|Threads)[^】]*】)|$)/i);
             const thMatch = rawText.match(/(?:【[^】]*Threads[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Facebook|Instagram)[^】]*】)|$)/i);
@@ -651,7 +648,6 @@
             return { fbText, igText, thText };
         }
 
-        // 📌 全效能 Markdown 渲染輔助函式 (僅在【情境】區塊下方附上發布按鈕)
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -680,13 +676,10 @@
                 el.innerText = text || '';
             }
 
-            // 確保只有包含「情境」的區塊才切分並加上發布按鈕，頂部的視覺分析絕對不加按鈕！
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
-                // 使用嚴格的正則切割出各個情境區塊
                 const blocks = text.split(/(?=(?:#+\s*)?【情境\s*[A-Z])/g);
 
                 if (blocks.length > 1) {
-                    // 保留頂部的視覺分析內容（如果有）
                     const topAnalysisText = blocks[0].includes('【情境') ? '' : blocks[0];
                     const scenarioBlocks = blocks.filter(b => b.includes('【情境'));
 
@@ -717,7 +710,6 @@
             }
         };
 
-        // 🚀 開啟三平台發佈預覽 Modal
         window.openPublishModalSingle = function(encodedText) {
             const rawBlockText = decodeURIComponent(encodedText);
             
@@ -739,7 +731,7 @@
             document.getElementById('publish-modal').classList.add('hidden');
         };
 
-        // 🚀 執行一鍵發佈呼叫
+        // 🚀 關鍵修復：確保發布時完整攜帶圖片的 imageBase64 參數給後端
         window.executePublishing = async function() {
             if (window.innerWidth < 768) {
                  document.getElementById('pub-target-fb').checked = document.getElementById('pub-target-fb-mobile').checked;
@@ -766,7 +758,7 @@
                         publishIg: pubIg,
                         fbCaption: fbCaption,
                         igCaption: igCaption,
-                        imageBase64: currentUploadedImageBase64
+                        imageBase64: currentUploadedImageBase64  // 👈 這裡就是關鍵！把圖片帶回去，讓 FB 成功辨識圖文並茂
                     })
                 });
 
@@ -1056,7 +1048,7 @@
             const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
             const fbTitle = pick(["一眼就被精緻的細節吸引！", "實物質感真的太棒了，完全超出期待。"]);
             const fbContent = pick(["無論通勤或週末約會，都能完美點綴妳的整體造型。這款材質輕盈且版型修身，絕對是本季衣櫃必備款！", "設計簡約卻充滿高級感，細節處理得非常用心，穿上去立刻提升整體氣質，是本季不可錯過的百搭首選！"]);
-            const igContent = pick(["高級感拉滿✨ 隨手一搭就非常有型！", "氣質歐膩必備款🛒 實物質感超棒！"]);
+            const igContent = pick(["高級感拉滿✨ 隨手一搭就非常有型！", "氣質歐膩比備款🛒 實物質感超棒！"]);
             const thContent = pick(["大家覺得這件拿來當上班戰袍會不會太浮誇？我一拿到手就忍不住想包色了！", "韓國連線現場真的搶翻天... 這款的材質我給 100 分！妳們喜歡哪一色？"]);
             
             const group = `【📘 Facebook 專屬文案】\n文案標題：${fbTitle}\n內文：${fbContent}\nHashtags：#韓國連線 #質感單品\n\n【📸 Instagram 專屬文案】\n內文：${igContent}\nHashtags：#東大門代購\n\n【🧵 Threads 專屬文案】\n內文：${thContent}`;
