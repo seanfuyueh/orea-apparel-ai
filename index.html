@@ -100,40 +100,26 @@
             margin: 1.25rem 0;
         }
 
-        /* 📱 手機版專屬優化 */
-        @media (max-width: 768px) {
-            #modal-content-box, #publish-modal-content-box {
-                width: 95vw !important;
-                max-height: 88vh !important;
-                margin: 0 auto;
-            }
-            #modal-body, #publish-modal-body {
-                padding: 1rem !important;
-            }
-            .markdown-body th, .markdown-body td {
-                padding: 0.4rem 0.5rem;
-                font-size: 0.825rem;
-            }
-            
-            /* 手機版發布視窗專用樣式 */
-            .pub-tab-btn {
-                flex: 1;
-                text-align: center;
-                padding: 8px 0;
-                font-size: 0.85rem;
-                font-weight: bold;
-                border-radius: 8px;
-                background-color: #f3f4f6;
-                color: #6b7280;
-                transition: all 0.2s;
-            }
-            .pub-tab-btn.active-fb { background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-            .pub-tab-btn.active-ig { background-color: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; }
-            .pub-tab-btn.active-th { background-color: #f3f4f6; color: #111827; border: 1px solid #d1d5db; }
-            
-            .pub-panel { display: none; }
-            .pub-panel.active { display: block; }
+        /* 📱 預覽視窗三平台頁籤樣式 (桌機與手機共用) */
+        .pub-tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 10px 16px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 10px;
+            background-color: #f3f4f6;
+            color: #6b7280;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #e5e7eb;
         }
+        .pub-tab-btn.active-fb { background-color: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+        .pub-tab-btn.active-ig { background-color: #fdf2f8; color: #db2777; border-color: #fbcfe8; }
+        .pub-tab-btn.active-th { background-color: #f3f4f6; color: #111827; border-color: #d1d5db; }
+        
+        .pub-panel { display: none; }
+        .pub-panel.active { display: flex; flex-direction: column; }
     </style>
     <script>
         if ('serviceWorker' in navigator) {
@@ -178,7 +164,7 @@
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
             <div class="text-sm text-gray-400 text-center">
-                LovelyByKorea Admin v4.4
+                LovelyByKorea Admin v4.5
             </div>
         </div>
     </aside>
@@ -502,77 +488,69 @@
         </div>
     </div>
 
-    <!-- 2. FB / IG / Threads 三平台一鍵發佈預覽彈跳視窗 -->
+    <!-- 2. 多平台同步預覽與發佈彈跳視窗 (頁籤切換模式) -->
     <div id="publish-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
-        <div id="publish-modal-content-box" class="bg-white w-full max-w-7xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[95vh] md:h-[90vh]">
+        <div id="publish-modal-content-box" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[92vh] md:h-[88vh]">
             <div class="px-4 md:px-6 py-3.5 bg-gray-900 text-white flex justify-between items-center shrink-0">
-                <div class="font-semibold text-sm md:text-lg flex items-center gap-2">🚀 三平台同步預覽與發佈</div>
+                <div class="font-semibold text-sm md:text-lg flex items-center gap-2">🚀 多平台同步預覽與發佈</div>
                 <button type="button" onclick="closePublishModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-medium border border-gray-700 cursor-pointer shrink-0">❌ 取消</button>
             </div>
             <div id="publish-modal-body" class="p-4 md:p-6 overflow-y-auto flex-1 bg-gray-50 flex flex-col">
                 
-                <!-- 手機版專屬：切換按鈕區 -->
-                <div class="md:hidden flex gap-2 mb-4">
+                <!-- 三平台切換按鈕區 (預設 FB 啟用) -->
+                <div class="flex gap-2 mb-4 shrink-0">
                     <button type="button" onclick="switchPubTab('fb')" id="pub-tab-fb" class="pub-tab-btn active-fb">📘 Facebook</button>
                     <button type="button" onclick="switchPubTab('ig')" id="pub-tab-ig" class="pub-tab-btn">📸 Instagram</button>
                     <button type="button" onclick="switchPubTab('th')" id="pub-tab-th" class="pub-tab-btn">🧵 Threads</button>
                 </div>
 
-                <!-- 選擇發布平台 (桌機版顯示於上方) -->
-                <div class="hidden md:flex bg-white p-4 rounded-xl border border-gray-200 gap-6 items-center mb-6">
-                    <span class="font-bold text-gray-800 text-sm md:text-base">📍 勾選欲發佈的平台 (Threads 暫存草稿區)：</span>
-                    <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-blue-600">
-                        <input type="checkbox" id="pub-target-fb" checked class="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
+                <!-- 平台發布目標勾選區 -->
+                <div class="bg-white p-3.5 rounded-xl border border-gray-200 flex gap-6 items-center mb-4 shrink-0">
+                    <span class="font-bold text-gray-800 text-sm md:text-base">📍 勾選欲發佈的目標平台：</span>
+                    <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-blue-600 text-sm">
+                        <input type="checkbox" id="pub-target-fb" checked class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
                         📘 Facebook 專頁
                     </label>
-                    <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-pink-600">
-                        <input type="checkbox" id="pub-target-ig" checked class="w-5 h-5 rounded text-pink-600 focus:ring-pink-500 cursor-pointer">
+                    <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-pink-600 text-sm">
+                        <input type="checkbox" id="pub-target-ig" checked class="w-4 h-4 rounded text-pink-600 focus:ring-pink-500 cursor-pointer">
                         📸 Instagram 商業
                     </label>
                 </div>
 
-                <!-- 三平台排版分頁/編輯區 (桌機: grid 3欄, 手機: 單欄切換) -->
-                <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
+                <!-- 三平台分頁容器 (預設僅顯示 FB 區塊) -->
+                <div class="flex-1 flex flex-col h-full overflow-hidden">
                     <!-- FB 專屬預覽編輯區 -->
-                    <div id="pub-panel-fb" class="pub-panel active md:!block bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
+                    <div id="pub-panel-fb" class="pub-panel active bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1 h-full">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-3">
-                            <h4 class="font-bold text-blue-600 flex items-center gap-1.5 text-base">📘 FB 導購長文</h4>
+                            <h4 class="font-bold text-blue-600 flex items-center gap-1.5 text-base">📘 FB 導購長文 (含自動固定尾巴)</h4>
                         </div>
-                        <div class="md:hidden flex items-center gap-2 mb-3">
-                            <input type="checkbox" id="pub-target-fb-mobile" checked class="w-5 h-5 rounded text-blue-600 cursor-pointer" onchange="document.getElementById('pub-target-fb').checked = this.checked">
-                            <label class="font-bold text-blue-600 text-sm">啟用發佈至 Facebook</label>
-                        </div>
-                        <textarea id="pub-fb-text" class="w-full flex-1 border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-blue-600 focus:outline-none resize-none min-h-[300px]"></textarea>
+                        <textarea id="pub-fb-text" class="w-full h-[calc(100%-40px)] border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-blue-600 focus:outline-none resize-none"></textarea>
                     </div>
 
                     <!-- IG 專屬預覽編輯區 -->
-                    <div id="pub-panel-ig" class="pub-panel md:!block bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
+                    <div id="pub-panel-ig" class="pub-panel bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1 h-full">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-3">
                             <h4 class="font-bold text-pink-600 flex items-center gap-1.5 text-base">📸 IG 視覺精煉</h4>
                         </div>
-                        <div class="md:hidden flex items-center gap-2 mb-3">
-                            <input type="checkbox" id="pub-target-ig-mobile" checked class="w-5 h-5 rounded text-pink-600 cursor-pointer" onchange="document.getElementById('pub-target-ig').checked = this.checked">
-                            <label class="font-bold text-pink-600 text-sm">啟用發佈至 Instagram</label>
-                        </div>
-                        <textarea id="pub-ig-text" class="w-full flex-1 border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-pink-600 focus:outline-none resize-none min-h-[300px]"></textarea>
+                        <textarea id="pub-ig-text" class="w-full h-[calc(100%-40px)] border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-pink-600 focus:outline-none resize-none"></textarea>
                     </div>
 
                     <!-- Threads 專屬預覽編輯區 -->
-                    <div id="pub-panel-th" class="pub-panel md:!block bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col h-full">
+                    <div id="pub-panel-th" class="pub-panel bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1 h-full">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-3">
-                            <h4 class="font-bold text-gray-800 flex items-center gap-1.5 text-base">🧵 Threads 真實互動</h4>
+                            <h4 class="font-bold text-gray-800 flex items-center gap-1.5 text-base">🧵 Threads 真實互動 (暫存草稿)</h4>
                         </div>
-                        <div class="bg-gray-100 text-gray-500 text-xs p-2 rounded-lg mb-3">
+                        <div class="bg-gray-100 text-gray-500 text-xs p-2 rounded-lg mb-2">
                             ※ Threads 暫不提供自動發佈，請在此編輯後手動複製。
                         </div>
-                        <textarea id="pub-th-text" class="w-full flex-1 border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-gray-600 focus:outline-none resize-none min-h-[300px]"></textarea>
+                        <textarea id="pub-th-text" class="w-full h-[calc(100%-70px)] border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-gray-600 focus:outline-none resize-none"></textarea>
                     </div>
                 </div>
 
-                <!-- 發佈按鈕 -->
-                <div class="pt-6 shrink-0 mt-auto">
-                    <button type="button" onclick="executePublishing()" id="pub-submit-btn" class="w-full bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-95 text-white py-4 rounded-xl font-bold shadow-lg text-base md:text-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2">
-                        🚀 確定同步發佈至選取的 FB / IG 平台
+                <!-- 統一名稱按鈕：一鍵發布 -->
+                <div class="pt-4 shrink-0 mt-auto">
+                    <button type="button" onclick="executePublishing()" id="pub-submit-btn" class="w-full bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-95 text-white py-3.5 rounded-xl font-bold shadow-lg text-base md:text-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2">
+                        🚀 一鍵發布
                     </button>
                 </div>
             </div>
@@ -602,6 +580,7 @@
 #時尚的盡頭是簡約
 #簡約不簡單`;
 
+        // 📌 預覽視窗分頁切換邏輯
         window.switchPubTab = function(platform) {
             document.getElementById('pub-tab-fb').className = 'pub-tab-btn';
             document.getElementById('pub-tab-ig').className = 'pub-tab-btn';
@@ -720,9 +699,8 @@
             document.getElementById('pub-ig-text').value = igText;
             document.getElementById('pub-th-text').value = thText;
             
-            if (window.innerWidth < 768) {
-                switchPubTab('fb');
-            }
+            // 每次打開預覽視窗時，預設顯示 Facebook 分頁
+            switchPubTab('fb');
 
             document.getElementById('publish-modal').classList.remove('hidden');
         };
@@ -731,13 +709,8 @@
             document.getElementById('publish-modal').classList.add('hidden');
         };
 
-        // 🚀 關鍵修復：確保發布時完整攜帶圖片的 imageBase64 參數給後端
+        // 🚀 一鍵發布核心 API 呼叫 (完整攜帶圖片 base64)
         window.executePublishing = async function() {
-            if (window.innerWidth < 768) {
-                 document.getElementById('pub-target-fb').checked = document.getElementById('pub-target-fb-mobile').checked;
-                 document.getElementById('pub-target-ig').checked = document.getElementById('pub-target-ig-mobile').checked;
-            }
-
             const pubFb = document.getElementById('pub-target-fb').checked;
             const pubIg = document.getElementById('pub-target-ig').checked;
             const fbCaption = document.getElementById('pub-fb-text').value;
@@ -758,7 +731,7 @@
                         publishIg: pubIg,
                         fbCaption: fbCaption,
                         igCaption: igCaption,
-                        imageBase64: currentUploadedImageBase64  // 👈 這裡就是關鍵！把圖片帶回去，讓 FB 成功辨識圖文並茂
+                        imageBase64: currentUploadedImageBase64
                     })
                 });
 
@@ -773,7 +746,7 @@
                 alert('連線發生錯誤：' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = '🚀 確定同步發佈至選取的 FB / IG 平台';
+                submitBtn.innerText = '🚀 一鍵發布';
             }
         };
 
