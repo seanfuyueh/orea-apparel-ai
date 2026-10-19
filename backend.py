@@ -168,7 +168,7 @@ async def publish_post(request: Request, data: dict):
                     print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
-       # 3. 發布至 Facebook 粉絲專頁 (全面改走 /feed 端點，徹底避開照片上傳的權限阻擋)
+        # 3. 發布至 Facebook 粉絲專頁 (改走 /feed 端點，徹底避開照片上傳的權限阻擋)
         if publish_fb:
             try:
                 page_access_token = FB_PAGE_ACCESS_TOKEN
@@ -207,6 +207,13 @@ async def publish_post(request: Request, data: dict):
             except Exception as fb_err:
                 print(f"🔥 [FB Publish Exception Error]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
+
+        return JSONResponse(content={"status": "complete", "results": results})
+
+    except Exception as e:
+        print(f"🔥 [Publish General Error]: {str(e)}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
 # ========================================================
 # 📊 韓國東大門 IG 實時爆款趨勢分析
 # ========================================================
