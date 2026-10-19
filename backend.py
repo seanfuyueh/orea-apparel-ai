@@ -168,23 +168,25 @@ async def publish_post(request: Request, data: dict):
                     print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
-        # 3. 發布至 Facebook 粉絲專頁 (改走 /feed 端點，徹底避開照片上傳的權限阻擋)
+        # 3. 發布至 Facebook 粉絲專頁 (強制透過圖形 API 抓取該粉專的專屬 Access Token)
         if publish_fb:
             try:
                 page_access_token = FB_PAGE_ACCESS_TOKEN
-                if not page_access_token:
-                    me_url = f"https://graph.facebook.com/v22.0/me/accounts"
-                    me_params = {"access_token": INSTAGRAM_ACCESS_TOKEN}
-                    me_res = requests.get(me_url, params=me_params, timeout=10).json()
-                    if "data" in me_res:
-                        for page in me_res["data"]:
+                
+                # 自動向 Facebook 查詢該粉專的專屬永久 Token
+                try:
+                    pages_url = f"https://graph.facebook.com/v22.0/me/accounts"
+                    pages_res = requests.get(pages_url, params={"access_token": FB_PAGE_ACCESS_TOKEN}, timeout=10).json()
+                    if "data" in pages_res:
+                        for page in pages_res["data"]:
                             if str(page.get("id")) == str(FB_PAGE_ID):
                                 page_access_token = page.get("access_token")
+                                print("✅ [FB Token] 成功取得粉專專屬 Access Token")
                                 break
-                    if not page_access_token:
-                        page_access_token = INSTAGRAM_ACCESS_TOKEN
+                except Exception as token_err:
+                    print(f"⚠️ [FB Token Notice]: {token_err}")
 
-                # 將圖片網址（如果有的話）直接附在貼文文字下方，改走穩定的 /feed 發文
+                # 將圖片網址直接附在貼文文字下方，走穩定的 /feed 發文
                 final_fb_message = fb_caption
                 if public_image_url:
                     final_fb_message += f"\n\n📸 商品實拍圖片參考：\n{public_image_url}"
@@ -207,12 +209,6 @@ async def publish_post(request: Request, data: dict):
             except Exception as fb_err:
                 print(f"🔥 [FB Publish Exception Error]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
-
-        return JSONResponse(content={"status": "complete", "results": results})
-
-    except Exception as e:
-        print(f"🔥 [Publish General Error]: {str(e)}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
 # 📊 韓國東大門 IG 實時爆款趨勢分析
@@ -339,6 +335,7 @@ async def get_realtime_trends():
 # ========================================================
 # 🚀 精準檔案路由
 # ========================================================
+
 @app.get("/")
 @app.get("/index.html")
 async def read_index():
