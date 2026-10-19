@@ -33,7 +33,7 @@ INSTAGRAM_ACCESS_TOKEN = os.environ.get(
 )
 INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595")
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
-FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")  # 專屬粉專 Token (若有設定則優先使用)
+FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")  # 專屬粉專 Token
 IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
 
 # ========================================================
@@ -132,7 +132,7 @@ async def publish_post(request: Request, data: dict):
 
         results = {}
 
-        # 2. 發布至 Instagram (加入 3 秒緩衝等待，解決 9007 錯誤)
+        # 2. 發布至 Instagram
         if publish_ig:
             if not public_image_url:
                 results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
@@ -150,7 +150,6 @@ async def publish_post(request: Request, data: dict):
                     creation_id = c_res.get("id")
 
                     if creation_id:
-                        # ⏳ 等待 3 秒讓 IG 伺服器準備好圖片素材
                         print("⏳ [IG Wait] 等待 3 秒讓 IG 處理圖片素材...")
                         time.sleep(3)
 
@@ -168,12 +167,10 @@ async def publish_post(request: Request, data: dict):
                     print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
-        # 3. 發布至 Facebook 粉絲專頁 (強制透過圖形 API 抓取該粉專的專屬 Access Token)
+        # 3. 發布至 Facebook 粉絲專頁
         if publish_fb:
             try:
                 page_access_token = FB_PAGE_ACCESS_TOKEN
-                
-                # 自動向 Facebook 查詢該粉專的專屬永久 Token
                 try:
                     pages_url = f"https://graph.facebook.com/v22.0/me/accounts"
                     pages_res = requests.get(pages_url, params={"access_token": FB_PAGE_ACCESS_TOKEN}, timeout=10).json()
@@ -186,7 +183,6 @@ async def publish_post(request: Request, data: dict):
                 except Exception as token_err:
                     print(f"⚠️ [FB Token Notice]: {token_err}")
 
-                # 將圖片網址直接附在貼文文字下方，走穩定的 /feed 發文
                 final_fb_message = fb_caption
                 if public_image_url:
                     final_fb_message += f"\n\n📸 商品實拍圖片參考：\n{public_image_url}"
@@ -209,6 +205,12 @@ async def publish_post(request: Request, data: dict):
             except Exception as fb_err:
                 print(f"🔥 [FB Publish Exception Error]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
+
+        return JSONResponse(content={"status": "complete", "results": results})
+
+    except Exception as e:
+        print(f"🔥 [Publish General Error]: {str(e)}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
 # 📊 韓國東大門 IG 實時爆款趨勢分析
@@ -335,7 +337,6 @@ async def get_realtime_trends():
 # ========================================================
 # 🚀 精準檔案路由
 # ========================================================
-
 @app.get("/")
 @app.get("/index.html")
 async def read_index():
