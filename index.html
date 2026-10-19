@@ -518,7 +518,7 @@
                     <button type="button" onclick="switchPubTab('th')" id="pub-tab-th" class="pub-tab-btn">🧵 Threads</button>
                 </div>
 
-                <!-- 選擇發布平台 (桌機版顯示於上方，手機版顯示於各 Panel 內或統一底部) -->
+                <!-- 選擇發布平台 (桌機版顯示於上方) -->
                 <div class="hidden md:flex bg-white p-4 rounded-xl border border-gray-200 gap-6 items-center mb-6">
                     <span class="font-bold text-gray-800 text-sm md:text-base">📍 勾選欲發佈的平台 (Threads 暫存草稿區)：</span>
                     <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-blue-600">
@@ -623,18 +623,16 @@
             }
         };
 
-        // 📌 新版清洗邏輯：剝離 Markdown 標題等雜訊
+        // 📌 精準清洗與擷取邏輯（相容多種標題格式並自動帶入）
         function extractPlatformContent(rawText) {
             let fbText = "";
             let igText = "";
             let thText = "";
 
-            // 移除最上層可能包含的「# 【情境 A...】」
-            let cleanedRawText = rawText.replace(/^(?:#+\s*)?【情境\s*[A-Z].*?】\s*/i, '');
-
-            const fbMatch = cleanedRawText.match(/【📘 Facebook.*?】([\s\S]*?)(?=【📸 Instagram|【🧵 Threads|$)/i);
-            const igMatch = cleanedRawText.match(/【📸 Instagram.*?】([\s\S]*?)(?=【📘 Facebook|【🧵 Threads|$)/i);
-            const thMatch = cleanedRawText.match(/【🧵 Threads.*?】([\s\S]*?)(?=【📘 Facebook|【📸 Instagram|$)/i);
+            // 支援【Facebook 專屬文案】或【📘 Facebook 專屬文案】等各種變化
+            const fbMatch = rawText.match(/(?:【[^】]*Facebook[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Instagram|Threads)[^】]*】)|$)/i);
+            const igMatch = rawText.match(/(?:【[^】]*Instagram[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Facebook|Threads)[^】]*】)|$)/i);
+            const thMatch = rawText.match(/(?:【[^】]*Threads[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Facebook|Instagram)[^】]*】)|$)/i);
 
             const cleanText = (text) => {
                 if (!text) return "";
@@ -653,7 +651,7 @@
             return { fbText, igText, thText };
         }
 
-        // 📌 全效能 Markdown 渲染輔助函式 (精準切割情境並產生對應按鈕)
+        // 📌 全效能 Markdown 渲染輔助函式 (僅在【情境】區塊下方附上發布按鈕)
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -682,14 +680,19 @@
                 el.innerText = text || '';
             }
 
+            // 確保只有包含「情境」的區塊才切分並加上發布按鈕，頂部的視覺分析絕對不加按鈕！
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
-                // 正確按照【情境 A】、【情境 B】去切割區塊
+                // 使用嚴格的正則切割出各個情境區塊
                 const blocks = text.split(/(?=(?:#+\s*)?【情境\s*[A-Z])/g);
 
                 if (blocks.length > 1) {
-                    el.innerHTML = ''; 
+                    // 保留頂部的視覺分析內容（如果有）
+                    const topAnalysisText = blocks[0].includes('【情境') ? '' : blocks[0];
+                    const scenarioBlocks = blocks.filter(b => b.includes('【情境'));
 
-                    blocks.forEach((blockText) => {
+                    el.innerHTML = topAnalysisText ? marked.parse(topAnalysisText) : ''; 
+
+                    scenarioBlocks.forEach((blockText) => {
                         if (!blockText.trim()) return;
 
                         const cardDiv = document.createElement('div');
@@ -710,16 +713,6 @@
                         cardDiv.appendChild(btnDiv);
                         el.appendChild(cardDiv);
                     });
-                } else {
-                    const pubBtnDiv = document.createElement('div');
-                    pubBtnDiv.className = 'mt-6 pt-4 border-t border-gray-200 flex justify-end';
-                    const escapedText = encodeURIComponent(text);
-                    pubBtnDiv.innerHTML = `
-                        <button type="button" onclick="openPublishModalSingle('${escapedText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-6 py-3 rounded-xl font-bold shadow-md text-sm md:text-base transition-all transform active:scale-95 cursor-pointer flex items-center gap-2">
-                            🚀 一鍵發佈至 FB / IG (預覽與發佈)
-                        </button>
-                    `;
-                    el.appendChild(pubBtnDiv);
                 }
             }
         };
@@ -1067,7 +1060,7 @@
             const thContent = pick(["大家覺得這件拿來當上班戰袍會不會太浮誇？我一拿到手就忍不住想包色了！", "韓國連線現場真的搶翻天... 這款的材質我給 100 分！妳們喜歡哪一色？"]);
             
             const group = `【📘 Facebook 專屬文案】\n文案標題：${fbTitle}\n內文：${fbContent}\nHashtags：#韓國連線 #質感單品\n\n【📸 Instagram 專屬文案】\n內文：${igContent}\nHashtags：#東大門代購\n\n【🧵 Threads 專屬文案】\n內文：${thContent}`;
-            return `【情境 A | 法式簡約】\n${group}\n\n【情境 B | 韓系知性】\n${group}\n\n【情境 C | 日常慵懶】\n${group}`;
+            return `視覺分析與品項辨識：這是一件精緻的高質感服飾。\n\n【情境 A | 法式簡約】\n${group}\n\n【情境 B | 韓系知性】\n${group}\n\n【情境 C | 日常慵懶】\n${group}`;
         }
 
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
@@ -1119,13 +1112,12 @@
             
             const fullPrompt = `你是一位專業的韓國時尚品牌行銷總監。請針對這張圖片進行「真實視覺分析與文案生成」：
 1. 【嚴格品項辨識】：請先仔細看圖，這究竟是「衣服、褲子、包包、鞋子還是飾品配件」？
-2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用「揹起來、手提、戴上、百搭、容量實用、皮革質感、五金細節」等正確詞彙。
-3. 【真實細節描繪】：根據圖片中展示的真實顏色、材質與設計結構進行客觀描述。
-4. 【生成 3 組情境文案】：請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
-在每一個情境區塊內，都必須同時產出以下三個平台的專屬文案：
-- 【📘 Facebook 專屬文案】：語氣重視信任感、詳細與 CP 值。包含「文案標題：」、「內文：」、「Hashtags：」欄位。
-- 【📸 Instagram 專屬文案】：語氣極致簡約、重視視覺美感。包含「內文：」、「Hashtags：」欄位。
-- 【🧵 Threads 專屬文案】：極具「真實對話感」、「生活碎碎念」。包含「內文：」欄位。
+2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用項目正確的動詞。
+3. 【生成 3 組情境文案】：請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
+在每一個情境區塊內，都必須包含以下三個標題開頭：
+- 【📘 Facebook 專屬文案】
+- 【📸 Instagram 專屬文案】
+- 【🧵 Threads 專屬文案】
 
 補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
@@ -1156,10 +1148,10 @@
             
             const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別。
 請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
-在每一個情境區塊內，都必須同時產出以下三個平台的專屬文案：
-- 【📘 Facebook 專屬文案】：語氣重視信任感、詳細與 CP 值。包含「文案標題：」、「內文：」、「Hashtags：」欄位。
-- 【📸 Instagram 專屬文案】：語氣極致簡約、重視視覺美感。包含「內文：」、「Hashtags：」欄位。
-- 【🧵 Threads 專屬文案】：極具「真實對話感」、「生活碎碎念」。包含「內文：」欄位。
+在每一個情境區塊內，都必須包含以下三個標題開頭：
+- 【📘 Facebook 專屬文案】
+- 【📸 Instagram 專屬文案】
+- 【🧵 Threads 專屬文案】
 
 ${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
