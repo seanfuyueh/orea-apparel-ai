@@ -167,7 +167,7 @@ async def publish_post(request: Request, data: dict):
                     print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
-        # 3. 發布至 Facebook 粉絲專頁
+        # 3. 發布至 Facebook 粉絲專頁 (最佳化：有圖走 /photos 大圖發布，無圖走 /feed 純文字)
         if publish_fb:
             try:
                 page_access_token = FB_PAGE_ACCESS_TOKEN
@@ -183,15 +183,19 @@ async def publish_post(request: Request, data: dict):
                 except Exception as token_err:
                     print(f"⚠️ [FB Token Notice]: {token_err}")
 
-                final_fb_message = fb_caption
                 if public_image_url:
-                    final_fb_message += f"\n\n📸 商品實拍圖片參考：\n{public_image_url}"
-
-                fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/feed"
-                fb_payload = {
-                    "message": final_fb_message,
-                    "access_token": page_access_token
-                }
+                    fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
+                    fb_payload = {
+                        "url": public_image_url,
+                        "caption": fb_caption,
+                        "access_token": page_access_token
+                    }
+                else:
+                    fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/feed"
+                    fb_payload = {
+                        "message": fb_caption,
+                        "access_token": page_access_token
+                    }
                 
                 fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
                 fb_res = fb_response.json()
