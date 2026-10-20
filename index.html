@@ -164,7 +164,7 @@
                 <span>📂</span> 歷史紀錄 <span id="cloud-status" class="text-xs text-green-400 font-normal">(雲端同步中)</span>
             </button>
             <div class="text-sm text-gray-400 text-center">
-                LovelyByKorea Admin v4.6
+                LovelyByKorea Admin v4.5
             </div>
         </div>
     </aside>
@@ -232,7 +232,7 @@
             </div>
 
             <!-- 2. 文案生成 -->
-            <div id="tab-copywriting" class="hidden space-y-6 pt-2">
+            <div id="tab-general-copy" class="hidden space-y-6 pt-2">
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
                     <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
                         <h3 class="font-bold text-gray-900 text-base md:text-lg">📄 純文字文案生成設定</h3>
@@ -547,10 +547,10 @@
                     </div>
                 </div>
 
-                <!-- 統一名稱按鈕：一鍵發佈 -->
+                <!-- 統一名稱按鈕：一鍵發布 -->
                 <div class="pt-4 shrink-0 mt-auto">
                     <button type="button" onclick="executePublishing()" id="pub-submit-btn" class="w-full bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-95 text-white py-3.5 rounded-xl font-bold shadow-lg text-base md:text-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2">
-                        🚀 一鍵發佈
+                        🚀 一鍵發布
                     </button>
                 </div>
             </div>
@@ -679,7 +679,7 @@
                         const escapedBlockText = encodeURIComponent(blockText);
                         btnDiv.innerHTML = `
                             <button type="button" onclick="openPublishModalSingle('${escapedBlockText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-bold shadow-md text-sm transition-transform active:scale-95 cursor-pointer flex items-center gap-2">
-                                🚀 一鍵發佈
+                                🚀 一鍵發佈選中此文案至 FB / IG
                             </button>
                         `;
                         cardDiv.appendChild(btnDiv);
@@ -709,7 +709,7 @@
             document.getElementById('publish-modal').classList.add('hidden');
         };
 
-        // 🚀 一鍵發佈核心 API 呼叫 (完整攜帶圖片 base64)
+        // 🚀 一鍵發布核心 API 呼叫 (完整攜帶圖片 base64)
         window.executePublishing = async function() {
             const pubFb = document.getElementById('pub-target-fb').checked;
             const pubIg = document.getElementById('pub-target-ig').checked;
@@ -746,7 +746,7 @@
                 alert('連線發生錯誤：' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = '🚀 一鍵發佈';
+                submitBtn.innerText = '🚀 一鍵發布';
             }
         };
 
@@ -758,7 +758,7 @@
         window.deletePromptFromCloud = async function() {};
 
         window.switchTab = function(tab, saveState = true) {
-            ['tab-image-copy', 'tab-copywriting', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
+            ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
                 const el = document.getElementById(id);
                 if(el) el.classList.add('hidden');
             });
@@ -771,7 +771,7 @@
                 if(el) el.className = 'flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer';
             });
 
-            let targetNavName = tab;
+            let targetNavName = tab === 'copywriting' ? 'copywriting' : tab;
             let currentDesktopNav = document.getElementById(`desktop-nav-${targetNavName}`);
             let currentMobileNav = document.getElementById(`mobile-nav-${targetNavName}`);
 
@@ -779,7 +779,7 @@
                 document.getElementById('tab-image-copy').classList.remove('hidden');
                 document.getElementById('page-title').innerText = '圖片生成文案';
             } else if (tab === 'copywriting') {
-                document.getElementById('tab-copywriting').classList.remove('hidden');
+                document.getElementById('tab-general-copy').classList.remove('hidden');
                 document.getElementById('page-title').innerText = '文案生成';
             } else if (tab === 'video-copy') {
                 document.getElementById('tab-video-copy').classList.remove('hidden');
@@ -885,4 +885,490 @@
             const file = event.target.files[0];
             if (type === 'image' && file) {
                 currentUploadedImageFilename = file.name;
-                const
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxDim = 1024;
+                        if (width > maxDim || height > maxDim) {
+                            if (width > height) {
+                                height = Math.round((height * maxDim) / width);
+                                width = maxDim;
+                            } else {
+                                width = Math.round((width * maxDim) / height);
+                                height = maxDim;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        currentUploadedImageBase64 = compressedDataUrl.split(',')[1];
+                        
+                        document.getElementById('image-preview').src = compressedDataUrl;
+                        document.getElementById('image-preview').classList.remove('hidden');
+                        document.getElementById('preview-placeholder-img').classList.add('hidden');
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else if (type === 'video' && file) {
+                currentUploadedVideoFilename = file.name;
+                currentUploadedVideoBlobUrl = URL.createObjectURL(file);
+                document.getElementById('video-preview').src = currentUploadedVideoBlobUrl;
+                document.getElementById('video-preview').classList.remove('hidden');
+                document.getElementById('preview-placeholder-vid').classList.add('hidden');
+            }
+        };
+
+        window.resetModule = function(mode) {
+            hasGeneratedMap[mode] = false;
+            if (mode === 'img') {
+                document.getElementById('image-file').value = '';
+                document.getElementById('image-preview').src = '';
+                document.getElementById('image-preview').classList.add('hidden');
+                document.getElementById('preview-placeholder-img').classList.remove('hidden');
+                document.getElementById('preset-prompts-img').value = '';
+                document.getElementById('prompt-text-img').value = '';
+                document.getElementById('delete-prompt-btn-img').classList.add('hidden');
+                document.getElementById('submit-btn-img').innerText = '✨ 分析圖片並生成 3 組文案';
+                document.getElementById('submit-btn-img').disabled = false;
+                document.getElementById('result-box-img').innerText = '尚未開始生成，請上傳圖片並點擊按鈕。';
+                currentUploadedImageBase64 = null;
+            } else if (mode === 'gen') {
+                document.getElementById('gen-topic').value = '';
+                document.getElementById('preset-prompts-gen').value = '';
+                document.getElementById('gen-style').value = '';
+                document.getElementById('delete-prompt-btn-gen').classList.add('hidden');
+                document.getElementById('submit-btn-gen').innerText = '✨ 生成 3 組專屬文案';
+                document.getElementById('submit-btn-gen').disabled = false;
+                document.getElementById('result-box-gen').innerText = '尚未開始生成，請輸入主題與風格並點擊按鈕。';
+            } else if (mode === 'vid') {
+                document.getElementById('video-file').value = '';
+                document.getElementById('video-preview').src = '';
+                document.getElementById('video-preview').classList.add('hidden');
+                document.getElementById('preview-placeholder-vid').classList.remove('hidden');
+                document.getElementById('preset-prompts-vid').value = '';
+                document.getElementById('prompt-text-vid').value = '';
+                document.getElementById('delete-prompt-btn-vid').classList.add('hidden');
+                document.getElementById('submit-btn-vid').innerText = '🎬 生成 Reels 專屬腳本';
+                document.getElementById('submit-btn-vid').disabled = false;
+                document.getElementById('result-box-vid').innerText = '尚未開始生成，請上傳影片並點擊按鈕。';
+                currentUploadedVideoBlobUrl = null;
+            } else if (mode === 'trend') {
+                document.getElementById('trend-btn').innerText = '📊 分析最新趨勢與網拍範例';
+                document.getElementById('trend-btn').disabled = false;
+                document.getElementById('trend-result-box').innerText = '點擊上方按鈕開始分析。';
+            }
+        };
+
+        window.selectPresetPrompt = function(mode) {
+            const select = document.getElementById(`preset-prompts-${mode}`);
+            const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
+            const deleteBtn = document.getElementById(`delete-prompt-btn-${mode}`);
+            if (select && input && select.value) {
+                input.value = select.value;
+                if (select.selectedOptions[0] && select.selectedOptions[0].text.startsWith('💾')) {
+                    if(deleteBtn) deleteBtn.classList.remove('hidden');
+                } else {
+                    if(deleteBtn) deleteBtn.classList.add('hidden');
+                }
+            } else {
+                if(deleteBtn) deleteBtn.classList.add('hidden');
+            }
+        };
+
+        window.saveCustomPrompt = async function(mode) {
+            const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
+            if (!input || !input.value.trim()) { alert('請先輸入想要儲存的項目！'); return; }
+            await window.savePromptToCloud(mode, input.value.trim());
+            input.value = '';
+            alert('已成功儲存至雲端，所有裝置將同步更新！');
+        };
+
+        window.deleteSelectedPrompt = async function(mode) {
+            const select = document.getElementById(`preset-prompts-${mode}`);
+            if (!select || !select.value) return;
+            if (confirm(`確定要從雲端刪除自訂項目「${select.value}」嗎？`)) {
+                await window.deletePromptFromCloud(mode, select.value);
+                document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`).value = '';
+                document.getElementById(`delete-prompt-btn-${mode}`).classList.add('hidden');
+            }
+        };
+
+        window.loadSavedPrompts = async function(mode) {
+            const select = document.getElementById(`preset-prompts-${mode}`);
+            if (!select) return;
+            let defaults = mode === 'img' ? ['強調材質與細節質感、適合日常搭配', '強調大容量與實用性、通勤約會皆宜', '質感高級感、韓國連線熱銷爆款'] : mode === 'vid' ? ['Reels 節奏明快、強調實物細節特寫', '30秒質感生活感短片、配音樂好搭', '高級感細節介紹、重點展示優點'] : ['質感簡約、知性小香風、減齡休閒', '微寬鬆顯瘦、日常百搭通勤風', '高級感約會搭配、溫柔氣質風'];
+            select.innerHTML = `<option value="">-- 選擇常用或自訂項目 --</option>` + defaults.map(d => `<option value="${d}">${d}</option>`).join('');
+            
+            if (typeof window.loadPromptsFromCloud === 'function') {
+                let cloudSaved = await window.loadPromptsFromCloud(mode);
+                cloudSaved.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.text; opt.text = '💾 ' + item.text;
+                    select.appendChild(opt);
+                });
+            }
+        };
+
+        function getDynamicMockResult(type, query = '') {
+            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+            const fbTitle = pick(["一眼就被精緻的細節吸引！", "實物質感真的太棒了，完全超出期待。"]);
+            const fbContent = pick(["無論通勤或週末約會，都能完美點綴妳的整體造型。這款材質輕盈且版型修身，絕對是本季衣櫃必備款！", "設計簡約卻充滿高級感，細節處理得非常用心，穿上去立刻提升整體氣質，是本季不可錯過的百搭首選！"]);
+            const igContent = pick(["高級感拉滿✨ 隨手一搭就非常有型！", "氣質歐膩比備款🛒 實物質感超棒！"]);
+            const thContent = pick(["大家覺得這件拿來當上班戰袍會不會太浮誇？我一拿到手就忍不住想包色了！", "韓國連線現場真的搶翻天... 這款的材質我給 100 分！妳們喜歡哪一色？"]);
+            
+            const group = `【📘 Facebook 專屬文案】\n文案標題：${fbTitle}\n內文：${fbContent}\nHashtags：#韓國連線 #質感單品\n\n【📸 Instagram 專屬文案】\n內文：${igContent}\nHashtags：#東大門代購\n\n【🧵 Threads 專屬文案】\n內文：${thContent}`;
+            return `視覺分析與品項辨識：這是一件精緻的高質感服飾。\n\n【情境 A | 法式簡約】\n${group}\n\n【情境 B | 韓系知性】\n${group}\n\n【情境 C | 日常慵懶】\n${group}`;
+        }
+
+        window.callGeminiAPI = async function(prompt, imageBase64 = null) {
+            const isVid = prompt.includes('短影音') || prompt.includes('腳本');
+            const isGen = prompt.includes('品項');
+            const toggleId = isVid ? 'mock-ai-toggle-vid' : (isGen ? 'mock-ai-toggle-gen' : 'mock-ai-toggle-img');
+            const toggleEl = document.getElementById(toggleId);
+            const useMock = toggleEl ? toggleEl.checked : false;
+
+            if (useMock) return getDynamicMockResult(prompt);
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt, imageBase64: imageBase64 })
+                });
+
+                if (!response.ok) {
+                    const errJson = await response.json().catch(() => ({}));
+                    throw new Error(`後端伺服器錯誤 (狀態碼: ${response.status}) ${errJson.error || ''}`);
+                }
+
+                const data = await response.json();
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    return data.candidates[0].content.parts[0].text;
+                } else if (data.text) {
+                    return data.text;
+                } else {
+                    throw new Error("API 回傳成功但未包含文字內容");
+                }
+            } catch (error) {
+                console.warn("後端 AI 呼叫失敗，已自動觸發備用 AI：", error);
+                return getDynamicMockResult(prompt) + `\n\n(系統備註：因後端連線異常 [${error.message}]，本次已自動啟用備用生成模式。)`;
+            }
+        };
+
+        window.generateImageText = async function() {
+            const fileInput = document.getElementById('image-file');
+            const promptText = document.getElementById('prompt-text-img').value;
+            const submitBtn = document.getElementById('submit-btn-img');
+            if (fileInput.files.length === 0 && !currentUploadedImageBase64) { alert('請先上傳圖片！'); return; }
+
+            const isRegen = hasGeneratedMap.img;
+            submitBtn.disabled = true; 
+            submitBtn.innerText = isRegen ? '🎲 重新分析與生成中...' : 'AI 視覺分析中...';
+
+            let variationRequirement = isRegen ? "\n【極度重要要求：使用者點擊了重新生成，請務必換一套截然不同的情境訴求、排版結構與表達風格，絕不可與上一版重複！】" : "";
+            
+            const fullPrompt = `你是一位專業的韓國時尚品牌行銷總監。請針對這張圖片進行「真實視覺分析與文案生成」：
+1. 【嚴格品項辨識】：請先仔細看圖，這究竟是「衣服、褲子、包包、鞋子還是飾品配件」？
+2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用項目正確的動詞。
+3. 【生成 3 組情境文案】：請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
+在每一個情境區塊內，都必須包含以下三個標題開頭：
+- 【📘 Facebook 專屬文案】
+- 【📸 Instagram 專屬文案】
+- 【🧵 Threads 專屬文案】
+
+補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
+(強制更新防快取碼: ${Date.now()})`; 
+
+            const resText = await window.callGeminiAPI(fullPrompt, currentUploadedImageBase64);
+            window.renderMarkdownContent('result-box-img', resText);
+
+            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
+                window.saveToHistory('image', (promptText || '圖片視覺文案') + (isRegen ? ' (重新生成)' : ''), resText, `data:image/jpeg;base64,${currentUploadedImageBase64}`);
+            }
+
+            hasGeneratedMap.img = true;
+            submitBtn.disabled = false; 
+            submitBtn.innerText = '重新生成';
+        };
+
+        window.generateTextOnly = async function() {
+            const topic = document.getElementById('gen-topic').value;
+            const style = document.getElementById('gen-style').value;
+            const submitBtn = document.getElementById('submit-btn-gen');
+            if (!topic) { alert('請輸入商品主題/品項！'); return; }
+
+            const isRegen = hasGeneratedMap.gen;
+            submitBtn.disabled = true; 
+            submitBtn.innerText = isRegen ? '🎲 重新生成全新創意...' : 'AI 生成中...';
+
+            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
+            
+            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別。
+請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
+在每一個情境區塊內，都必須包含以下三個標題開頭：
+- 【📘 Facebook 專屬文案】
+- 【📸 Instagram 專屬文案】
+- 【🧵 Threads 專屬文案】
+
+${variationRequirement}
+(強制更新防快取碼: ${Date.now()})`; 
+
+            const resText = await window.callGeminiAPI(fullPrompt);
+            window.renderMarkdownContent('result-box-gen', resText);
+
+            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
+                window.saveToHistory('text', topic + (isRegen ? ' (重新生成)' : ''), resText, null);
+            }
+
+            hasGeneratedMap.gen = true;
+            submitBtn.disabled = false; 
+            submitBtn.innerText = '重新生成';
+        };
+
+        window.generateVideoText = async function() {
+            const fileInput = document.getElementById('video-file');
+            const promptText = document.getElementById('prompt-text-vid').value;
+            const submitBtn = document.getElementById('submit-btn-vid');
+            if (fileInput.files.length === 0 && !currentUploadedVideoBlobUrl) { alert('請先上傳影片！'); return; }
+
+            const isRegen = hasGeneratedMap.vid;
+            submitBtn.disabled = true; 
+            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'AI 生成中...';
+
+            let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點！】" : "";
+            
+            const fullPrompt = `身為專業的短影音編導，請針對韓國時尚短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
+(強制更新防快取碼: ${Date.now()})`; 
+
+            const resText = await window.callGeminiAPI(fullPrompt);
+            window.renderMarkdownContent('result-box-vid', resText);
+
+            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
+                window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedVideoBlobUrl);
+            }
+
+            hasGeneratedMap.vid = true;
+            submitBtn.disabled = false; 
+            submitBtn.innerText = '重新生成';
+        };
+
+        window.fetchTrend = async function() {
+            const resultBox = document.getElementById('trend-result-box');
+            const trendBtn = document.getElementById('trend-btn');
+
+            if (trendBtn) {
+                trendBtn.disabled = true;
+                trendBtn.innerText = '🔍 實時抓取 IG 爆款數據中...';
+            }
+            resultBox.innerText = '正在透過爬蟲引擎抓取韓國爆款 IG 貼文，並由 Gemini Vision 進行多模態趨勢分析，請稍候約 20-30 秒...';
+
+            try {
+                const response = await fetch('/api/realtime-trends', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                const data = await response.json();
+
+                if (response.ok && data.report) {
+                    window.renderMarkdownContent('trend-result-box', data.report);
+                    if (typeof window.saveToHistory === 'function') {
+                        window.saveToHistory('text', '東大門 IG 實時爆款趨勢報告', data.report, null);
+                    }
+                } else {
+                    resultBox.innerText = '分析失敗：' + (data.error || '無法取得資料');
+                }
+            } catch (error) {
+                resultBox.innerText = '連線發生錯誤：' + error.message;
+            } finally {
+                if (trendBtn) {
+                    trendBtn.disabled = false;
+                    trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
+                }
+            }
+        };
+
+        window.renderHistory = async function() {
+            const container = document.getElementById('history-list-container');
+            if (!container) return;
+
+            container.innerHTML = '<div class="text-center text-gray-400 py-12">正在讀取雲端歷史紀錄...</div>';
+            let records = await window.loadHistoryFromCloud();
+
+            const sortOrder = document.getElementById('sort-date')?.value || 'desc';
+            const filterType = document.getElementById('filter-type')?.value || 'all';
+            const searchKeyword = document.getElementById('search-keyword')?.value.toLowerCase().trim() || '';
+
+            if (filterType !== 'all') {
+                records = records.filter(r => r.type === filterType);
+            }
+            if (searchKeyword) {
+                records = records.filter(r => (r.title && r.title.toLowerCase().includes(searchKeyword)) || (r.content && r.content.toLowerCase().includes(searchKeyword)));
+            }
+            records.sort((a, b) => sortOrder === 'asc' ? (a.timestamp - b.timestamp) : (b.timestamp - a.timestamp));
+
+            globalHistoryRecords = records;
+
+            if (records.length === 0) {
+                container.innerHTML = '<div class="bg-white p-8 rounded-2xl border border-gray-200 text-center text-gray-400">目前沒有符合條件的歷史紀錄。</div>';
+                return;
+            }
+
+            container.innerHTML = records.map((r, index) => {
+                let badge = r.type === 'image' ? '🖼️ 圖片文案' : (r.type === 'video' ? '🎬 影片腳本' : '📄 純文字');
+                let mediaThumb = '';
+                if (r.type === 'image' && r.mediaSrc) {
+                    mediaThumb = `<img src="${r.mediaSrc}" class="w-16 h-16 object-cover rounded-xl border border-gray-200 shrink-0">`;
+                } else if (r.type === 'video' && r.mediaSrc) {
+                    mediaThumb = `<div class="w-16 h-16 bg-gray-900 rounded-xl flex items-center justify-center text-white text-xl shrink-0">🎬</div>`;
+                } else {
+                    mediaThumb = `<div class="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xl shrink-0">📄</div>`;
+                }
+
+                return `
+                    <div class="bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div class="flex items-center gap-4 flex-1 min-w-0 w-full">
+                            ${mediaThumb}
+                            <div class="space-y-1 overflow-hidden flex-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-md font-medium">${badge}</span>
+                                    <span class="text-xs text-gray-400">${r.dateStr || ''}</span>
+                                </div>
+                                <h4 class="font-bold text-gray-800 text-base truncate">${r.title || '無標題'}</h4>
+                                <p class="text-sm text-gray-500 line-clamp-1">${r.content ? r.content.replace(/\n/g, ' ') : ''}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
+                            <button type="button" onclick="openModal(${index})" class="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer">🔍 檢視完整內容</button>
+                            <button type="button" onclick="deleteRecord('${r.id}')" class="bg-gray-100 hover:bg-red-50 text-red-600 px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 hover:border-red-200 transition-colors cursor-pointer">🗑️ 刪除</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        window.addEventListener('DOMContentLoaded', () => { 
+            window.loadSavedPrompts('img'); 
+            window.loadSavedPrompts('vid'); 
+            window.loadSavedPrompts('gen'); 
+            window.fetchBankRate();
+            const lastTab = localStorage.getItem('active_tab') || 'image-copy';
+            window.switchTab(lastTab, false);
+        });
+    </script>
+
+    <!-- ================= 模組腳本區 (Firebase 數據庫) ================= -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const app = initializeApp({
+            apiKey: "AIzaSyC3hF7AJgPZnb9RZdRGFo8UOnOBDVPTahM",
+            authDomain: "orea-apparel-ai.firebaseapp.com",
+            projectId: "orea-apparel-ai",
+            storageBucket: "orea-apparel-ai.firebasestorage.app",
+            messagingSenderId: "628052479735",
+            appId: "1:628052479735:web:e9ff155bffd211123acdf2"
+        });
+        const db = getFirestore(app);
+
+        window.saveToHistory = async function(type, title, content, mediaSrc = null) {
+            try {
+                const now = new Date();
+                await addDoc(collection(db, "ai_history_records"), {
+                    type,
+                    title,
+                    content,
+                    mediaSrc: (mediaSrc && mediaSrc.length < 500000) ? mediaSrc : null,
+                    dateStr: now.toLocaleString('zh-TW', { hour12: false }),
+                    timestamp: now.getTime()
+                });
+                if (typeof window.renderHistory === 'function') window.renderHistory();
+            } catch (e) {
+                console.error("雲端歷史紀錄寫入失敗: ", e);
+            }
+        };
+
+        window.loadHistoryFromCloud = async function() {
+            try {
+                const q = query(collection(db, "ai_history_records"), orderBy("timestamp", "desc"));
+                const querySnapshot = await getDocs(q);
+                let records = [];
+                let seen = new Set();
+                querySnapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const key = `${data.title}_${data.timestamp}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        records.push({ id: docSnap.id, ...data });
+                    }
+                });
+                return records;
+            } catch (e) {
+                console.error("雲端讀取歷史紀錄失敗: ", e);
+                return [];
+            }
+        };
+
+        window.deleteRecord = async function(id) {
+            if (confirm('確定要從雲端刪除這筆紀錄嗎？')) {
+                try {
+                    await deleteDoc(doc(db, "ai_history_records", id));
+                    if (typeof window.renderHistory === 'function') window.renderHistory();
+                } catch (e) {
+                    console.error("雲端刪除失敗: ", e);
+                }
+            }
+        };
+
+        window.savePromptToCloud = async function(mode, promptText) {
+            try {
+                await addDoc(collection(db, "ai_custom_prompts"), { mode, text: promptText, timestamp: Date.now() });
+                if (typeof window.loadSavedPrompts === 'function') window.loadSavedPrompts(mode);
+            } catch (e) {
+                console.error("提示詞寫入失敗: ", e);
+            }
+        };
+
+        window.loadPromptsFromCloud = async function(mode) {
+            try {
+                const q = query(collection(db, "ai_custom_prompts"), orderBy("timestamp", "asc"));
+                const querySnapshot = await getDocs(q);
+                let customList = [];
+                querySnapshot.forEach(docSnap => {
+                    if (docSnap.data().mode === mode) {
+                        customList.push({ id: docSnap.id, text: docSnap.data().text });
+                    }
+                });
+                return customList;
+            } catch (e) {
+                console.error("提示詞讀取失敗: ", e);
+                return [];
+            }
+        };
+
+        window.deletePromptFromCloud = async function(mode, promptText) {
+            try {
+                const q = query(collection(db, "ai_custom_prompts"), orderBy("timestamp", "asc"));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach(async docSnap => {
+                    if (docSnap.data().mode === mode && docSnap.data().text === promptText) {
+                        await deleteDoc(doc(db, "ai_custom_prompts", docSnap.id));
+                        if (typeof window.loadSavedPrompts === 'function') window.loadSavedPrompts(mode);
+                    }
+                });
+            } catch (e) {
+                console.error("提示詞刪除失敗: ", e);
+            }
+        };
+    </script>
+</body>
+</html>
