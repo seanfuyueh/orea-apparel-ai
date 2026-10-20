@@ -339,7 +339,7 @@ async def get_realtime_trends():
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 🚀 精準檔案路由
+# 🚀 精準檔案路由 (包含圖片檔案服務)
 # ========================================================
 @app.get("/")
 @app.get("/index.html")
@@ -349,6 +349,18 @@ async def read_index():
 @app.get("/logo.png")
 async def read_logo():
     return FileResponse("logo.png", media_type="image/png")
+
+@app.get("/fb-logo.png")
+async def read_fb_logo():
+    return FileResponse("fb-logo.png", media_type="image/png")
+
+@app.get("/ig-logo.jpg")
+async def read_ig_logo():
+    return FileResponse("ig-logo.jpg", media_type="image/jpeg")
+
+@app.get("/threads-logo.png")
+async def read_threads_logo():
+    return FileResponse("threads-logo.png", media_type="image/png")
 
 @app.get("/manifest.json")
 async def read_manifest():

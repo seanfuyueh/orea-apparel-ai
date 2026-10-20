@@ -100,15 +100,16 @@
             margin: 1.25rem 0;
         }
 
-        /* 📱 預覽視窗三平台頁籤樣式 (桌機與手機共用) */
+        /* 📱 預覽視窗三平台頁籤樣式 (微調縮放避免手機擠壓) */
         .pub-tab-btn {
             flex: 1;
+            min-width: 0;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 10px 12px;
-            font-size: 0.85rem;
+            gap: 4px;
+            padding: 8px 6px;
+            font-size: 0.8rem;
             font-weight: bold;
             border-radius: 12px;
             background-color: #f3f4f6;
@@ -116,9 +117,11 @@
             transition: all 0.2s;
             cursor: pointer;
             border: 1px solid #e5e7eb;
+            white-space: nowrap;
         }
         @media (min-width: 640px) {
             .pub-tab-btn {
+                gap: 8px;
                 font-size: 0.95rem;
                 padding: 10px 16px;
             }
@@ -504,42 +507,42 @@
                 <div class="font-semibold text-sm md:text-lg flex items-center gap-2">🚀 多平台同步預覽與發佈</div>
                 <button type="button" onclick="closePublishModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-medium border border-gray-700 cursor-pointer shrink-0">❌ 取消</button>
             </div>
-            <div id="publish-modal-body" class="p-4 md:p-6 overflow-y-auto flex-1 bg-gray-50 flex flex-col">
+            <div id="publish-modal-body" class="p-3 sm:p-6 overflow-y-auto flex-1 bg-gray-50 flex flex-col">
                 
-                <!-- 📌 三平台切換按鈕區 (修復重點：替換為大圖示 Logo，自動調適手機與桌機比例) -->
-                <div class="flex gap-2 mb-4 shrink-0">
+                <!-- 📌 三平台切換按鈕區 (採用大圖示 Logo，手機版自動縮放) -->
+                <div class="flex gap-1.5 sm:gap-2 mb-4 shrink-0 w-full">
                     <button type="button" onclick="switchPubTab('fb')" id="pub-tab-fb" class="pub-tab-btn active-fb">
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current text-blue-600 shrink-0" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        <img src="fb-logo.png" alt="Facebook" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
                         <span>Facebook</span>
                     </button>
                     <button type="button" onclick="switchPubTab('ig')" id="pub-tab-ig" class="pub-tab-btn">
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current text-pink-600 shrink-0" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                        <img src="ig-logo.jpg" alt="Instagram" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
                         <span>Instagram</span>
                     </button>
                     <button type="button" onclick="switchPubTab('th')" id="pub-tab-th" class="pub-tab-btn">
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6 fill-current text-gray-900 shrink-0" viewBox="0 0 24 24"><path d="M12.186 24c-2.775 0-5.18-.888-6.953-2.568-1.724-1.636-2.6-3.923-2.532-6.612.083-3.284 1.443-6.002 3.829-7.653 2.148-1.486 4.966-2.143 8.15-1.901 2.378.181 4.476.845 6.236 1.972l-1.353 2.62c-1.413-.91-3.111-1.444-5.048-1.591-2.457-.187-4.577.301-6.13 1.412-1.611 1.152-2.529 3.033-2.584 5.297-.047 1.884.567 3.475 1.777 4.601 1.233 1.147 2.946 1.751 4.954 1.751 2.138 0 3.864-.673 4.992-1.947.881-.995 1.356-2.316 1.376-3.821h-5.285v-2.825h8.212c.112.557.172 1.152.172 1.782 0 2.502-.821 4.698-2.375 6.353C17.892 22.846 15.352 24 12.186 24z"/></svg>
+                        <img src="threads-logo.png" alt="Threads" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
                         <span>Threads</span>
                     </button>
                 </div>
 
-                <!-- 📌 平台發佈目標勾選區 (📱手機優化版：標題獨立置頂，核取方塊改用 Logo，100% 完美收納) -->
-                <div class="bg-white p-3.5 rounded-xl border border-gray-200 flex flex-col sm:flex-row gap-2.5 sm:gap-6 items-start sm:items-center mb-4 shrink-0">
+                <!-- 📌 平台發佈目標勾選區 (標題獨立置頂，彈性均分，手機 100% 穩定收納於白框內) -->
+                <div class="bg-white p-3 sm:p-4 rounded-xl border border-gray-200 flex flex-col gap-2.5 mb-4 shrink-0 w-full box-border">
                     <span class="font-bold text-gray-800 text-xs sm:text-sm">📍 勾選欲發佈的目標平台：</span>
-                    <div class="flex items-center gap-5 sm:gap-6 w-full justify-start">
+                    <div class="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 w-full flex-wrap">
                         <!-- FB -->
                         <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-blue-600 text-xs sm:text-sm">
-                            <input type="checkbox" id="pub-target-fb" checked class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer">
-                            <svg class="w-5 h-5 fill-current text-blue-600" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                            <input type="checkbox" id="pub-target-fb" checked class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0">
+                            <img src="fb-logo.png" alt="Facebook" class="w-5 h-5 rounded-md object-contain shrink-0">
                         </label>
                         <!-- IG -->
                         <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-pink-600 text-xs sm:text-sm">
-                            <input type="checkbox" id="pub-target-ig" checked class="w-4 h-4 rounded text-pink-600 focus:ring-pink-500 cursor-pointer">
-                            <svg class="w-5 h-5 fill-current text-pink-600" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                            <input type="checkbox" id="pub-target-ig" checked class="w-4 h-4 rounded text-pink-600 focus:ring-pink-500 cursor-pointer shrink-0">
+                            <img src="ig-logo.jpg" alt="Instagram" class="w-5 h-5 rounded-md object-contain shrink-0">
                         </label>
                         <!-- Threads -->
                         <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-gray-900 text-xs sm:text-sm">
-                            <input type="checkbox" id="pub-target-th" checked class="w-4 h-4 rounded text-gray-900 focus:ring-gray-700 cursor-pointer">
-                            <svg class="w-5 h-5 fill-current text-gray-900" viewBox="0 0 24 24"><path d="M12.186 24c-2.775 0-5.18-.888-6.953-2.568-1.724-1.636-2.6-3.923-2.532-6.612.083-3.284 1.443-6.002 3.829-7.653 2.148-1.486 4.966-2.143 8.15-1.901 2.378.181 4.476.845 6.236 1.972l-1.353 2.62c-1.413-.91-3.111-1.444-5.048-1.591-2.457-.187-4.577.301-6.13 1.412-1.611 1.152-2.529 3.033-2.584 5.297-.047 1.884.567 3.475 1.777 4.601 1.233 1.147 2.946 1.751 4.954 1.751 2.138 0 3.864-.673 4.992-1.947.881-.995 1.356-2.316 1.376-3.821h-5.285v-2.825h8.212c.112.557.172 1.152.172 1.782 0 2.502-.821 4.698-2.375 6.353C17.892 22.846 15.352 24 12.186 24z"/></svg>
+                            <input type="checkbox" id="pub-target-th" checked class="w-4 h-4 rounded text-gray-900 focus:ring-gray-700 cursor-pointer shrink-0">
+                            <img src="threads-logo.png" alt="Threads" class="w-5 h-5 rounded-md object-contain shrink-0">
                         </label>
                     </div>
                 </div>
