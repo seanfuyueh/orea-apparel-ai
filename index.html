@@ -100,7 +100,7 @@
             margin: 1.25rem 0;
         }
 
-        /* 📱 預覽視窗三平台頁籤樣式 (微調縮放避免手機擠壓) */
+        /* 📱 預覽視窗三平台頁籤樣式 */
         .pub-tab-btn {
             flex: 1;
             min-width: 0;
@@ -500,7 +500,7 @@
         </div>
     </div>
 
-    <!-- 2. 多平台同步預覽與發佈彈跳視窗 (頁籤切換模式) -->
+    <!-- 2. 多平台同步預覽與發佈彈跳視窗 (採用 CDN SVG 圖示) -->
     <div id="publish-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
         <div id="publish-modal-content-box" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[92vh] md:h-[88vh]">
             <div class="px-4 md:px-6 py-3.5 bg-gray-900 text-white flex justify-between items-center shrink-0">
@@ -509,40 +509,40 @@
             </div>
             <div id="publish-modal-body" class="p-3 sm:p-6 overflow-y-auto flex-1 bg-gray-50 flex flex-col">
                 
-                <!-- 📌 三平台切換按鈕區 (採用大圖示 Logo，手機版自動縮放) -->
+                <!-- 📌 三平台切換按鈕區 (使用 Wikimedia 高畫質 CDN 圖示) -->
                 <div class="flex gap-1.5 sm:gap-2 mb-4 shrink-0 w-full">
                     <button type="button" onclick="switchPubTab('fb')" id="pub-tab-fb" class="pub-tab-btn active-fb">
-                        <img src="fb-logo.png" alt="Facebook" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
                         <span>Facebook</span>
                     </button>
                     <button type="button" onclick="switchPubTab('ig')" id="pub-tab-ig" class="pub-tab-btn">
-                        <img src="ig-logo.jpg" alt="Instagram" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
                         <span>Instagram</span>
                     </button>
                     <button type="button" onclick="switchPubTab('th')" id="pub-tab-th" class="pub-tab-btn">
-                        <img src="threads-logo.png" alt="Threads" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Threads_%28app%29_logo.svg" alt="Threads" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
                         <span>Threads</span>
                     </button>
                 </div>
 
-                <!-- 📌 平台發佈目標勾選區 (標題獨立置頂，彈性均分，手機 100% 穩定收納於白框內) -->
+                <!-- 📌 平台發佈目標勾選區 (使用 Wikimedia 高畫質 CDN 圖示) -->
                 <div class="bg-white p-3 sm:p-4 rounded-xl border border-gray-200 flex flex-col gap-2.5 mb-4 shrink-0 w-full box-border">
                     <span class="font-bold text-gray-800 text-xs sm:text-sm">📍 勾選欲發佈的目標平台：</span>
                     <div class="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 w-full flex-wrap">
                         <!-- FB -->
                         <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-blue-600 text-xs sm:text-sm">
                             <input type="checkbox" id="pub-target-fb" checked class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0">
-                            <img src="fb-logo.png" alt="Facebook" class="w-5 h-5 rounded-md object-contain shrink-0">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook" class="w-5 h-5 rounded-md object-contain shrink-0">
                         </label>
                         <!-- IG -->
                         <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-pink-600 text-xs sm:text-sm">
                             <input type="checkbox" id="pub-target-ig" checked class="w-4 h-4 rounded text-pink-600 focus:ring-pink-500 cursor-pointer shrink-0">
-                            <img src="ig-logo.jpg" alt="Instagram" class="w-5 h-5 rounded-md object-contain shrink-0">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" class="w-5 h-5 rounded-md object-contain shrink-0">
                         </label>
                         <!-- Threads -->
                         <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-gray-900 text-xs sm:text-sm">
                             <input type="checkbox" id="pub-target-th" checked class="w-4 h-4 rounded text-gray-900 focus:ring-gray-700 cursor-pointer shrink-0">
-                            <img src="threads-logo.png" alt="Threads" class="w-5 h-5 rounded-md object-contain shrink-0">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Threads_%28app%29_logo.svg" alt="Threads" class="w-5 h-5 rounded-md object-contain shrink-0">
                         </label>
                     </div>
                 </div>
@@ -577,7 +577,7 @@
                     </div>
                 </div>
 
-                <!-- 統一名稱按鈕：一鍵發佈 -->
+                <!-- 一鍵發佈按鈕 -->
                 <div class="pt-4 shrink-0 mt-auto">
                     <button type="button" onclick="executePublishing()" id="pub-submit-btn" class="w-full bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-95 text-white py-3.5 rounded-xl font-bold shadow-lg text-base md:text-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2">
                         🚀 一鍵發佈
@@ -640,7 +640,6 @@
             const igMatch = rawText.match(/(?:【[^】]*Instagram[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Facebook|Threads)[^】]*】)|$)/i);
             const thMatch = rawText.match(/(?:【[^】]*Threads[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Facebook|Instagram)[^】]*】)|$)/i);
 
-            // 📌 在過濾文字時清理掉 Markdown 標頭符號 (如 ####, ### 等)
             const cleanText = (text) => {
                 if (!text) return "";
                 let cleaned = text;
@@ -732,7 +731,6 @@
             document.getElementById('pub-ig-text').value = igText;
             document.getElementById('pub-th-text').value = thText;
             
-            // 每次打開預覽視窗時，預設顯示 Facebook 分頁
             switchPubTab('fb');
 
             document.getElementById('publish-modal').classList.remove('hidden');
@@ -742,7 +740,6 @@
             document.getElementById('publish-modal').classList.add('hidden');
         };
 
-        // 🚀 一鍵發佈核心 API 呼叫 (完整攜帶圖片 base64)
         window.executePublishing = async function() {
             const pubFb = document.getElementById('pub-target-fb').checked;
             const pubIg = document.getElementById('pub-target-ig').checked;
