@@ -504,7 +504,7 @@
                     <button type="button" onclick="switchPubTab('th')" id="pub-tab-th" class="pub-tab-btn">🧵 Threads</button>
                 </div>
 
-                <!-- 平台發布目標勾選區 -->
+                <!-- 平台發佈目標勾選區 -->
                 <div class="bg-white p-3.5 rounded-xl border border-gray-200 flex gap-6 items-center mb-4 shrink-0">
                     <span class="font-bold text-gray-800 text-sm md:text-base">📍 勾選欲發佈的目標平台：</span>
                     <label class="inline-flex items-center gap-2 cursor-pointer font-bold text-blue-600 text-sm">
@@ -547,10 +547,10 @@
                     </div>
                 </div>
 
-                <!-- 統一名稱按鈕：一鍵發布 -->
+                <!-- 統一名稱按鈕：一鍵發佈 -->
                 <div class="pt-4 shrink-0 mt-auto">
                     <button type="button" onclick="executePublishing()" id="pub-submit-btn" class="w-full bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-95 text-white py-3.5 rounded-xl font-bold shadow-lg text-base md:text-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2">
-                        🚀 一鍵發布
+                        🚀 一鍵發佈
                     </button>
                 </div>
             </div>
@@ -679,7 +679,7 @@
                         const escapedBlockText = encodeURIComponent(blockText);
                         btnDiv.innerHTML = `
                             <button type="button" onclick="openPublishModalSingle('${escapedBlockText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-bold shadow-md text-sm transition-transform active:scale-95 cursor-pointer flex items-center gap-2">
-                                🚀 一鍵發佈選中此文案至 FB / IG
+                                🚀 一鍵發佈
                             </button>
                         `;
                         cardDiv.appendChild(btnDiv);
@@ -709,7 +709,7 @@
             document.getElementById('publish-modal').classList.add('hidden');
         };
 
-        // 🚀 一鍵發布核心 API 呼叫 (完整攜帶圖片 base64)
+        // 🚀 一鍵發佈核心 API 呼叫 (完整攜帶圖片 base64)
         window.executePublishing = async function() {
             const pubFb = document.getElementById('pub-target-fb').checked;
             const pubIg = document.getElementById('pub-target-ig').checked;
@@ -717,7 +717,7 @@
             const igCaption = document.getElementById('pub-ig-text').value;
             const submitBtn = document.getElementById('pub-submit-btn');
 
-            if (!pubFb && !pubIg) { alert('請至少勾選一個發布目標平台！(Threads 需手動複製)'); return; }
+            if (!pubFb && !pubIg) { alert('請至少勾選一個發佈目標平台！(Threads 需手動複製)'); return; }
 
             submitBtn.disabled = true;
             submitBtn.innerText = '⏳ 貼文同步發佈中，請稍候約 10-15 秒...';
@@ -746,7 +746,7 @@
                 alert('連線發生錯誤：' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = '🚀 一鍵發布';
+                submitBtn.innerText = '🚀 一鍵發佈';
             }
         };
 
@@ -764,7 +764,13 @@
             });
             ['desktop-nav-image-copy', 'desktop-nav-copywriting', 'desktop-nav-video-copy', 'desktop-nav-trend', 'desktop-nav-pricing', 'desktop-nav-history'].forEach(id => {
                 const el = document.getElementById(id);
-                if(el) el.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer';
+                if(el) {
+                    if (id === 'desktop-nav-history') {
+                        el.className = 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2 cursor-pointer';
+                    } else {
+                        el.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer';
+                    }
+                }
             });
             ['mobile-nav-image-copy', 'mobile-nav-copywriting', 'mobile-nav-video-copy', 'mobile-nav-trend', 'mobile-nav-pricing', 'mobile-nav-history'].forEach(id => {
                 const el = document.getElementById(id);
@@ -776,27 +782,45 @@
             let currentMobileNav = document.getElementById(`mobile-nav-${targetNavName}`);
 
             if (tab === 'image-copy') {
-                document.getElementById('tab-image-copy').classList.remove('hidden');
-                document.getElementById('page-title').innerText = '圖片生成文案';
+                const el = document.getElementById('tab-image-copy');
+                if (el) el.classList.remove('hidden');
+                const title = document.getElementById('page-title');
+                if (title) title.innerText = '圖片生成文案';
             } else if (tab === 'copywriting') {
-                document.getElementById('tab-general-copy').classList.remove('hidden');
-                document.getElementById('page-title').innerText = '文案生成';
+                const el = document.getElementById('tab-general-copy');
+                if (el) el.classList.remove('hidden');
+                const title = document.getElementById('page-title');
+                if (title) title.innerText = '文案生成';
             } else if (tab === 'video-copy') {
-                document.getElementById('tab-video-copy').classList.remove('hidden');
-                document.getElementById('page-title').innerText = '影片生成文案';
+                const el = document.getElementById('tab-video-copy');
+                if (el) el.classList.remove('hidden');
+                const title = document.getElementById('page-title');
+                if (title) title.innerText = '影片生成文案';
             } else if (tab === 'trend') {
-                document.getElementById('tab-trend').classList.remove('hidden');
-                document.getElementById('page-title').innerText = '韓國東大門流行趨勢';
+                const el = document.getElementById('tab-trend');
+                if (el) el.classList.remove('hidden');
+                const title = document.getElementById('page-title');
+                if (title) title.innerText = '韓國東大門流行趨勢';
             } else if (tab === 'pricing') {
-                document.getElementById('tab-pricing').classList.remove('hidden');
-                document.getElementById('page-title').innerText = '韓國商品價格試算器';
+                const el = document.getElementById('tab-pricing');
+                if (el) el.classList.remove('hidden');
+                const title = document.getElementById('page-title');
+                if (title) title.innerText = '韓國商品價格試算器';
             } else if (tab === 'history') {
-                document.getElementById('tab-history').classList.remove('hidden');
-                document.getElementById('page-title').innerText = '歷史紀錄查詢';
+                const el = document.getElementById('tab-history');
+                if (el) el.classList.remove('hidden');
+                const title = document.getElementById('page-title');
+                if (title) title.innerText = '歷史紀錄查詢';
                 if (typeof window.renderHistory === 'function') window.renderHistory();
             }
 
-            if (currentDesktopNav) currentDesktopNav.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left cursor-pointer';
+            if (currentDesktopNav) {
+                if (targetNavName === 'history') {
+                    currentDesktopNav.className = 'w-full bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-lg font-medium transition-colors shadow-sm text-base flex items-center justify-center gap-2 cursor-pointer ring-2 ring-gray-400';
+                } else {
+                    currentDesktopNav.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left cursor-pointer';
+                }
+            }
             if (currentMobileNav) currentMobileNav.className = 'flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer';
 
             if (saveState) localStorage.setItem('active_tab', tab);
@@ -887,42 +911,65 @@
                 currentUploadedImageFilename = file.name;
                 const reader = new FileReader();
                 reader.onload = e => {
+                    const dataUrl = e.target.result;
+                    // 📌 立即設定圖片預覽並顯示，隱藏佔位符
+                    const imgPreview = document.getElementById('image-preview');
+                    const placeholder = document.getElementById('preview-placeholder-img');
+                    if (imgPreview) {
+                        imgPreview.src = dataUrl;
+                        imgPreview.classList.remove('hidden');
+                    }
+                    if (placeholder) {
+                        placeholder.classList.add('hidden');
+                    }
+
+                    // 進行 Canvas 圖片壓縮並保存 Base64
                     const img = new Image();
                     img.onload = () => {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        const maxDim = 1024;
-                        if (width > maxDim || height > maxDim) {
-                            if (width > height) {
-                                height = Math.round((height * maxDim) / width);
-                                width = maxDim;
-                            } else {
-                                width = Math.round((width * maxDim) / height);
-                                height = maxDim;
+                        try {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const maxDim = 1024;
+                            if (width > maxDim || height > maxDim) {
+                                if (width > height) {
+                                    height = Math.round((height * maxDim) / width);
+                                    width = maxDim;
+                                } else {
+                                    width = Math.round((width * maxDim) / height);
+                                    height = maxDim;
+                                }
                             }
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                            currentUploadedImageBase64 = compressedDataUrl.split(',')[1];
+                        } catch (err) {
+                            console.error("Canvas 壓縮失敗:", err);
+                            currentUploadedImageBase64 = dataUrl.split(',')[1];
                         }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        
-                        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-                        currentUploadedImageBase64 = compressedDataUrl.split(',')[1];
-                        
-                        document.getElementById('image-preview').src = compressedDataUrl;
-                        document.getElementById('image-preview').classList.remove('hidden');
-                        document.getElementById('preview-placeholder-img').classList.add('hidden');
                     };
-                    img.src = e.target.result;
+                    img.onerror = () => {
+                        currentUploadedImageBase64 = dataUrl.split(',')[1];
+                    };
+                    img.src = dataUrl;
                 };
                 reader.readAsDataURL(file);
             } else if (type === 'video' && file) {
                 currentUploadedVideoFilename = file.name;
                 currentUploadedVideoBlobUrl = URL.createObjectURL(file);
-                document.getElementById('video-preview').src = currentUploadedVideoBlobUrl;
-                document.getElementById('video-preview').classList.remove('hidden');
-                document.getElementById('preview-placeholder-vid').classList.add('hidden');
+                const vidPreview = document.getElementById('video-preview');
+                const placeholder = document.getElementById('preview-placeholder-vid');
+                if (vidPreview) {
+                    vidPreview.src = currentUploadedVideoBlobUrl;
+                    vidPreview.classList.remove('hidden');
+                }
+                if (placeholder) {
+                    placeholder.classList.add('hidden');
+                }
             }
         };
 
