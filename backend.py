@@ -40,20 +40,25 @@ FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")  # 專屬粉�
 IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
 
 # ========================================================
-# 🔄 智慧模型名稱對應防呆（確保不會再發生 404 錯誤）
+# 🔄 智慧模型名稱對應防呆（自動加上標準 models/ 前綴）
 # ========================================================
 def get_supported_model(requested_model: str) -> str:
     if not requested_model:
-        return "gemini-1.5-flash"
+        return "models/gemini-1.5-flash"
     
     model_lower = requested_model.lower()
     
-    # 如果包含 pro 或 1.5-pro，對應到 gemini-1.5-pro
+    # 如果包含 pro，對應到 gemini-1.5-pro
     if "pro" in model_lower:
-        return "gemini-1.5-pro"
-    
-    # 其餘 Flash 或舊有代號（包含您常用的 3.8-flash 等），全面安全對應至穩定高效的 gemini-1.5-flash
-    return "gemini-1.5-flash"
+        base_name = "gemini-1.5-pro"
+    else:
+        # 其餘 Flash 或您常用的 3.8-flash 等，統一對應至穩定高效的 gemini-1.5-flash
+        base_name = "gemini-1.5-flash"
+        
+    # 新版 google-genai SDK 強制規定必須帶有 "models/" 前綴
+    if not base_name.startswith("models/"):
+        return f"models/{base_name}"
+    return base_name
 
 # ========================================================
 # 🔄 Instagram 權杖自動續期機制
@@ -85,7 +90,7 @@ async def startup_event():
     INSTAGRAM_ACCESS_TOKEN = refresh_instagram_token(INSTAGRAM_ACCESS_TOKEN)
 
 # ========================================================
-# 🚀 處理前端的 AI 生成請求 (已加入模型防呆對應)
+# 🚀 處理前端的 AI 生成請求 (已修正 models/ 前綴)
 # ========================================================
 @app.post("/api/generate")
 async def generate_content(request: Request):
@@ -96,7 +101,7 @@ async def generate_content(request: Request):
         
         raw_model = data.get("model", DEFAULT_GEMINI_MODEL)
         selected_model = get_supported_model(raw_model)
-        print(f"🤖 [AI Request] 收到前端模型: {raw_model} -> 自動轉譯為合法模型: {selected_model}")
+        print(f"🤖 [AI Request] 收到前端模型: {raw_model} -> 最終送出模型參數: {selected_model}")
 
         contents = [prompt]
         if image_base64:
