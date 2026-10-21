@@ -304,6 +304,17 @@
                                     <button type="button" onclick="saveCustomPrompt('vid')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                                 </div>
                             </div>
+
+                            <!-- ⏱️ 新增：選擇秒數按鈕群組 (放在「重新生成」上方) -->
+                            <div class="space-y-2">
+                                <label class="block text-sm md:text-base font-medium text-gray-700">⏱️ 選擇 Reels 目標秒數</label>
+                                <div class="grid grid-cols-3 gap-2.5">
+                                    <button type="button" onclick="setReelsDuration(10)" id="duration-btn-10" class="py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer">10秒</button>
+                                    <button type="button" onclick="setReelsDuration(15)" id="duration-btn-15" class="py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer">15秒</button>
+                                    <button type="button" onclick="setReelsDuration(30)" id="duration-btn-30" class="py-2.5 rounded-xl text-sm font-bold border border-gray-900 bg-gray-900 text-white transition-all cursor-pointer shadow-sm">30秒 (預設)</button>
+                                </div>
+                            </div>
+
                             <div class="pt-1">
                                 <button type="button" onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
                                     ✨ 生成 Reels 腳本
@@ -492,9 +503,24 @@
     <script>
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
-        let currentReelsFiles = []; // 儲存多張圖片/影片的陣列 (支援拖曳排序、刪除與放大)
+        let currentReelsFiles = []; 
+        let currentReelsDuration = 30; // 預設 30秒
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
+
+        // 設定 Reels 秒數並切換按鈕樣式
+        window.setReelsDuration = function(seconds) {
+            currentReelsDuration = seconds;
+            [10, 15, 30].forEach(sec => {
+                const btn = document.getElementById(`duration-btn-${sec}`);
+                if (!btn) return;
+                if (sec === seconds) {
+                    btn.className = 'py-2.5 rounded-xl text-sm font-bold border border-gray-900 bg-gray-900 text-white transition-all cursor-pointer shadow-sm';
+                } else {
+                    btn.className = 'py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer';
+                }
+            });
+        };
 
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
@@ -722,13 +748,11 @@
             }
         };
 
-        // 刪除指定的 Reels 素材
         window.removeReelsItem = function(index) {
             currentReelsFiles.splice(index, 1);
             renderReelsThumbnails();
         };
 
-        // 渲染 Reels 縮圖列表並啟用「拖曳排序 (Desktop)」與「刪除 (❌)」與「放大 (><)」
         window.renderReelsThumbnails = function() {
             const container = document.getElementById('video-multi-preview-container');
             const placeholder = document.getElementById('preview-placeholder-vid');
@@ -756,15 +780,11 @@
 
                 thumbWrapper.innerHTML = `
                     ${mediaElementHtml}
-                    <!-- 左上角刪除按鈕 (X) -->
                     <button type="button" onclick="removeReelsItem(${index})" title="刪除此照片" class="absolute top-1 left-1 bg-red-600/80 hover:bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow cursor-pointer transition-transform active:scale-90 z-10">×</button>
-                    <!-- 左下角編號 -->
                     <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 rounded font-bold pointer-events-none">#${index + 1}</span>
-                    <!-- 右上角放大按鈕 (><) (僅限圖片可放大) -->
                     ${fileObj.type.startsWith('image/') ? `<button type="button" onclick="openReelsLightbox('${fileObj.url}')" title="放大完整檢視" class="absolute top-1 right-1 bg-black/70 hover:bg-black text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90 z-10">><</button>` : ''}
                 `;
 
-                // 📌 HTML5 拖曳排序事件 (滑鼠操作)
                 thumbWrapper.addEventListener('dragstart', (e) => {
                     e.dataTransfer.setData('text/plain', index);
                     setTimeout(() => thumbWrapper.classList.add('dragging'), 0);
@@ -793,7 +813,6 @@
             });
         };
 
-        // 開啟 Reels 燈箱彈跳視窗檢視完整照片
         window.openReelsLightbox = function(url) {
             const modal = document.getElementById('reels-lightbox-modal');
             const img = document.getElementById('reels-lightbox-img');
@@ -803,7 +822,6 @@
             }
         };
 
-        // 關閉 Reels 燈箱彈跳視窗
         window.closeReelsLightbox = function() {
             const modal = document.getElementById('reels-lightbox-modal');
             if (modal) {
@@ -844,6 +862,7 @@
                 document.getElementById('submit-btn-vid').disabled = false;
                 document.getElementById('result-box-vid').innerText = '尚未開始生成，請上傳照片與輸入需求並點擊按鈕。';
                 currentReelsFiles = [];
+                window.setReelsDuration(30);
             } else if (mode === 'trend') {
                 document.getElementById('trend-btn').innerHTML = '<span>📊</span> 點擊開始分析';
                 document.getElementById('trend-btn').disabled = false;
@@ -995,7 +1014,7 @@ ${variationRequirement}
             
             const firstImageBase64 = currentReelsFiles[0] ? currentReelsFiles[0].base64 : null;
 
-            const fullPrompt = `身為專業的短影音編導與韓國時尚品牌總監，請依據上傳的商品圖片與短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
+            const fullPrompt = `身為專業的短影音編導與韓國時尚品牌總監，請依據上傳的商品圖片與短影音需求「${promptText || '細節特色展示'}」，並嚴格依照使用者所選擇的【目標總時長：${currentReelsDuration}秒】，編寫一份高流量的短影音腳本（包含各分鏡秒數分配、視覺畫面、口白台詞與導購 Call to Action，總秒數必須符合 ${currentReelsDuration} 秒）。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
             try {
