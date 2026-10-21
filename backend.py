@@ -25,10 +25,10 @@ app.add_middleware(
 # 初始化 Google Gemini 客戶端
 client = genai.Client()
 
-# 預設模型（優先讀取環境變數，若無則預設為您使用的 gemini-3.8-flash）
+# 預設模型
 DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+FALLBACK_MODEL = "gemini-2.5-flash"  # 備援模型
 
-# 從 Render 環境變數抓取設定
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 INSTAGRAM_ACCESS_TOKEN = os.environ.get(
     "INSTAGRAM_ACCESS_TOKEN",
@@ -45,20 +45,16 @@ IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
 def refresh_instagram_token(current_token: str) -> str:
     if not current_token:
         return current_token
-    
     url = "https://graph.instagram.com/refresh_access_token"
-    params = {
-        "grant_type": "ig_refresh_token",
-        "access_token": current_token
-    }
+    params = {"grant_type": "ig_refresh_token", "access_token": current_token}
     try:
         response = requests.get(url, params=params, timeout=10)
         data = response.json()
         if "access_token" in data:
-            print("✅ [Instagram API] 成功自動延長 IG 權杖期限（重新倒數 60 天）")
+            print("✅ [Instagram API] 成功自動延長 IG 權杖期限")
             return data["access_token"]
     except Exception as e:
-        print(f"⚠️ [Instagram API] 權杖自動續期失敗: {e}")
+        print(f"⚠️ [Instagram API] 續期失敗: {e}")
     return current_token
 
 @app.on_event("startup")
@@ -67,7 +63,7 @@ async def startup_event():
     INSTAGRAM_ACCESS_TOKEN = refresh_instagram_token(INSTAGRAM_ACCESS_TOKEN)
 
 # ========================================================
-# 🚀 處理前端的 AI 生成請求（直接採用前端選取的模型）
+# 🚀 處理前端的 AI 生成請求 (含 503 塞車自動備援機制)
 # ========================================================
 @app.post("/api/generate")
 async def generate_content(request: Request):
@@ -75,34 +71,41 @@ async def generate_content(request: Request):
         data = await request.json()
         prompt = data.get("prompt", "")
         image_base64 = data.get("imageBase64", None)
-        
-        # 直接使用前端傳過來的模型名稱，不進行任何強行改名
         selected_model = data.get("model", DEFAULT_GEMINI_MODEL)
-        print(f"🤖 [AI Request] 正式呼叫 Gemini API 模型: {selected_model}")
 
         contents = [prompt]
         if image_base64:
             image_bytes = base64.b64decode(image_base64)
-            image_part = types.Part.from_bytes(
-                data=image_bytes,
-                mime_type="image/jpeg"
-            )
+            image_part = types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg")
             contents.append(image_part)
 
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = client.models.generate_content(
-                    model=selected_model,
-                    contents=contents
-                )
-                return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
-            except Exception as e:
-                print(f"⚠️ [Gemini API Error] 嘗試第 {attempt+1} 次失敗: {e}")
-                if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
-                    time.sleep(2)
-                    continue
-                return JSONResponse(status_code=500, content={"error": str(e)})
+        # 優先嘗試選擇的模型
+        models_to_try = [selected_model]
+        if selected_model != FALLBACK_MODEL:
+            models_to_try.append(FALLBACK_MODEL)
+
+        last_error = None
+        for current_model in models_to_try:
+            max_retries = 2
+            for attempt in range(max_retries):
+                try:
+                    print(f"🤖 [AI Request] 嘗試使用模型生成: {current_model} (第 {attempt+1} 次)")
+                    response = client.models.generate_content(
+                        model=current_model,
+                        contents=contents
+                    )
+                    return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
+                except Exception as e:
+                    last_error = str(e)
+                    print(f"⚠️ [Gemini API Error] 模型 {current_model} 呼叫失敗: {e}")
+                    if ("503" in str(e) or "UNAVAILABLE" in str(e)):
+                        time.sleep(1.5)
+                        continue
+                    else:
+                        break  # 非 503 錯誤直接換下一個備援模型或丟出
+
+        return JSONResponse(status_code=500, content={"error": last_error})
+
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -120,28 +123,25 @@ async def publish_post(request: Request):
         image_base64 = data.get("imageBase64", None)
 
         if not publish_fb and not publish_ig:
-            return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台 (FB 或 IG)"})
+            return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台"})
 
         public_image_url = None
         if image_base64:
             try:
                 imgur_url = "https://api.imgur.com/3/image"
                 headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
-                payload = {
-                    "image": image_base64,
-                    "type": "base64"
-                }
+                payload = {"image": image_base64, "type": "base64"}
                 img_res = requests.post(imgur_url, headers=headers, data=payload, timeout=20).json()
                 if img_res.get("success"):
                     public_image_url = img_res["data"]["link"]
             except Exception as img_err:
-                print(f"⚠️ [Imgur Exception]: {str(img_err)}")
+                print(f"⚠️ [Imgur Error]: {str(img_err)}")
 
         results = {}
 
         if publish_ig:
             if not public_image_url:
-                results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
+                results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布"}
             else:
                 try:
                     container_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media"
@@ -156,10 +156,7 @@ async def publish_post(request: Request):
                     if creation_id:
                         time.sleep(3)
                         pub_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media_publish"
-                        pub_payload = {
-                            "creation_id": creation_id,
-                            "access_token": INSTAGRAM_ACCESS_TOKEN
-                        }
+                        pub_payload = {"creation_id": creation_id, "access_token": INSTAGRAM_ACCESS_TOKEN}
                         p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
                         results["instagram"] = {"status": "success", "data": p_res}
                     else:
@@ -183,21 +180,13 @@ async def publish_post(request: Request):
 
                 if public_image_url:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
-                    fb_payload = {
-                        "url": public_image_url,
-                        "caption": fb_caption,
-                        "access_token": page_access_token
-                    }
+                    fb_payload = {"url": public_image_url, "caption": fb_caption, "access_token": page_access_token}
                 else:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/feed"
-                    fb_payload = {
-                        "message": fb_caption,
-                        "access_token": page_access_token
-                    }
+                    fb_payload = {"message": fb_caption, "access_token": page_access_token}
                 
                 fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
                 fb_res = fb_response.json()
-                
                 if fb_response.status_code == 200 and "id" in fb_res:
                     results["facebook"] = {"status": "success", "data": fb_res}
                 else:
@@ -206,7 +195,6 @@ async def publish_post(request: Request):
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
 
         return JSONResponse(content={"status": "complete", "results": results})
-
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -241,11 +229,7 @@ async def get_realtime_trends(request: Request):
             ig_urls = ["https://www.instagram.com/partysu_official/"]
 
         apify_url = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
-        payload = {
-            "directUrls": ig_urls,
-            "resultsLimit": 20,
-            "searchType": "user"
-        }
+        payload = {"directUrls": ig_urls, "resultsLimit": 20, "searchType": "user"}
         
         response = requests.post(apify_url, json=payload, timeout=60)
         items = response.json()
@@ -261,7 +245,6 @@ async def get_realtime_trends(request: Request):
         )[:10]
 
         trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是實時抓取到的最新熱門 IG 爆款貼文數據與圖片：\n\n"
-        
         image_parts = []
         for idx, post in enumerate(sorted_posts, 1):
             likes = post.get('likesCount', 0)
@@ -279,10 +262,7 @@ async def get_realtime_trends(request: Request):
                 try:
                     img_resp = requests.get(display_url, timeout=10)
                     if img_resp.status_code == 200:
-                        image_part = types.Part.from_bytes(
-                            data=img_resp.content,
-                            mime_type="image/jpeg"
-                        )
+                        image_part = types.Part.from_bytes(data=img_resp.content, mime_type="image/jpeg")
                         image_parts.append(image_part)
                 except Exception as img_err:
                     print(f"圖片下載失敗: {img_err}")
@@ -332,11 +312,9 @@ async def get_realtime_trends(request: Request):
                 return JSONResponse(status_code=500, content={"error": str(e)})
 
     except Exception as e:
+        print(f"Realtime trend error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
-# ========================================================
-# 🚀 靜態檔案路由
-# ========================================================
 def safe_file_response(filename: str, media_type: str = None):
     if os.path.exists(filename):
         return FileResponse(filename, media_type=media_type)
