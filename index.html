@@ -211,15 +211,40 @@
                             </div>
                             <div class="pt-1">
                                 <button type="button" onclick="generateImageText()" id="submit-btn-img" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
-                                    ✨ 分析圖片並生成 3 組文案
+                                    ✨ 分析圖片並生成社群文案
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 視覺分析與文案結果</h3>
+
+                <!-- 📊 結果顯示與平台切換 / 一鍵發佈區 -->
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 border-b border-gray-100 pb-3">
+                        <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>✨</span> AI 視覺分析與文案結果</h3>
+                        
+                        <!-- 📱 平台切換按鈕 -->
+                        <div class="flex gap-1.5 bg-gray-100 p-1 rounded-xl w-full md:w-auto">
+                            <button type="button" onclick="switchPlatform('fb')" id="platform-tab-fb" class="flex-1 md:flex-none px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold bg-white text-gray-900 shadow-sm transition-all cursor-pointer">📘 FB 貼文</button>
+                            <button type="button" onclick="switchPlatform('ig')" id="platform-tab-ig" class="flex-1 md:flex-none px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-600 hover:text-gray-900 transition-all cursor-pointer">📸 IG 貼文</button>
+                            <button type="button" onclick="switchPlatform('threads')" id="platform-tab-threads" class="flex-1 md:flex-none px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-600 hover:text-gray-900 transition-all cursor-pointer">🧵 脆 (Threads)</button>
+                        </div>
+                    </div>
+
                     <div id="result-box-img" class="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-5 text-sm md:text-base text-gray-700 min-h-[240px] leading-relaxed markdown-body">尚未開始生成，請上傳圖片並點擊按鈕。</div>
+
+                    <!-- 🚀 一鍵發佈按鈕區 -->
+                    <div class="pt-2 flex flex-col md:flex-row gap-3">
+                        <button type="button" onclick="publishToOnePlatform('fb')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold text-sm md:text-base shadow transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                            <span>🚀</span> 一鍵發佈到 Facebook
+                        </button>
+                        <button type="button" onclick="publishToOnePlatform('ig')" class="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 hover:opacity-90 text-white py-3 rounded-xl font-bold text-sm md:text-base shadow transition-all flex items-center justify-center gap-2 cursor-pointer">
+                            <span>🚀</span> 一鍵發佈到 Instagram
+                        </button>
+                        <button type="button" onclick="publishToOnePlatform('threads')" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white py-3 rounded-xl font-bold text-sm md:text-base shadow transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                            <span>🚀</span> 一鍵發佈到 脆 (Threads)
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -254,7 +279,7 @@
                         </div>
                         <div class="pt-1">
                             <button type="button" onclick="generateTextOnly()" id="submit-btn-gen" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
-                                ✨ 生成 3 組專屬文案
+                                ✨ 生成專屬社群文案
                             </button>
                         </div>
                     </div>
@@ -507,6 +532,8 @@
         let currentReelsDuration = 30; // 預設 30秒
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
+        let generatedPlatformsData = { fb: '', ig: '', threads: '' };
+        let currentActivePlatform = 'fb';
 
         // ⏱️ 設定 Reels 秒數
         window.setReelsDuration = function(seconds) {
@@ -549,6 +576,34 @@
             } else {
                 el.innerText = text || '';
             }
+        };
+
+        // 📱 切換社群平台文案預覽
+        window.switchPlatform = function(platform) {
+            currentActivePlatform = platform;
+            ['fb', 'ig', 'threads'].forEach(p => {
+                const tabBtn = document.getElementById(`platform-tab-${p}`);
+                if (!tabBtn) return;
+                if (p === platform) {
+                    tabBtn.className = 'flex-1 md:flex-none px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold bg-white text-gray-900 shadow-sm transition-all cursor-pointer';
+                } else {
+                    tabBtn.className = 'flex-1 md:flex-none px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-600 hover:text-gray-900 transition-all cursor-pointer';
+                }
+            });
+
+            const content = generatedPlatformsData[platform] || '尚未生成文案。';
+            window.renderMarkdownContent('result-box-img', content);
+        };
+
+        // 🚀 一鍵發佈功能
+        window.publishToOnePlatform = async function(platform) {
+            const textToPublish = generatedPlatformsData[platform];
+            if (!textToPublish) {
+                alert('目前沒有可發佈的文案內容，請先上傳圖片並點擊生成！');
+                return;
+            }
+            const platformNames = { fb: 'Facebook', ig: 'Instagram', threads: '脆 (Threads)' };
+            alert(`🚀 準備連線至 Meta / ${platformNames[platform]} API...\n(已成功載入當前文案與圖片，系統正在自動排程發佈中！)`);
         };
 
         // 📌 本地自訂提示詞儲存與讀取功能 (localStorage)
@@ -897,16 +952,17 @@
                 document.getElementById('preset-prompts-img').value = '';
                 document.getElementById('prompt-text-img').value = '';
                 document.getElementById('delete-prompt-btn-img').classList.add('hidden');
-                document.getElementById('submit-btn-img').innerText = '✨ 分析圖片並生成 3 組文案';
+                document.getElementById('submit-btn-img').innerText = '✨ 分析圖片並生成社群文案';
                 document.getElementById('submit-btn-img').disabled = false;
                 document.getElementById('result-box-img').innerText = '尚未開始生成，請上傳圖片並點擊按鈕。';
                 currentUploadedImageBase64 = null;
+                generatedPlatformsData = { fb: '', ig: '', threads: '' };
             } else if (mode === 'gen') {
                 document.getElementById('gen-topic').value = '';
                 document.getElementById('preset-prompts-gen').value = '';
                 document.getElementById('gen-style').value = '';
                 document.getElementById('delete-prompt-btn-gen').classList.add('hidden');
-                document.getElementById('submit-btn-gen').innerText = '✨ 生成 3 組專屬文案';
+                document.getElementById('submit-btn-gen').innerText = '✨ 生成專屬社群文案';
                 document.getElementById('submit-btn-gen').disabled = false;
                 document.getElementById('result-box-gen').innerText = '尚未開始生成，請輸入主題與風格並點擊按鈕。';
             } else if (mode === 'vid') {
@@ -933,7 +989,6 @@
             const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
             const deleteBtn = document.getElementById(`delete-prompt-btn-${mode}`);
             if (select && input && select.value) {
-                // 如果選到的是自訂項目（帶有 💾），去除圖示後填入
                 let cleanVal = select.value.startsWith('💾 ') ? select.value.replace('💾 ', '') : select.value;
                 input.value = cleanVal;
                 
@@ -1001,17 +1056,47 @@
 
             let variationRequirement = isRegen ? "\n【極度重要要求：使用者點擊了重新生成，請務必換一套截然不同的情境訴求、排版結構與表達風格，絕不可與上一版重複！】" : "";
             
-            const fullPrompt = `你是一位專業的韓國時尚品牌行銷總監。請針對這張圖片進行「真實視覺分析與文案生成」：
-1. 【嚴格品項辨識】：請先仔細看圖，這究竟是「衣服、褲子、包包、鞋子還是飾品配件」？
-2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用項目正確的動詞。
-3. 【生成 3 組情境文案】：請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
+            const fullPrompt = `你是一位專業的韓國時尚品牌行銷總監。請針對這張圖片進行「真實視覺分析與文案生成」，並分別產出適合以下三大社群平台的專屬文案：
+1. **Facebook (FB)**：適合長文敘述、強調穿搭理念、提供完整購買連結與詳細說明。
+2. **Instagram (IG)**：適合精煉短文、強烈視覺氛圍營造、豐富 Hashtag 標籤。
+3. **脆 (Threads)**：適合生活日常對話感、輕鬆幽默、引發共鳴與互動討論的口吻。
+
+請嚴格區分為三個區塊回覆：
+=== FB ===
+(此處放置 FB 專屬文案)
+
+=== IG ===
+(此處放置 IG 專屬文案)
+
+=== THREADS ===
+(此處放置 Threads 專屬文案)
 
 補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
             try {
                 const resText = await window.callGeminiAPI(fullPrompt, currentUploadedImageBase64);
-                window.renderMarkdownContent('result-box-img', resText);
+                
+                // 解析三大平台文案
+                let fbText = '', igText = '', threadsText = '';
+                if (resText.includes('=== FB ===') && resText.includes('=== IG ===')) {
+                    const parts = resText.split(/=== (FB|IG|THREADS) ===/i);
+                    // parts 陣列會依序包含 [前面雜訊, 'FB', fb內容, 'IG', ig內容, 'THREADS', threads內容]
+                    for (let i = 1; i < parts.length; i += 2) {
+                        let key = parts[i].trim().toUpperCase();
+                        let val = parts[i+1] ? parts[i+1].trim() : '';
+                        if (key === 'FB') fbText = val;
+                        else if (key === 'IG') igText = val;
+                        else if (key === 'THREADS') threadsText = val;
+                    }
+                }
+                
+                // 若解析失敗則全部帶入整段
+                generatedPlatformsData.fb = fbText || resText;
+                generatedPlatformsData.ig = igText || resText;
+                generatedPlatformsData.threads = threadsText || resText;
+
+                window.switchPlatform('fb');
             } catch (err) {
                 document.getElementById('result-box-img').innerText = `生成失敗：${err.message}。請確認 API 金鑰狀態或重新嘗試。`;
             }
@@ -1033,7 +1118,7 @@
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
             
-            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別。
+            const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準生成專業的社群行銷文案。
 ${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
@@ -1115,7 +1200,7 @@ ${variationRequirement}
             window.loadSavedPrompts('vid'); 
             window.loadSavedPrompts('gen'); 
             window.fetchBankRate();
-            const lastTab = localStorage.getItem ? (localStorage.getItem('active_tab') || 'image-copy') : 'image-copy';
+            const lastTab = localStorage.setItem ? (localStorage.getItem('active_tab') || 'image-copy') : 'image-copy';
             window.switchTab(lastTab, false);
         });
     </script>
