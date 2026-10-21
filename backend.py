@@ -25,6 +25,9 @@ app.add_middleware(
 # 初始化 Google Gemini 客戶端
 client = genai.Client()
 
+# 預設模型（若前端未指定時使用）
+DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+
 # 從 Render 環境變數抓取設定
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 INSTAGRAM_ACCESS_TOKEN = os.environ.get(
@@ -66,42 +69,50 @@ async def startup_event():
     INSTAGRAM_ACCESS_TOKEN = refresh_instagram_token(INSTAGRAM_ACCESS_TOKEN)
 
 # ========================================================
-# 🚀 處理前端的 AI 生成請求
+# 🚀 處理前端的 AI 生成請求 (已升級支援動態接收前端選單的模型參數)
 # ========================================================
 @app.post("/api/generate")
-async def generate_content(data: dict):
-    prompt = data.get("prompt", "")
-    image_base64 = data.get("imageBase64", None)
+async def generate_content(request: Request):
+    try:
+        data = await request.json()
+        prompt = data.get("prompt", "")
+        image_base64 = data.get("imageBase64", None)
+        
+        # 📌 優先採用前端下拉選單傳過來的模型名稱，若無則退回環境變數或預設值
+        selected_model = data.get("model", DEFAULT_GEMINI_MODEL)
 
-    contents = [prompt]
-    if image_base64:
-        image_bytes = base64.b64decode(image_base64)
-        image_part = types.Part.from_bytes(
-            data=image_bytes,
-            mime_type="image/jpeg"
-        )
-        contents.append(image_part)
-
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model='gemini-3.8-flash',
-                contents=contents
+        contents = [prompt]
+        if image_base64:
+            image_bytes = base64.b64decode(image_base64)
+            image_part = types.Part.from_bytes(
+                data=image_bytes,
+                mime_type="image/jpeg"
             )
-            return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
-        except Exception as e:
-            if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
-                time.sleep(2)
-                continue
-            return JSONResponse(status_code=500, content={"error": str(e)})
+            contents.append(image_part)
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = client.models.generate_content(
+                    model=selected_model,  # 動態套用前端選定的模型
+                    contents=contents
+                )
+                return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
+            except Exception as e:
+                if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
+                    time.sleep(2)
+                    continue
+                return JSONResponse(status_code=500, content={"error": str(e)})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
 # 📱 雙平台（FB / IG）一鍵貼文 API 接口 (100% 保留您原本可發圖的邏輯)
 # ========================================================
 @app.post("/api/publish-post")
-async def publish_post(request: Request, data: dict):
+async def publish_post(request: Request):
     try:
+        data = await request.json()
         publish_fb = data.get("publishFb", False)
         publish_ig = data.get("publishIg", False)
         fb_caption = data.get("fbCaption", "")
@@ -217,11 +228,14 @@ async def publish_post(request: Request, data: dict):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📊 韓國東大門 IG 實時爆款趨勢分析
+# 📊 韓國東大門 IG 實時爆款趨勢分析 (支援動態模型選擇)
 # ========================================================
 @app.post("/api/realtime-trends")
-async def get_realtime_trends():
+async def get_realtime_trends(request: Request):
     try:
+        data = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        selected_model = data.get("model", DEFAULT_GEMINI_MODEL)
+
         if not APIFY_TOKEN:
             return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
 
@@ -315,7 +329,7 @@ async def get_realtime_trends():
 
 ### 貳、東大門當季流行趨勢總結與採購建議
 1. **整體視覺風格趨勢**：(總結這 10 款爆款的共通點與韓國女性最愛的風格)
-​2. **賣家選品與行銷建議**：(提供給台灣女裝賣家的採購與粉專/IG 行銷切入點)
+2. **賣家選品與行銷建議**：(提供給台灣女裝賣家的採購與粉專/IG 行銷切入點)
 """
 
         contents = [trend_summary_prompt] + image_parts
@@ -324,7 +338,7 @@ async def get_realtime_trends():
         for attempt in range(max_retries):
             try:
                 ai_response = client.models.generate_content(
-                    model='gemini-3.8-flash',
+                    model=selected_model,
                     contents=contents
                 )
                 return JSONResponse(content={"report": ai_response.text})
