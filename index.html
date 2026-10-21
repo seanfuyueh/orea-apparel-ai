@@ -159,12 +159,12 @@
                 <button type="button" onclick="switchTab('image-copy')" id="desktop-nav-image-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left cursor-pointer">
                     <span>🖼️</span> 圖片生成文案
                 </button>
-                <!-- 📌 階段一修改：左側選單改為「生成 Reels」 -->
                 <button type="button" onclick="switchTab('video-copy')" id="desktop-nav-video-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>🎬</span> 生成 Reels
                 </button>
+                <!-- 📌 修改點：左側選單改為「韓國女裝趨勢」 -->
                 <button type="button" onclick="switchTab('trend')" id="desktop-nav-trend" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
-                    <span>📊</span> 韓國東大門流行趨勢
+                    <span>📊</span> 韓國女裝趨勢
                 </button>
                 <button type="button" onclick="switchTab('pricing')" id="desktop-nav-pricing" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>💰</span> 價格試算器
@@ -193,10 +193,13 @@
             
             <!-- 1. 圖片生成文案 -->
             <div id="tab-image-copy" class="space-y-6 pt-2">
-                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🖼️ 圖片視覺分析與文案生成</h3>
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6 relative">
+                    <!-- 📌 重置按鈕固定於右上角 -->
+                    <div class="absolute top-5 right-5 md:top-8 md:right-8">
                         <button type="button" onclick="resetModule('img')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
+                    </div>
+                    <div class="border-b border-gray-100 pb-4 pr-16">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🖼️ 圖片視覺分析與文案生成</h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                         <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
@@ -230,7 +233,6 @@
                                 <button type="button" onclick="generateImageText()" id="submit-btn-img" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
                                     ✨ 分析圖片並生成 3 組文案
                                 </button>
-                                <!-- 📌 階段一修改：移除模擬備用 AI，改為動態「選擇模型」下拉選單 -->
                                 <div class="flex items-center gap-2 bg-gray-50 border border-gray-300 px-3.5 py-3 rounded-xl shadow-sm">
                                     <span class="text-xs md:text-sm font-bold text-gray-700 whitespace-nowrap"><i class="fa-solid fa-microchip text-indigo-600"></i> 選擇模型：</span>
                                     <select id="model-select-img" class="w-full bg-transparent text-xs md:text-sm font-bold text-gray-800 focus:outline-none cursor-pointer">
@@ -251,10 +253,13 @@
 
             <!-- 2. 文案生成 -->
             <div id="tab-general-copy" class="hidden space-y-6 pt-2">
-                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-900 text-base md:text-lg">📄 純文字文案生成設定</h3>
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6 relative">
+                    <!-- 📌 重置按鈕固定於右上角 -->
+                    <div class="absolute top-5 right-5 md:top-8 md:right-8">
                         <button type="button" onclick="resetModule('gen')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
+                    </div>
+                    <div class="border-b border-gray-100 pb-4 pr-16">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">📄 純文字文案生成設定</h3>
                     </div>
                     <div class="space-y-5">
                         <div>
@@ -297,18 +302,20 @@
                 </div>
             </div>
 
-            <!-- 3. 生成 Reels (原影片生成文案) -->
+            <!-- 3. 生成 Reels -->
             <div id="tab-video-copy" class="hidden space-y-6 pt-2">
-                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
-                    <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 生成 Reels 設定</h3>
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6 relative">
+                    <!-- 📌 重置按鈕固定於右上角 -->
+                    <div class="absolute top-5 right-5 md:top-8 md:right-8">
                         <button type="button" onclick="resetModule('vid')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
+                    </div>
+                    <div class="border-b border-gray-100 pb-4 pr-16">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 生成 Reels 設定</h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
                         <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
                             <div id="preview-placeholder-vid" class="text-center text-gray-400">
                                 <span class="text-4xl">🎬</span>
-                                <!-- 📌 階段一修改：上傳區塊說明文字改為「上傳 3~10張照片或影片」 -->
                                 <p class="text-sm mt-2 font-medium">上傳 3~10張照片或影片</p>
                             </div>
                             <video id="video-preview" src="" controls class="absolute inset-0 w-full h-full object-contain hidden bg-black/5"></video>
@@ -334,11 +341,9 @@
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1 items-center">
-                                <!-- 📌 階段一修改：按鈕名稱改為「✨ 生成 Reels」 -->
                                 <button type="button" onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
                                     ✨ 生成 Reels
                                 </button>
-                                <!-- 📌 階段一修改：移除模擬備用 AI，改為動態「選擇模型」下拉選單 -->
                                 <div class="flex items-center gap-2 bg-gray-50 border border-gray-300 px-3.5 py-3 rounded-xl shadow-sm">
                                     <span class="text-xs md:text-sm font-bold text-gray-700 whitespace-nowrap"><i class="fa-solid fa-microchip text-indigo-600"></i> 選擇模型：</span>
                                     <select id="model-select-vid" class="w-full bg-transparent text-xs md:text-sm font-bold text-gray-800 focus:outline-none cursor-pointer">
@@ -357,45 +362,47 @@
                 </div>
             </div>
 
-            <!-- 4. 最新流行趨勢 -->
+            <!-- 4. 韓國女裝趨勢 (已依指示將按鈕文字改為「點擊開始分析」、對調左右位置、重置移至右上角) -->
             <div id="tab-trend" class="hidden space-y-6 pt-2">
-                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h3 class="font-medium text-gray-900 text-base md:text-lg">韓國東大門當季流行時尚趨勢分析</h3>
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm relative space-y-5">
+                    <!-- 📌 重置按鈕固定於右上角 -->
+                    <div class="absolute top-5 right-5 md:top-8 md:right-8">
+                        <button type="button" onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
+                    </div>
+                    <div class="pr-16">
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">韓國女裝當季流行時尚趨勢分析</h3>
                         <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行實時 IG 爆款貼文爬取與熱銷單品推薦。</p>
                     </div>
-                    <div class="flex items-center gap-2.5 w-full md:w-auto flex-wrap">
-                        <div class="flex items-center gap-2 bg-gray-50 border border-gray-300 px-3 py-2.5 rounded-xl shadow-sm">
-                            <span class="text-xs font-bold text-gray-700">選擇模型：</span>
-                            <select id="model-select-trend" class="bg-transparent text-xs font-bold text-gray-800 focus:outline-none cursor-pointer">
+                    <!-- 📌 模型選單與分析按鈕左右對調、手機版上下垂直顯示 -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+                        <div class="flex items-center gap-2 bg-gray-50 border border-gray-300 px-3.5 py-3 rounded-xl shadow-sm w-full sm:w-auto">
+                            <span class="text-xs md:text-sm font-bold text-gray-700 whitespace-nowrap"><i class="fa-solid fa-microchip text-indigo-600"></i> 選擇模型：</span>
+                            <select id="model-select-trend" class="w-full bg-transparent text-xs md:text-sm font-bold text-gray-800 focus:outline-none cursor-pointer">
                                 <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash</option>
                                 <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
                                 <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
                             </select>
                         </div>
-                        <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
-                            📊 分析最新趨勢與網拍範例
-                        </button>
-                        <button type="button" onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap cursor-pointer">
-                            🔄 重置
+                        <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 sm:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3.5 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer flex items-center justify-center gap-2">
+                            <span>📊</span> 點擊開始分析
                         </button>
                     </div>
                 </div>
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 東大門趨勢分析報告</h3>
+                    <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>📈</span> 韓國女裝趨勢分析報告</h3>
                     <div id="trend-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-5 text-sm md:text-base text-gray-700 min-h-[380px] leading-relaxed markdown-body max-w-full">點擊上方按鈕開始分析。</div>
                 </div>
             </div>
 
             <!-- 5. 價格試算器 -->
             <div id="tab-pricing" class="hidden space-y-6 pt-2">
-                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+                <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6 relative">
                     <div class="border-b border-gray-100 pb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                         <div>
                             <h3 class="font-bold text-gray-900 text-lg">💰 韓國商品價格試算表</h3>
                             <p class="text-sm text-gray-500 mt-1">所有數值皆可自由編輯，即時計算台幣成本、實際成本與利潤。</p>
                         </div>
-                        <div class="flex gap-2.5">
+                        <div class="flex gap-2.5 flex-wrap">
                             <button type="button" onclick="fetchBankRate()" id="fetch-rate-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium shadow-sm transition-colors cursor-pointer">🔄 同步台銀即時匯率</button>
                             <button type="button" onclick="resetPricing()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 cursor-pointer">🔄 恢復預設值</button>
                         </div>
@@ -496,11 +503,11 @@
             <span class="text-lg">🖼️</span>
             <span class="text-xs font-medium">圖片</span>
         </button>
-        <!-- 📌 階段一修改：手機底部選單改為「生成 Reels」 -->
         <button type="button" onclick="switchTab('video-copy')" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
             <span class="text-lg">🎬</span>
             <span class="text-xs font-medium">Reels</span>
         </button>
+        <!-- 📌 修改點：手機底部選單改為「韓國女裝趨勢」 -->
         <button type="button" onclick="switchTab('trend')" id="mobile-nav-trend" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
             <span class="text-lg">📊</span>
             <span class="text-xs font-medium">趨勢</span>
@@ -835,7 +842,7 @@
                 document.getElementById('page-title').innerText = '生成 Reels';
             } else if (tab === 'trend') {
                 document.getElementById('tab-trend').classList.remove('hidden');
-                document.getElementById('page-title').innerText = '韓國東大門流行趨勢';
+                document.getElementById('page-title').innerText = '韓國女裝趨勢';
             } else if (tab === 'pricing') {
                 document.getElementById('tab-pricing').classList.remove('hidden');
                 document.getElementById('page-title').innerText = '韓國商品價格試算器';
@@ -1010,7 +1017,7 @@
                 document.getElementById('result-box-vid').innerText = '尚未開始生成，請上傳影片並點擊按鈕。';
                 currentUploadedVideoBlobUrl = null;
             } else if (mode === 'trend') {
-                document.getElementById('trend-btn').innerText = '📊 分析最新趨勢與網拍範例';
+                document.getElementById('trend-btn').innerHTML = '<span>📊</span> 點擊開始分析';
                 document.getElementById('trend-btn').disabled = false;
                 document.getElementById('trend-result-box').innerText = '點擊上方按鈕開始分析。';
             }
@@ -1227,7 +1234,7 @@ ${variationRequirement}
 
             if (trendBtn) {
                 trendBtn.disabled = true;
-                trendBtn.innerText = '🔍 實時抓取 IG 爆款數據中...';
+                trendBtn.innerHTML = '<span>⏳</span> 實時抓取 IG 爆款數據中...';
             }
             resultBox.innerText = '正在透過爬蟲引擎抓取韓國爆款 IG 貼文，並由 Gemini 進行多模態趨勢分析，請稍候約 20-30 秒...';
 
@@ -1243,7 +1250,7 @@ ${variationRequirement}
                 if (response.ok && data.report) {
                     window.renderMarkdownContent('trend-result-box', data.report);
                     if (typeof window.saveToHistory === 'function') {
-                        window.saveToHistory('text', '東大門 IG 實時爆款趨勢報告', data.report, null);
+                        window.saveToHistory('text', '韓國女裝趨勢分析報告', data.report, null);
                     }
                 } else {
                     resultBox.innerText = '分析失敗：' + (data.error || '無法取得資料');
@@ -1253,7 +1260,7 @@ ${variationRequirement}
             } finally {
                 if (trendBtn) {
                     trendBtn.disabled = false;
-                    trendBtn.innerText = '📊 分析最新趨勢與網拍範例';
+                    trendBtn.innerHTML = '<span>📊</span> 點擊開始分析';
                 }
             }
         };
