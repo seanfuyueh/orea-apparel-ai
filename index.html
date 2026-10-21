@@ -171,7 +171,7 @@
                     <span>🖼️</span> 圖片生成文案
                 </button>
                 <button type="button" onclick="switchTab('video-copy')" id="desktop-nav-video-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
-                    <span>🎬</span> 影片生成文案
+                    <span>🎬</span> 生成 Reels
                 </button>
                 <button type="button" onclick="switchTab('trend')" id="desktop-nav-trend" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>📊</span> 韓國東大門流行趨勢
@@ -298,25 +298,26 @@
                 </div>
             </div>
 
-            <!-- 3. 影片生成文案 -->
+            <!-- 3. 生成 Reels (支援多圖上傳、拖曳排序、秒數選擇) -->
             <div id="tab-video-copy" class="hidden space-y-6 pt-2">
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
                     <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 影片生成文案設定</h3>
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 生成 Reels 設定</h3>
                         <button type="button" onclick="resetModule('vid')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                        <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
-                            <div id="preview-placeholder-vid" class="text-center text-gray-400">
+                        <div class="md:col-span-5 flex flex-col border-2 border-dashed border-gray-300 rounded-xl p-3 bg-gray-50 min-h-[280px] relative">
+                            <div class="text-xs text-gray-400 mb-1 text-center font-medium">💡 可拖曳調整順序 (手機長按移動)</div>
+                            <div id="preview-placeholder-vid" class="my-auto text-center text-gray-400 py-8">
                                 <span class="text-4xl">🎬</span>
-                                <p class="text-sm mt-2 font-medium">上傳的影片預覽</p>
+                                <p class="text-sm mt-2 font-medium">上傳 3~10張照片或影片</p>
                             </div>
-                            <video id="video-preview" src="" controls class="absolute inset-0 w-full h-full object-contain hidden bg-black/5"></video>
+                            <div id="video-multi-preview-container" class="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full max-h-[340px] overflow-y-auto"></div>
                         </div>
-                        <div class="md:col-span-8 space-y-5">
+                        <div class="md:col-span-7 space-y-5">
                             <div>
-                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳短影音 / Reels 檔案</label>
-                                <input type="file" id="video-file" accept="video/*" onchange="previewFile(event, 'video')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳 3~10張照片或影片</label>
+                                <input type="file" id="video-file" accept="video/*,image/*" multiple onchange="previewFile(event, 'video')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
                             </div>
                             <div>
                                 <div class="flex justify-between items-center mb-1.5">
@@ -333,9 +334,18 @@
                                     <button type="button" onclick="saveCustomPrompt('vid')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                                 </div>
                             </div>
+                            <div class="space-y-2">
+                                <label class="block text-sm md:text-base font-medium text-gray-700">⏱️ 選擇 Reels 目標秒數</label>
+                                <div class="grid grid-cols-3 gap-2.5">
+                                    <button type="button" onclick="setReelsDuration(10)" id="duration-btn-10" class="py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer">10秒</button>
+                                    <button type="button" onclick="setReelsDuration(15)" id="duration-btn-15" class="py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer">15秒</button>
+                                    <button type="button" onclick="setReelsDuration(30)" id="duration-btn-30" class="py-2.5 rounded-xl text-sm font-bold border border-gray-900 bg-gray-900 text-white transition-all cursor-pointer shadow-sm">30秒 (預設)</button>
+                                </div>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                                <!-- 📌 按鈕文字已改為「✨ 生成 Reels」 -->
                                 <button type="button" onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
-                                    🎬 生成 Reels 專屬腳本
+                                    ✨ 生成 Reels
                                 </button>
                                 <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
                                     <input type="checkbox" id="mock-ai-toggle-vid" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
@@ -484,7 +494,7 @@
         </button>
         <button type="button" onclick="switchTab('video-copy')" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
             <span class="text-lg">🎬</span>
-            <span class="text-xs font-medium">影片</span>
+            <span class="text-xs font-medium">Reels</span>
         </button>
         <button type="button" onclick="switchTab('trend')" id="mobile-nav-trend" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
             <span class="text-lg">📊</span>
@@ -590,12 +600,22 @@
         </div>
     </div>
 
+    <!-- 3. Reels 圖片專屬放大燈箱彈跳視窗 -->
+    <div id="reels-lightbox-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-3 md:p-6 backdrop-blur-md" onclick="closeReelsLightbox()">
+        <div class="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center justify-center" onclick="event.stopPropagation()">
+            <button type="button" onclick="closeReelsLightbox()" class="absolute -top-12 right-0 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg cursor-pointer flex items-center gap-1.5">
+                ❌ 關閉視窗
+            </button>
+            <img id="reels-lightbox-img" src="" alt="完整照片" class="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl border border-gray-700 bg-black">
+        </div>
+    </div>
+
     <!-- ================= 一般腳本區 ================= -->
     <script>
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
-        let currentUploadedVideoBlobUrl = null;
-        let currentUploadedVideoFilename = null;
+        let currentReelsFiles = []; 
+        let currentReelsDuration = 30; // 預設 30秒
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
 
@@ -611,6 +631,20 @@
 #韓國代購 #韓國製
 #時尚的盡頭是簡約
 #簡約不簡單`;
+
+        // ⏱️ 設定 Reels 秒數
+        window.setReelsDuration = function(seconds) {
+            currentReelsDuration = seconds;
+            [10, 15, 30].forEach(sec => {
+                const btn = document.getElementById(`duration-btn-${sec}`);
+                if (!btn) return;
+                if (sec === seconds) {
+                    btn.className = 'py-2.5 rounded-xl text-sm font-bold border border-gray-900 bg-gray-900 text-white transition-all cursor-pointer shadow-sm';
+                } else {
+                    btn.className = 'py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer';
+                }
+            });
+        };
 
         // 📌 彈跳視窗內的三平台分頁切換邏輯
         window.switchPubTab = function(platform) {
@@ -786,8 +820,11 @@
         };
 
         window.previewFile = function(event, type) {
-            const file = event.target.files[0];
-            if (type === 'image' && file) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            if (type === 'image') {
+                const file = files[0];
                 currentUploadedImageFilename = file.name;
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -821,13 +858,102 @@
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
-            } else if (type === 'video' && file) {
-                currentUploadedVideoFilename = file.name;
-                currentUploadedVideoBlobUrl = URL.createObjectURL(file);
-                document.getElementById('video-preview').src = currentUploadedVideoBlobUrl;
-                document.getElementById('video-preview').classList.remove('hidden');
-                document.getElementById('preview-placeholder-vid').classList.add('hidden');
+            } else if (type === 'video') {
+                const fileList = Array.from(files);
+                let loadedCount = 0;
+                fileList.forEach((file) => {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const fileDataUrl = e.target.result;
+                        const base64Clean = fileDataUrl.includes(',') ? fileDataUrl.split(',')[1] : fileDataUrl;
+                        
+                        currentReelsFiles.push({
+                            name: file.name,
+                            type: file.type,
+                            base64: base64Clean,
+                            url: fileDataUrl
+                        });
+
+                        loadedCount++;
+                        if (loadedCount === fileList.length) {
+                            renderReelsThumbnails();
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
             }
+        };
+
+        window.removeReelsItem = function(index) {
+            currentReelsFiles.splice(index, 1);
+            renderReelsThumbnails();
+        };
+
+        window.renderReelsThumbnails = function() {
+            const container = document.getElementById('video-multi-preview-container');
+            const placeholder = document.getElementById('preview-placeholder-vid');
+            if (!container) return;
+
+            container.innerHTML = '';
+            if (currentReelsFiles.length > 0) {
+                placeholder.classList.add('hidden');
+            } else {
+                placeholder.classList.remove('hidden');
+                return;
+            }
+
+            currentReelsFiles.forEach((fileObj, index) => {
+                if (!fileObj) return;
+
+                const thumbWrapper = document.createElement('div');
+                thumbWrapper.className = 'reels-thumb-item relative group aspect-square bg-black/5 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center';
+                thumbWrapper.setAttribute('draggable', 'true');
+                thumbWrapper.dataset.index = index;
+
+                let mediaElementHtml = fileObj.type.startsWith('image/') 
+                    ? `<img src="${fileObj.url}" class="w-full h-full object-cover pointer-events-none">`
+                    : `<video src="${fileObj.url}" class="w-full h-full object-cover pointer-events-none"></video>`;
+
+                thumbWrapper.innerHTML = `
+                    ${mediaElementHtml}
+                    <button type="button" onclick="removeReelsItem(${index})" title="刪除此照片" class="absolute top-1 left-1 bg-red-600/80 hover:bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow cursor-pointer transition-transform active:scale-90 z-10">×</button>
+                    <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 rounded font-bold pointer-events-none">#${index + 1}</span>
+                    ${fileObj.type.startsWith('image/') ? `<button type="button" onclick="openReelsLightbox('${fileObj.url}')" title="放大完整檢視" class="absolute top-1 right-1 bg-black/70 hover:bg-black text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90 z-10">><</button>` : ''}
+                `;
+
+                thumbWrapper.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', index);
+                    setTimeout(() => thumbWrapper.classList.add('dragging'), 0);
+                });
+                thumbWrapper.addEventListener('dragend', () => { thumbWrapper.classList.remove('dragging'); });
+                thumbWrapper.addEventListener('dragover', (e) => { e.preventDefault(); });
+                thumbWrapper.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    const targetIndex = index;
+                    if (draggedIndex !== targetIndex) {
+                        const movedItem = currentReelsFiles.splice(draggedIndex, 1)[0];
+                        currentReelsFiles.splice(targetIndex, 0, movedItem);
+                        renderReelsThumbnails();
+                    }
+                });
+
+                container.appendChild(thumbWrapper);
+            });
+        };
+
+        window.openReelsLightbox = function(url) {
+            const modal = document.getElementById('reels-lightbox-modal');
+            const img = document.getElementById('reels-lightbox-img');
+            if (modal && img) {
+                img.src = url;
+                modal.classList.remove('hidden');
+            }
+        };
+
+        window.closeReelsLightbox = function() {
+            const modal = document.getElementById('reels-lightbox-modal');
+            if (modal) modal.classList.add('hidden');
         };
 
         window.resetModule = function(mode) {
@@ -854,16 +980,16 @@
                 document.getElementById('result-box-gen').innerText = '尚未開始生成，請輸入主題與風格並點擊按鈕。';
             } else if (mode === 'vid') {
                 document.getElementById('video-file').value = '';
-                document.getElementById('video-preview').src = '';
-                document.getElementById('video-preview').classList.add('hidden');
+                document.getElementById('video-multi-preview-container').innerHTML = '';
                 document.getElementById('preview-placeholder-vid').classList.remove('hidden');
                 document.getElementById('preset-prompts-vid').value = '';
                 document.getElementById('prompt-text-vid').value = '';
                 document.getElementById('delete-prompt-btn-vid').classList.add('hidden');
-                document.getElementById('submit-btn-vid').innerText = '🎬 生成 Reels 專屬腳本';
+                document.getElementById('submit-btn-vid').innerText = '✨ 生成 Reels';
                 document.getElementById('submit-btn-vid').disabled = false;
                 document.getElementById('result-box-vid').innerText = '尚未開始生成，請上傳影片並點擊按鈕。';
-                currentUploadedVideoBlobUrl = null;
+                currentReelsFiles = [];
+                window.setReelsDuration(30);
             } else if (mode === 'trend') {
                 document.getElementById('trend-btn').innerText = '📊 分析最新趨勢與網拍範例';
                 document.getElementById('trend-btn').disabled = false;
@@ -1038,25 +1164,25 @@ ${variationRequirement}
         };
 
         window.generateVideoText = async function() {
-            const fileInput = document.getElementById('video-file');
             const promptText = document.getElementById('prompt-text-vid').value;
             const submitBtn = document.getElementById('submit-btn-vid');
-            if (fileInput.files.length === 0 && !currentUploadedVideoBlobUrl) { alert('請先上傳影片！'); return; }
+            if (currentReelsFiles.length === 0) { alert('請先上傳 3~10張照片或影片素材！'); return; }
 
             const isRegen = hasGeneratedMap.vid;
             submitBtn.disabled = true; 
             submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'AI 生成中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點！】" : "";
+            const firstImageBase64 = currentReelsFiles[0] ? currentReelsFiles[0].base64 : null;
             
-            const fullPrompt = `身為專業的短影音編導，請針對韓國時尚短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
+            const fullPrompt = `身為專業的短影音編導與韓國時尚品牌總監，請依據上傳的商品圖片與短影音需求「${promptText || '細節特色展示'}」，並嚴格依照使用者所選擇的【目標總時長：${currentReelsDuration}秒】，編寫一份高流量的短影音腳本（包含各分鏡秒數分配、視覺畫面、口白台詞與導購 Call to Action，總秒數必須符合 ${currentReelsDuration} 秒）。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
-            const resText = await window.callGeminiAPI(fullPrompt);
+            const resText = await window.callGeminiAPI(fullPrompt, firstImageBase64);
             window.renderMarkdownContent('result-box-vid', resText);
 
             if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
-                window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedVideoBlobUrl);
+                window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentReelsFiles[0] ? currentReelsFiles[0].url : null);
             }
 
             hasGeneratedMap.vid = true;
@@ -1159,7 +1285,7 @@ ${variationRequirement}
             }).join('');
         };
 
-        // 📌 左側主選單頁籤切換邏輯 (嚴格使用 switchTab)
+        // 📌 左側主選單頁籤切換邏輯
         window.switchTab = function(tab, saveState = true) {
             ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
                 const el = document.getElementById(id);
@@ -1186,7 +1312,7 @@ ${variationRequirement}
                 document.getElementById('page-title').innerText = '文案生成';
             } else if (tab === 'video-copy') {
                 document.getElementById('tab-video-copy').classList.remove('hidden');
-                document.getElementById('page-title').innerText = '影片生成文案';
+                document.getElementById('page-title').innerText = '生成 Reels';
             } else if (tab === 'trend') {
                 document.getElementById('tab-trend').classList.remove('hidden');
                 document.getElementById('page-title').innerText = '韓國東大門流行趨勢';
