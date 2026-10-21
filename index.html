@@ -139,9 +139,7 @@
             transition: transform 0.15s ease, box-shadow 0.15s ease;
             user-select: none;
         }
-        .reels-thumb-item:active {
-            cursor: grabbing;
-        }
+        .reels-thumb-item:active { cursor: grabbing; }
         .reels-thumb-item.dragging {
             opacity: 0.4;
             transform: scale(0.92);
@@ -151,9 +149,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.getRegistrations().then(function(registrations) {
-                for(let registration of registrations) {
-                    registration.unregister();
-                }
+                for(let registration of registrations) { registration.unregister(); }
             });
         }
     </script>
@@ -175,7 +171,7 @@
                     <span>🖼️</span> 圖片生成文案
                 </button>
                 <button type="button" onclick="switchTab('video-copy')" id="desktop-nav-video-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
-                    <span>🎬</span> 生成 Reels
+                    <span>🎬</span> 影片生成文案
                 </button>
                 <button type="button" onclick="switchTab('trend')" id="desktop-nav-trend" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>📊</span> 韓國東大門流行趨勢
@@ -302,26 +298,25 @@
                 </div>
             </div>
 
-            <!-- 3. 生成 Reels (支援多圖上傳、拖曳排序、秒數選擇) -->
+            <!-- 3. 影片生成文案 -->
             <div id="tab-video-copy" class="hidden space-y-6 pt-2">
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6">
                     <div class="border-b border-gray-100 pb-4 flex justify-between items-center">
-                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 生成 Reels 設定</h3>
+                        <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 影片生成文案設定</h3>
                         <button type="button" onclick="resetModule('vid')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                        <div class="md:col-span-5 flex flex-col border-2 border-dashed border-gray-300 rounded-xl p-3 bg-gray-50 min-h-[280px] relative">
-                            <div class="text-xs text-gray-400 mb-1 text-center font-medium">💡 可拖曳調整順序 (手機長按移動)</div>
-                            <div id="preview-placeholder-vid" class="my-auto text-center text-gray-400 py-8">
+                        <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
+                            <div id="preview-placeholder-vid" class="text-center text-gray-400">
                                 <span class="text-4xl">🎬</span>
-                                <p class="text-sm mt-2 font-medium">上傳 3~10張照片或影片</p>
+                                <p class="text-sm mt-2 font-medium">上傳的影片預覽</p>
                             </div>
-                            <div id="video-multi-preview-container" class="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full max-h-[340px] overflow-y-auto"></div>
+                            <video id="video-preview" src="" controls class="absolute inset-0 w-full h-full object-contain hidden bg-black/5"></video>
                         </div>
-                        <div class="md:col-span-7 space-y-5">
+                        <div class="md:col-span-8 space-y-5">
                             <div>
-                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳 3~10張照片或影片</label>
-                                <input type="file" id="video-file" accept="video/*,image/*" multiple onchange="previewFile(event, 'video')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
+                                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳短影音 / Reels 檔案</label>
+                                <input type="file" id="video-file" accept="video/*" onchange="previewFile(event, 'video')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
                             </div>
                             <div>
                                 <div class="flex justify-between items-center mb-1.5">
@@ -336,14 +331,6 @@
                                 <div class="flex flex-col md:flex-row gap-2">
                                     <input type="text" id="prompt-text-vid" placeholder="或直接在此輸入新的補充說明..." class="w-full md:flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm md:text-base focus:ring-2 focus:ring-gray-900 focus:outline-none">
                                     <button type="button" onclick="saveCustomPrompt('vid')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="block text-sm md:text-base font-medium text-gray-700">⏱️ 選擇 Reels 目標秒數</label>
-                                <div class="grid grid-cols-3 gap-2.5">
-                                    <button type="button" onclick="setReelsDuration(10)" id="duration-btn-10" class="py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer">10秒</button>
-                                    <button type="button" onclick="setReelsDuration(15)" id="duration-btn-15" class="py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer">15秒</button>
-                                    <button type="button" onclick="setReelsDuration(30)" id="duration-btn-30" class="py-2.5 rounded-xl text-sm font-bold border border-gray-900 bg-gray-900 text-white transition-all cursor-pointer shadow-sm">30秒 (預設)</button>
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
@@ -603,26 +590,15 @@
         </div>
     </div>
 
-    <!-- 3. Reels 圖片專屬放大燈箱彈跳視窗 -->
-    <div id="reels-lightbox-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-3 md:p-6 backdrop-blur-md" onclick="closeReelsLightbox()">
-        <div class="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center justify-center" onclick="event.stopPropagation()">
-            <button type="button" onclick="closeReelsLightbox()" class="absolute -top-12 right-0 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg cursor-pointer flex items-center gap-1.5">
-                ❌ 關閉視窗
-            </button>
-            <img id="reels-lightbox-img" src="" alt="完整照片" class="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl border border-gray-700 bg-black">
-        </div>
-    </div>
-
     <!-- ================= 一般腳本區 ================= -->
     <script>
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
-        let currentReelsFiles = []; 
-        let currentReelsDuration = 30; // 預設 30秒
+        let currentUploadedVideoBlobUrl = null;
+        let currentUploadedVideoFilename = null;
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
 
-        // 📌 FB 固定頁尾定義
         const FB_FIXED_FOOTER = `
 👇來去逛逛👇
 🏷 https://www.lovelybykorea.com/
@@ -636,21 +612,7 @@
 #時尚的盡頭是簡約
 #簡約不簡單`;
 
-        // ⏱️ 設定 Reels 秒數
-        window.setReelsDuration = function(seconds) {
-            currentReelsDuration = seconds;
-            [10, 15, 30].forEach(sec => {
-                const btn = document.getElementById(`duration-btn-${sec}`);
-                if (!btn) return;
-                if (sec === seconds) {
-                    btn.className = 'py-2.5 rounded-xl text-sm font-bold border border-gray-900 bg-gray-900 text-white transition-all cursor-pointer shadow-sm';
-                } else {
-                    btn.className = 'py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer';
-                }
-            });
-        };
-
-        // 📌 預覽視窗分頁切換邏輯
+        // 📌 彈跳視窗內的三平台分頁切換邏輯
         window.switchPubTab = function(platform) {
             document.getElementById('pub-tab-fb').className = 'pub-tab-btn';
             document.getElementById('pub-tab-ig').className = 'pub-tab-btn';
@@ -772,7 +734,6 @@
             document.getElementById('pub-th-text').value = thText;
             
             switchPubTab('fb');
-
             document.getElementById('publish-modal').classList.remove('hidden');
         };
 
@@ -825,11 +786,8 @@
         };
 
         window.previewFile = function(event, type) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
-
-            if (type === 'image') {
-                const file = files[0];
+            const file = event.target.files[0];
+            if (type === 'image' && file) {
                 currentUploadedImageFilename = file.name;
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -863,102 +821,13 @@
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
-            } else if (type === 'video') {
-                const fileList = Array.from(files);
-                let loadedCount = 0;
-                fileList.forEach((file) => {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        const fileDataUrl = e.target.result;
-                        const base64Clean = fileDataUrl.includes(',') ? fileDataUrl.split(',')[1] : fileDataUrl;
-                        
-                        currentReelsFiles.push({
-                            name: file.name,
-                            type: file.type,
-                            base64: base64Clean,
-                            url: fileDataUrl
-                        });
-
-                        loadedCount++;
-                        if (loadedCount === fileList.length) {
-                            renderReelsThumbnails();
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                });
+            } else if (type === 'video' && file) {
+                currentUploadedVideoFilename = file.name;
+                currentUploadedVideoBlobUrl = URL.createObjectURL(file);
+                document.getElementById('video-preview').src = currentUploadedVideoBlobUrl;
+                document.getElementById('video-preview').classList.remove('hidden');
+                document.getElementById('preview-placeholder-vid').classList.add('hidden');
             }
-        };
-
-        window.removeReelsItem = function(index) {
-            currentReelsFiles.splice(index, 1);
-            renderReelsThumbnails();
-        };
-
-        window.renderReelsThumbnails = function() {
-            const container = document.getElementById('video-multi-preview-container');
-            const placeholder = document.getElementById('preview-placeholder-vid');
-            if (!container) return;
-
-            container.innerHTML = '';
-            if (currentReelsFiles.length > 0) {
-                placeholder.classList.add('hidden');
-            } else {
-                placeholder.classList.remove('hidden');
-                return;
-            }
-
-            currentReelsFiles.forEach((fileObj, index) => {
-                if (!fileObj) return;
-
-                const thumbWrapper = document.createElement('div');
-                thumbWrapper.className = 'reels-thumb-item relative group aspect-square bg-black/5 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center';
-                thumbWrapper.setAttribute('draggable', 'true');
-                thumbWrapper.dataset.index = index;
-
-                let mediaElementHtml = fileObj.type.startsWith('image/') 
-                    ? `<img src="${fileObj.url}" class="w-full h-full object-cover pointer-events-none">`
-                    : `<video src="${fileObj.url}" class="w-full h-full object-cover pointer-events-none"></video>`;
-
-                thumbWrapper.innerHTML = `
-                    ${mediaElementHtml}
-                    <button type="button" onclick="removeReelsItem(${index})" title="刪除此照片" class="absolute top-1 left-1 bg-red-600/80 hover:bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow cursor-pointer transition-transform active:scale-90 z-10">×</button>
-                    <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 rounded font-bold pointer-events-none">#${index + 1}</span>
-                    ${fileObj.type.startsWith('image/') ? `<button type="button" onclick="openReelsLightbox('${fileObj.url}')" title="放大完整檢視" class="absolute top-1 right-1 bg-black/70 hover:bg-black text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90 z-10">><</button>` : ''}
-                `;
-
-                thumbWrapper.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', index);
-                    setTimeout(() => thumbWrapper.classList.add('dragging'), 0);
-                });
-                thumbWrapper.addEventListener('dragend', () => { thumbWrapper.classList.remove('dragging'); });
-                thumbWrapper.addEventListener('dragover', (e) => { e.preventDefault(); });
-                thumbWrapper.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
-                    const targetIndex = index;
-                    if (draggedIndex !== targetIndex) {
-                        const movedItem = currentReelsFiles.splice(draggedIndex, 1)[0];
-                        currentReelsFiles.splice(targetIndex, 0, movedItem);
-                        renderReelsThumbnails();
-                    }
-                });
-
-                container.appendChild(thumbWrapper);
-            });
-        };
-
-        window.openReelsLightbox = function(url) {
-            const modal = document.getElementById('reels-lightbox-modal');
-            const img = document.getElementById('reels-lightbox-img');
-            if (modal && img) {
-                img.src = url;
-                modal.classList.remove('hidden');
-            }
-        };
-
-        window.closeReelsLightbox = function() {
-            const modal = document.getElementById('reels-lightbox-modal');
-            if (modal) modal.classList.add('hidden');
         };
 
         window.resetModule = function(mode) {
@@ -985,7 +854,8 @@
                 document.getElementById('result-box-gen').innerText = '尚未開始生成，請輸入主題與風格並點擊按鈕。';
             } else if (mode === 'vid') {
                 document.getElementById('video-file').value = '';
-                document.getElementById('video-multi-preview-container').innerHTML = '';
+                document.getElementById('video-preview').src = '';
+                document.getElementById('video-preview').classList.add('hidden');
                 document.getElementById('preview-placeholder-vid').classList.remove('hidden');
                 document.getElementById('preset-prompts-vid').value = '';
                 document.getElementById('prompt-text-vid').value = '';
@@ -993,8 +863,7 @@
                 document.getElementById('submit-btn-vid').innerText = '🎬 生成 Reels 專屬腳本';
                 document.getElementById('submit-btn-vid').disabled = false;
                 document.getElementById('result-box-vid').innerText = '尚未開始生成，請上傳影片並點擊按鈕。';
-                currentReelsFiles = [];
-                window.setReelsDuration(30);
+                currentUploadedVideoBlobUrl = null;
             } else if (mode === 'trend') {
                 document.getElementById('trend-btn').innerText = '📊 分析最新趨勢與網拍範例';
                 document.getElementById('trend-btn').disabled = false;
@@ -1007,8 +876,7 @@
             const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
             const deleteBtn = document.getElementById(`delete-prompt-btn-${mode}`);
             if (select && input && select.value) {
-                let cleanVal = select.value.startsWith('💾 ') ? select.value.replace('💾 ', '') : select.value;
-                input.value = cleanVal;
+                input.value = select.value;
                 if (select.selectedOptions[0] && select.selectedOptions[0].text.startsWith('💾')) {
                     if(deleteBtn) deleteBtn.classList.remove('hidden');
                 } else {
@@ -1030,9 +898,8 @@
         window.deleteSelectedPrompt = async function(mode) {
             const select = document.getElementById(`preset-prompts-${mode}`);
             if (!select || !select.value) return;
-            let val = select.value.startsWith('💾 ') ? select.value.replace('💾 ', '') : select.value;
-            if (confirm(`確定要從雲端刪除自訂項目「${val}」嗎？`)) {
-                await window.deletePromptFromCloud(mode, val);
+            if (confirm(`確定要從雲端刪除自訂項目「${select.value}」嗎？`)) {
+                await window.deletePromptFromCloud(mode, select.value);
                 document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`).value = '';
                 document.getElementById(`delete-prompt-btn-${mode}`).classList.add('hidden');
             }
@@ -1171,25 +1038,25 @@ ${variationRequirement}
         };
 
         window.generateVideoText = async function() {
+            const fileInput = document.getElementById('video-file');
             const promptText = document.getElementById('prompt-text-vid').value;
             const submitBtn = document.getElementById('submit-btn-vid');
-            if (currentReelsFiles.length === 0) { alert('請先上傳 3~10張照片或影片素材！'); return; }
+            if (fileInput.files.length === 0 && !currentUploadedVideoBlobUrl) { alert('請先上傳影片！'); return; }
 
             const isRegen = hasGeneratedMap.vid;
             submitBtn.disabled = true; 
             submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'AI 生成中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點！】" : "";
-            const firstImageBase64 = currentReelsFiles[0] ? currentReelsFiles[0].base64 : null;
             
-            const fullPrompt = `身為專業的短影音編導與韓國時尚品牌總監，請依據上傳的商品圖片與短影音需求「${promptText || '細節特色展示'}」，並嚴格依照使用者所選擇的【目標總時長：${currentReelsDuration}秒】，編寫一份高流量的短影音腳本（包含各分鏡秒數分配、視覺畫面、口白台詞與導購 Call to Action，總秒數必須符合 ${currentReelsDuration} 秒）。${variationRequirement}
+            const fullPrompt = `身為專業的短影音編導，請針對韓國時尚短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
-            const resText = await window.callGeminiAPI(fullPrompt, firstImageBase64);
+            const resText = await window.callGeminiAPI(fullPrompt);
             window.renderMarkdownContent('result-box-vid', resText);
 
             if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
-                window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentReelsFiles[0] ? currentReelsFiles[0].url : null);
+                window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedVideoBlobUrl);
             }
 
             hasGeneratedMap.vid = true;
@@ -1290,6 +1157,131 @@ ${variationRequirement}
                     </div>
                 `;
             }).join('');
+        };
+
+        // 📌 左側主選單頁籤切換邏輯 (嚴格使用 switchTab)
+        window.switchTab = function(tab, saveState = true) {
+            ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
+            ['desktop-nav-image-copy', 'desktop-nav-copywriting', 'desktop-nav-video-copy', 'desktop-nav-trend', 'desktop-nav-pricing', 'desktop-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer';
+            });
+            ['mobile-nav-image-copy', 'mobile-nav-copywriting', 'mobile-nav-video-copy', 'mobile-nav-trend', 'mobile-nav-pricing', 'mobile-nav-history'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.className = 'flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer';
+            });
+
+            let targetNavName = tab === 'copywriting' ? 'copywriting' : tab;
+            let currentDesktopNav = document.getElementById(`desktop-nav-${targetNavName}`);
+            let currentMobileNav = document.getElementById(`mobile-nav-${targetNavName}`);
+
+            if (tab === 'image-copy') {
+                document.getElementById('tab-image-copy').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '圖片生成文案';
+            } else if (tab === 'copywriting') {
+                document.getElementById('tab-general-copy').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '文案生成';
+            } else if (tab === 'video-copy') {
+                document.getElementById('tab-video-copy').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '影片生成文案';
+            } else if (tab === 'trend') {
+                document.getElementById('tab-trend').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '韓國東大門流行趨勢';
+            } else if (tab === 'pricing') {
+                document.getElementById('tab-pricing').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '韓國商品價格試算器';
+            } else if (tab === 'history') {
+                document.getElementById('tab-history').classList.remove('hidden');
+                document.getElementById('page-title').innerText = '歷史紀錄查詢';
+                if (typeof window.renderHistory === 'function') window.renderHistory();
+            }
+
+            if (currentDesktopNav) currentDesktopNav.className = 'w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium bg-gray-100 text-gray-900 transition-colors text-left cursor-pointer';
+            if (currentMobileNav) currentMobileNav.className = 'flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer';
+
+            if (saveState) localStorage.setItem('active_tab', tab);
+        };
+
+        window.closeModal = function() {
+            document.getElementById('expand-modal').classList.add('hidden');
+        };
+
+        window.openModal = function(index) {
+            const item = globalHistoryRecords[index];
+            if (!item) return;
+            document.getElementById('modal-title').innerHTML = `🔍 紀錄檢視 - ${item.title || '歷史紀錄'}`;
+            let mediaHtml = '';
+            if (item.type === 'image' && item.mediaSrc) {
+                mediaHtml = `<div class="mb-4 text-center"><img src="${item.mediaSrc}" class="max-h-72 mx-auto rounded-xl border border-gray-200 shadow-sm object-contain"></div>`;
+            } else if (item.type === 'video' && item.mediaSrc) {
+                mediaHtml = `<div class="mb-4 text-center"><video src="${item.mediaSrc}" controls class="max-h-72 mx-auto rounded-xl border border-gray-200 shadow-sm"></video></div>`;
+            }
+            
+            const modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = `
+                <div class="text-xs text-gray-400 mb-2">建立時間：${item.dateStr || ''}</div>
+                ${mediaHtml}
+                <div id="modal-text-content" class="bg-white border border-gray-200 rounded-xl p-4 md:p-5 text-gray-800 leading-relaxed shadow-inner markdown-body"></div>
+            `;
+            window.renderMarkdownContent('modal-text-content', item.content || '無內容');
+            document.getElementById('expand-modal').classList.remove('hidden');
+        };
+
+        window.fetchBankRate = async function() {
+            const rateInput = document.getElementById('calc-rate');
+            const rateSource = document.getElementById('rate-source');
+            if(rateSource) rateSource.innerText = "(同步中...)";
+            try {
+                const response = await fetch('https://open.er-api.com/v6/latest/KRW');
+                const data = await response.json();
+                if (data && data.rates && data.rates.TWD) {
+                    const fetchedRate = parseFloat(data.rates.TWD).toFixed(4);
+                    if(rateInput) rateInput.value = fetchedRate;
+                    if(rateSource) rateSource.innerText = "(已同步即時匯率)";
+                    calculatePrice();
+                    return;
+                }
+            } catch (e) {
+                console.log('網路同步匯率失敗');
+            }
+            if(rateSource) rateSource.innerText = "(使用預設匯率)";
+            calculatePrice();
+        };
+
+        window.calculatePrice = function() {
+            const krw = parseFloat(document.getElementById('calc-krw').value) || 0;
+            const rate = parseFloat(document.getElementById('calc-rate').value) || 0;
+            const commRate = parseFloat(document.getElementById('calc-commission-rate').value) || 0;
+            const shipping = parseFloat(document.getElementById('calc-shipping').value) || 0;
+            const bossMultiplier = parseFloat(document.getElementById('calc-boss-multiplier').value) || 0;
+            const retailMultiplier = parseFloat(document.getElementById('calc-retail-multiplier').value) || 0;
+            const rateAmount = krw * rate;                  
+            const commKrw = krw * commRate;                 
+            const commTwd = commKrw * rate;                 
+            const subtotal = rateAmount + commTwd + shipping; 
+            const bossCost = Math.round(subtotal * bossMultiplier); 
+            const retailPrice = Math.round(bossCost * retailMultiplier); 
+            const profit = retailPrice - bossCost;
+            document.getElementById('res-rate').innerText = Math.round(rateAmount);
+            document.getElementById('res-commission-krw').innerText = Math.round(commKrw).toLocaleString();
+            document.getElementById('res-commission-twd').innerText = Math.round(commTwd);
+            document.getElementById('res-subtotal').innerText = Math.round(subtotal);
+            document.getElementById('res-boss-cost').innerText = bossCost.toLocaleString();
+            document.getElementById('res-retail-price').innerText = retailPrice.toLocaleString();
+            document.getElementById('res-profit').innerText = profit.toLocaleString();
+        };
+
+        window.resetPricing = function() {
+            document.getElementById('calc-krw').value = 40000;
+            document.getElementById('calc-rate').value = 0.0228;
+            document.getElementById('calc-commission-rate').value = 0.02;
+            document.getElementById('calc-shipping').value = 60;
+            document.getElementById('calc-boss-multiplier').value = 1.05;
+            document.getElementById('calc-retail-multiplier').value = 2.8;
+            calculatePrice();
         };
 
         window.addEventListener('DOMContentLoaded', () => { 
