@@ -236,14 +236,10 @@
                                     <button type="button" onclick="saveCustomPrompt('img')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                            <div>
                                 <button type="button" onclick="generateImageText()" id="submit-btn-img" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
                                     ✨ 分析圖片並生成 3 組文案
                                 </button>
-                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
-                                    <input type="checkbox" id="mock-ai-toggle-img" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
-                                    <span class="text-xs md:text-sm font-bold text-gray-700 text-center">⚡ 使用模擬備用 AI</span>
-                                </label>
                             </div>
                         </div>
                     </div>
@@ -281,14 +277,10 @@
                                 <button type="button" onclick="saveCustomPrompt('gen')" class="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-xl text-sm md:text-base font-medium border border-gray-300 whitespace-nowrap cursor-pointer">💾 儲存</button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                        <div>
                             <button type="button" onclick="generateTextOnly()" id="submit-btn-gen" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
                                 ✨ 生成 3 組專屬文案
                             </button>
-                            <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
-                                <input type="checkbox" id="mock-ai-toggle-gen" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
-                                <span class="text-xs md:text-sm font-bold text-gray-700 text-center">⚡ 使用模擬備用 AI</span>
-                            </label>
                         </div>
                     </div>
                 </div>
@@ -342,15 +334,10 @@
                                     <button type="button" onclick="setReelsDuration(30)" id="duration-btn-30" class="py-2.5 rounded-xl text-sm font-bold border border-gray-900 bg-gray-900 text-white transition-all cursor-pointer shadow-sm">30秒 (預設)</button>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                                <!-- 📌 按鈕文字已改為「✨ 生成 Reels」 -->
+                            <div>
                                 <button type="button" onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
                                     ✨ 生成 Reels
                                 </button>
-                                <label class="flex items-center justify-center gap-2 bg-gray-50 px-4 py-3.5 rounded-xl border border-gray-300 cursor-pointer shadow-sm hover:bg-gray-100 transition-colors w-full">
-                                    <input type="checkbox" id="mock-ai-toggle-vid" class="w-4 h-4 text-gray-900 rounded focus:ring-gray-900 cursor-pointer">
-                                    <span class="text-xs md:text-sm font-bold text-gray-700 text-center">⚡ 使用模擬備用 AI</span>
-                                </label>
                             </div>
                         </div>
                     </div>
@@ -1047,26 +1034,7 @@
             }
         };
 
-        function getDynamicMockResult(type, query = '') {
-            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-            const fbTitle = pick(["一眼就被精緻的細節吸引！", "實物質感真的太棒了，完全超出期待。"]);
-            const fbContent = pick(["無論通勤或週末約會，都能完美點綴妳的整體造型。這款材質輕盈且版型修身，絕對是本季衣櫃必備款！", "設計簡約卻充滿高級感，細節處理得非常用心，穿上去立刻提升整體氣質，是本季不可錯過的百搭首選！"]);
-            const igContent = pick(["高級感拉滿✨ 隨手一搭就非常有型！", "氣質歐膩必備款🛒 實物質感超棒！"]);
-            const thContent = pick(["大家覺得這件拿來當上班戰袍會不會太浮誇？我一拿到手就忍不住想包色了！", "韓國連線現場真的搶翻天... 這款的材質我給 100 分！妳們喜歡哪一色？"]);
-            
-            const group = `【📘 Facebook 專屬文案】\n文案標題：${fbTitle}\n內文：${fbContent}\nHashtags：#韓國連線 #質感單品\n\n【📸 Instagram 專屬文案】\n內文：${igContent}\nHashtags：#東大門代購\n\n【🧵 Threads 專屬文案】\n內文：${thContent}`;
-            return `視覺分析與品項辨識：這是一件精緻的高質感服飾。\n\n【情境 A | 法式簡約】\n${group}\n\n【情境 B | 韓系知性】\n${group}\n\n【情境 C | 日常慵懶】\n${group}`;
-        }
-
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
-            const isVid = prompt.includes('短影音') || prompt.includes('腳本');
-            const isGen = prompt.includes('品項');
-            const toggleId = isVid ? 'mock-ai-toggle-vid' : (isGen ? 'mock-ai-toggle-gen' : 'mock-ai-toggle-img');
-            const toggleEl = document.getElementById(toggleId);
-            const useMock = toggleEl ? toggleEl.checked : false;
-
-            if (useMock) return getDynamicMockResult(prompt);
-
             try {
                 const response = await fetch('/api/generate', {
                     method: 'POST',
@@ -1088,8 +1056,8 @@
                     throw new Error("API 回傳成功但未包含文字內容");
                 }
             } catch (error) {
-                console.warn("後端 AI 呼叫失敗，已自動觸發備用 AI：", error);
-                return getDynamicMockResult(prompt) + `\n\n(系統備註：因後端連線異常 [${error.message}]，本次已自動啟用備用生成模式。)`;
+                console.error("後端 AI 呼叫失敗：", error);
+                throw error;
             }
         };
 
@@ -1117,16 +1085,21 @@
 補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
-            const resText = await window.callGeminiAPI(fullPrompt, currentUploadedImageBase64);
-            window.renderMarkdownContent('result-box-img', resText);
+            try {
+                const resText = await window.callGeminiAPI(fullPrompt, currentUploadedImageBase64);
+                window.renderMarkdownContent('result-box-img', resText);
 
-            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
-                window.saveToHistory('image', (promptText || '圖片視覺文案') + (isRegen ? ' (重新生成)' : ''), resText, `data:image/jpeg;base64,${currentUploadedImageBase64}`);
+                if (typeof window.saveToHistory === 'function') {
+                    window.saveToHistory('image', (promptText || '圖片視覺文案') + (isRegen ? ' (重新生成)' : ''), resText, `data:image/jpeg;base64,${currentUploadedImageBase64}`);
+                }
+
+                hasGeneratedMap.img = true;
+            } catch (error) {
+                alert('生成失敗：' + error.message);
+            } finally {
+                submitBtn.disabled = false; 
+                submitBtn.innerText = '重新生成';
             }
-
-            hasGeneratedMap.img = true;
-            submitBtn.disabled = false; 
-            submitBtn.innerText = '重新生成';
         };
 
         window.generateTextOnly = async function() {
@@ -1151,16 +1124,21 @@
 ${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
-            const resText = await window.callGeminiAPI(fullPrompt);
-            window.renderMarkdownContent('result-box-gen', resText);
+            try {
+                const resText = await window.callGeminiAPI(fullPrompt);
+                window.renderMarkdownContent('result-box-gen', resText);
 
-            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
-                window.saveToHistory('text', topic + (isRegen ? ' (重新生成)' : ''), resText, null);
+                if (typeof window.saveToHistory === 'function') {
+                    window.saveToHistory('text', topic + (isRegen ? ' (重新生成)' : ''), resText, null);
+                }
+
+                hasGeneratedMap.gen = true;
+            } catch (error) {
+                alert('生成失敗：' + error.message);
+            } finally {
+                submitBtn.disabled = false; 
+                submitBtn.innerText = '重新生成';
             }
-
-            hasGeneratedMap.gen = true;
-            submitBtn.disabled = false; 
-            submitBtn.innerText = '重新生成';
         };
 
         window.generateVideoText = async function() {
@@ -1178,16 +1156,21 @@ ${variationRequirement}
             const fullPrompt = `身為專業的短影音編導與韓國時尚品牌總監，請依據上傳的商品圖片與短影音需求「${promptText || '細節特色展示'}」，並嚴格依照使用者所選擇的【目標總時長：${currentReelsDuration}秒】，編寫一份高流量的短影音腳本（包含各分鏡秒數分配、視覺畫面、口白台詞與導購 Call to Action，總秒數必須符合 ${currentReelsDuration} 秒）。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
-            const resText = await window.callGeminiAPI(fullPrompt, firstImageBase64);
-            window.renderMarkdownContent('result-box-vid', resText);
+            try {
+                const resText = await window.callGeminiAPI(fullPrompt, firstImageBase64);
+                window.renderMarkdownContent('result-box-vid', resText);
 
-            if (typeof window.saveToHistory === 'function' && !resText.includes('備用模擬 AI')) {
-                window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentReelsFiles[0] ? currentReelsFiles[0].url : null);
+                if (typeof window.saveToHistory === 'function') {
+                    window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentReelsFiles[0] ? currentReelsFiles[0].url : null);
+                }
+
+                hasGeneratedMap.vid = true;
+            } catch (error) {
+                alert('生成失敗：' + error.message);
+            } finally {
+                submitBtn.disabled = false; 
+                submitBtn.innerText = '重新生成';
             }
-
-            hasGeneratedMap.vid = true;
-            submitBtn.disabled = false; 
-            submitBtn.innerText = '重新生成';
         };
 
         window.fetchTrend = async function() {
