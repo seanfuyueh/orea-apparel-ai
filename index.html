@@ -298,6 +298,8 @@
                                 <span class="text-4xl">🎬</span>
                                 <p class="text-sm mt-2 font-medium">上傳 3~10張照片或影片</p>
                             </div>
+                            <!-- 動態預覽：圖片或影片皆可自動適配 -->
+                            <img id="video-image-preview" src="" alt="預覽圖" class="absolute inset-0 w-full h-full object-contain hidden bg-black/5">
                             <video id="video-preview" src="" controls class="absolute inset-0 w-full h-full object-contain hidden bg-black/5"></video>
                         </div>
                         <div class="md:col-span-8 space-y-5">
@@ -461,11 +463,11 @@
             <span class="text-lg">📄</span>
             <span class="text-xs font-medium">文案</span>
         </button>
-        <button type="button" onclick="switchTab('image-copy')" id="mobile-nav-image-copy" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer">
+        <button type="button" onclick="switchTab('image-copy')" id="mobile-nav-image-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
             <span class="text-lg">🖼️</span>
             <span class="text-xs font-medium">圖片</span>
         </button>
-        <button type="button" onclick="switchTab('video-copy')" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
+        <button type="button" onclick="switchTab('video-copy')" id="mobile-nav-video-copy" class="flex flex-col items-center gap-1 text-gray-900 py-1 px-2 rounded-xl bg-gray-100 font-bold cursor-pointer">
             <span class="text-lg">🎬</span>
             <span class="text-xs font-medium">Reels</span>
         </button>
@@ -899,8 +901,11 @@
         };
 
         window.previewFile = function(event, type) {
-            const file = event.target.files[0];
-            if (type === 'image' && file) {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+            const file = files[0];
+
+            if (type === 'image') {
                 currentUploadedImageFilename = file.name;
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -934,12 +939,27 @@
                     img.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
-            } else if (type === 'video' && file) {
+            } else if (type === 'video') {
                 currentUploadedVideoFilename = file.name;
                 currentUploadedVideoBlobUrl = URL.createObjectURL(file);
-                document.getElementById('video-preview').src = currentUploadedVideoBlobUrl;
-                document.getElementById('video-preview').classList.remove('hidden');
-                document.getElementById('preview-placeholder-vid').classList.add('hidden');
+                
+                const imgPreview = document.getElementById('video-image-preview');
+                const vidPreview = document.getElementById('video-preview');
+                const placeholder = document.getElementById('preview-placeholder-vid');
+
+                if (file.type.startsWith('image/')) {
+                    // 如果上傳的是圖片（例如 Reels 多張照片）
+                    imgPreview.src = currentUploadedVideoBlobUrl;
+                    imgPreview.classList.remove('hidden');
+                    vidPreview.classList.add('hidden');
+                    placeholder.classList.add('hidden');
+                } else {
+                    // 如果上傳的是影片
+                    vidPreview.src = currentUploadedVideoBlobUrl;
+                    vidPreview.classList.remove('hidden');
+                    imgPreview.classList.add('hidden');
+                    placeholder.classList.add('hidden');
+                }
             }
         };
 
@@ -967,6 +987,8 @@
                 document.getElementById('result-box-gen').innerText = '尚未開始生成，請輸入主題與風格並點擊按鈕。';
             } else if (mode === 'vid') {
                 document.getElementById('video-file').value = '';
+                document.getElementById('video-image-preview').src = '';
+                document.getElementById('video-image-preview').classList.add('hidden');
                 document.getElementById('video-preview').src = '';
                 document.getElementById('video-preview').classList.add('hidden');
                 document.getElementById('preview-placeholder-vid').classList.remove('hidden');
@@ -1302,7 +1324,7 @@ ${variationRequirement}
                     content,
                     mediaSrc: (mediaSrc && mediaSrc.length < 500000) ? mediaSrc : null,
                     dateStr: now.toLocaleString('zh-TW', { hour12: false }),
-                    timestamp: now.getTime()
+                    timestamp: now.time ? now.time() : now.getTime()
                 });
                 if (typeof window.renderHistory === 'function') window.renderHistory();
             } catch (e) {
