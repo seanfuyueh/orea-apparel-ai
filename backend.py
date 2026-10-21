@@ -22,13 +22,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 初始化 Google Gemini 客戶端
-client = genai.Client()
-
-# 預設模型（若前端未指定時使用）
-DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
-
-# 從 Render 環境變數抓取設定
+# 從 Render 環境變數抓取 API KEY 與設定
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 INSTAGRAM_ACCESS_TOKEN = os.environ.get(
     "INSTAGRAM_ACCESS_TOKEN",
@@ -36,30 +31,47 @@ INSTAGRAM_ACCESS_TOKEN = os.environ.get(
 )
 INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595")
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
-FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")  # 專屬粉專 Token
+FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")
 IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
 
+# 強制使用正式版 v1 API 路由，防止走入 v1beta 跳出 404
+client = genai.Client(
+    api_key=GEMINI_API_KEY,
+    http_options=types.HttpOptions(api_version="v1")
+)
+
+# 預設模型設定（使用 Google 官方標準名稱）
+DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+
+def get_valid_model_name(requested_model: str) -> str:
+    if not requested_model:
+        return "gemini-2.5-flash"
+    
+    model_lower = requested_model.lower()
+    if "1.5-pro" in model_lower or "pro" in model_lower:
+        return "gemini-1.5-pro"
+    elif "1.5-flash" in model_lower:
+        return "gemini-1.5-flash"
+    else:
+        # 預設與 3.8/2.5 flash 切換皆使用最新標準 gemini-2.5-flash
+        return "gemini-2.5-flash"
+
 # ========================================================
-# 🔍 診斷 API：測試 GEMINI_API_KEY 設定與列出金鑰可用模型
+# 🔍 診斷 API：檢查 API Key 與可用的模型清單
 # ========================================================
 @app.get("/api/debug-models")
 async def debug_models():
     try:
-        api_key_env = os.environ.get("GEMINI_API_KEY", "")
-        api_key_configured = bool(api_key_env)
-        
-        # 呼叫 Google SDK 查詢當前 API Key 真正可使用的模型
         models_list = list(client.models.list())
         available_models = [getattr(m, "name", str(m)) for m in models_list]
-        
         return {
-            "api_key_configured": api_key_configured,
-            "api_key_preview": f"{api_key_env[:6]}..." if api_key_configured else "未設定",
+            "api_key_configured": bool(GEMINI_API_KEY),
+            "api_key_preview": f"{GEMINI_API_KEY[:6]}..." if GEMINI_API_KEY else "未設定",
             "available_models": available_models
         }
     except Exception as e:
         return {
-            "api_key_configured": bool(os.environ.get("GEMINI_API_KEY")),
+            "api_key_configured": bool(GEMINI_API_KEY),
             "error_message": str(e)
         }
 
@@ -81,10 +93,8 @@ def refresh_instagram_token(current_token: str) -> str:
         if "access_token" in data:
             print("✅ [Instagram API] 成功自動延長 IG 權杖期限（重新倒數 60 天）")
             return data["access_token"]
-        else:
-            print(f"ℹ️ [Instagram API] 權杖續期回應: {data}")
     except Exception as e:
-        print(f"⚠️ [Instagram API] 權杖自動續期失敗，繼續使用現有權杖: {e}")
+        print(f"⚠️ [Instagram API] 權杖自動續期失敗: {e}")
     return current_token
 
 @app.on_event("startup")
@@ -101,7 +111,10 @@ async def generate_content(request: Request):
         data = await request.json()
         prompt = data.get("prompt", "")
         image_base64 = data.get("imageBase64", None)
-        selected_model = data.get("model", DEFAULT_GEMINI_MODEL)
+        
+        raw_model = data.get("model", DEFAULT_GEMINI_MODEL)
+        selected_model = get_valid_model_name(raw_model)
+        print(f"🤖 [AI Request] 收到請求模型: {raw_model} -> 帶入合法模型名稱: {selected_model}")
 
         contents = [prompt]
         if image_base64:
@@ -157,9 +170,6 @@ async def publish_post(request: Request):
                 img_res = requests.post(imgur_url, headers=headers, data=payload, timeout=20).json()
                 if img_res.get("success"):
                     public_image_url = img_res["data"]["link"]
-                    print(f"✅ [Imgur Upload] 圖片成功上傳至圖床，永久公開網址: {public_image_url}")
-                else:
-                    print(f"⚠️ [Imgur Upload Failed]: {img_res}")
             except Exception as img_err:
                 print(f"⚠️ [Imgur Exception]: {str(img_err)}")
 
@@ -168,7 +178,6 @@ async def publish_post(request: Request):
         if publish_ig:
             if not public_image_url:
                 results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
-                print("❌ [IG Publish Error] 缺少圖床圖片網址")
             else:
                 try:
                     container_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media"
@@ -178,25 +187,20 @@ async def publish_post(request: Request):
                         "access_token": INSTAGRAM_ACCESS_TOKEN
                     }
                     c_res = requests.post(container_url, data=container_payload, timeout=20).json()
-                    print(f"📸 [IG Container Response]: {c_res}")
                     creation_id = c_res.get("id")
 
                     if creation_id:
-                        print("⏳ [IG Wait] 等待 3 秒讓 IG 處理圖片素材...")
                         time.sleep(3)
-
                         pub_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media_publish"
                         pub_payload = {
                             "creation_id": creation_id,
                             "access_token": INSTAGRAM_ACCESS_TOKEN
                         }
                         p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
-                        print(f"🚀 [IG Publish Response]: {p_res}")
                         results["instagram"] = {"status": "success", "data": p_res}
                     else:
                         results["instagram"] = {"status": "error", "message": c_res}
                 except Exception as ig_err:
-                    print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
         if publish_fb:
@@ -209,7 +213,6 @@ async def publish_post(request: Request):
                         for page in pages_res["data"]:
                             if str(page.get("id")) == str(FB_PAGE_ID):
                                 page_access_token = page.get("access_token")
-                                print("✅ [FB Token] 成功取得粉專專屬 Access Token")
                                 break
                 except Exception as token_err:
                     print(f"⚠️ [FB Token Notice]: {token_err}")
@@ -230,21 +233,17 @@ async def publish_post(request: Request):
                 
                 fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
                 fb_res = fb_response.json()
-                print(f"📘 [FB Publish HTTP Status]: {fb_response.status_code}")
-                print(f"📘 [FB Publish Response JSON]: {fb_res}")
                 
                 if fb_response.status_code == 200 and "id" in fb_res:
                     results["facebook"] = {"status": "success", "data": fb_res}
                 else:
                     results["facebook"] = {"status": "error", "message": fb_res}
             except Exception as fb_err:
-                print(f"🔥 [FB Publish Exception Error]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
 
         return JSONResponse(content={"status": "complete", "results": results})
 
     except Exception as e:
-        print(f"🔥 [Publish General Error]: {str(e)}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
@@ -254,7 +253,8 @@ async def publish_post(request: Request):
 async def get_realtime_trends(request: Request):
     try:
         data = await request.json() if request.headers.get("content-type") == "application/json" else {}
-        selected_model = data.get("model", DEFAULT_GEMINI_MODEL)
+        raw_model = data.get("model", DEFAULT_GEMINI_MODEL)
+        selected_model = get_valid_model_name(raw_model)
 
         if not APIFY_TOKEN:
             return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
@@ -288,7 +288,7 @@ async def get_realtime_trends(request: Request):
         items = response.json()
         
         if not isinstance(items, list) or len(items) == 0:
-            error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據，請確認 ig_targets.txt 網址或 Apify 狀態。"
+            error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據。"
             return JSONResponse(status_code=500, content={"error": error_msg})
 
         sorted_posts = sorted(
@@ -369,11 +369,10 @@ async def get_realtime_trends(request: Request):
                 return JSONResponse(status_code=500, content={"error": str(e)})
 
     except Exception as e:
-        print(f"Realtime trend error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 🚀 防護版檔案路由
+# 🚀 靜態檔案路由
 # ========================================================
 def safe_file_response(filename: str, media_type: str = None):
     if os.path.exists(filename):
@@ -414,12 +413,8 @@ async def read_manifest():
 async def read_sw():
     return safe_file_response("sw.js", "application/javascript")
 
-# ========================================================
-# 啟動設定
-# ========================================================
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    # 若檔名為 backend.py 請填 "backend:app"；若為 backend_2.py 請填 "backend_2:app"
     filename = os.path.basename(__file__).replace(".py", "")
     uvicorn.run(f"{filename}:app", host="0.0.0.0", port=port)
