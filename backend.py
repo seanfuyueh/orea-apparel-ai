@@ -22,8 +22,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 從 Render 環境變數抓取 API KEY 與設定
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+# 初始化 Google Gemini 客戶端
+client = genai.Client()
+
+# 預設模型（優先讀取環境變數，若無則預設為您使用的 gemini-3.8-flash）
+DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+
+# 從 Render 環境變數抓取設定
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 INSTAGRAM_ACCESS_TOKEN = os.environ.get(
     "INSTAGRAM_ACCESS_TOKEN",
@@ -33,47 +38,6 @@ INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
 FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")
 IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
-
-# 強制使用正式版 v1 API 路由，防止走入 v1beta 跳出 404
-client = genai.Client(
-    api_key=GEMINI_API_KEY,
-    http_options=types.HttpOptions(api_version="v1")
-)
-
-# 預設模型設定（使用 Google 官方標準名稱）
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
-
-def get_valid_model_name(requested_model: str) -> str:
-    if not requested_model:
-        return "gemini-2.5-flash"
-    
-    model_lower = requested_model.lower()
-    if "1.5-pro" in model_lower or "pro" in model_lower:
-        return "gemini-1.5-pro"
-    elif "1.5-flash" in model_lower:
-        return "gemini-1.5-flash"
-    else:
-        # 預設與 3.8/2.5 flash 切換皆使用最新標準 gemini-2.5-flash
-        return "gemini-2.5-flash"
-
-# ========================================================
-# 🔍 診斷 API：檢查 API Key 與可用的模型清單
-# ========================================================
-@app.get("/api/debug-models")
-async def debug_models():
-    try:
-        models_list = list(client.models.list())
-        available_models = [getattr(m, "name", str(m)) for m in models_list]
-        return {
-            "api_key_configured": bool(GEMINI_API_KEY),
-            "api_key_preview": f"{GEMINI_API_KEY[:6]}..." if GEMINI_API_KEY else "未設定",
-            "available_models": available_models
-        }
-    except Exception as e:
-        return {
-            "api_key_configured": bool(GEMINI_API_KEY),
-            "error_message": str(e)
-        }
 
 # ========================================================
 # 🔄 Instagram 權杖自動續期機制
@@ -103,7 +67,7 @@ async def startup_event():
     INSTAGRAM_ACCESS_TOKEN = refresh_instagram_token(INSTAGRAM_ACCESS_TOKEN)
 
 # ========================================================
-# 🚀 處理前端的 AI 生成請求
+# 🚀 處理前端的 AI 生成請求（直接採用前端選取的模型）
 # ========================================================
 @app.post("/api/generate")
 async def generate_content(request: Request):
@@ -112,9 +76,9 @@ async def generate_content(request: Request):
         prompt = data.get("prompt", "")
         image_base64 = data.get("imageBase64", None)
         
-        raw_model = data.get("model", DEFAULT_GEMINI_MODEL)
-        selected_model = get_valid_model_name(raw_model)
-        print(f"🤖 [AI Request] 收到請求模型: {raw_model} -> 帶入合法模型名稱: {selected_model}")
+        # 直接使用前端傳過來的模型名稱，不進行任何強行改名
+        selected_model = data.get("model", DEFAULT_GEMINI_MODEL)
+        print(f"🤖 [AI Request] 正式呼叫 Gemini API 模型: {selected_model}")
 
         contents = [prompt]
         if image_base64:
@@ -253,8 +217,7 @@ async def publish_post(request: Request):
 async def get_realtime_trends(request: Request):
     try:
         data = await request.json() if request.headers.get("content-type") == "application/json" else {}
-        raw_model = data.get("model", DEFAULT_GEMINI_MODEL)
-        selected_model = get_valid_model_name(raw_model)
+        selected_model = data.get("model", DEFAULT_GEMINI_MODEL)
 
         if not APIFY_TOKEN:
             return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
@@ -416,5 +379,4 @@ async def read_sw():
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    filename = os.path.basename(__file__).replace(".py", "")
-    uvicorn.run(f"{filename}:app", host="0.0.0.0", port=port)
+    uvicorn.run("backend:app", host="0.0.0.0", port=port)
