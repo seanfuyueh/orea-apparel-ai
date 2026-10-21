@@ -100,38 +100,20 @@
             margin: 1.25rem 0;
         }
 
-        /* 📱 預覽視窗三平台頁籤樣式 */
-        .pub-tab-btn {
-            flex: 1;
-            min-width: 0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            padding: 8px 6px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            border-radius: 12px;
-            background-color: #f3f4f6;
-            color: #6b7280;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: 1px solid #e5e7eb;
-            white-space: nowrap;
+        /* 拖曳排序時的視覺提示樣式 */
+        .reels-thumb-item {
+            cursor: grab;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            user-select: none;
         }
-        @media (min-width: 640px) {
-            .pub-tab-btn {
-                gap: 8px;
-                font-size: 0.95rem;
-                padding: 10px 16px;
-            }
+        .reels-thumb-item:active {
+            cursor: grabbing;
         }
-        .pub-tab-btn.active-fb { background-color: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
-        .pub-tab-btn.active-ig { background-color: #fdf2f8; color: #db2777; border-color: #fbcfe8; }
-        .pub-tab-btn.active-th { background-color: #f3f4f6; color: #111827; border-color: #d1d5db; }
-        
-        .pub-panel { display: none; }
-        .pub-panel.active { display: flex; flex-direction: column; }
+        .reels-thumb-item.dragging {
+            opacity: 0.4;
+            transform: scale(0.92);
+            border: 2px dashed #2563eb;
+        }
     </style>
     <script>
         if ('serviceWorker' in navigator) {
@@ -293,13 +275,14 @@
                         <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 生成 Reels 設定</h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                        <!-- 多圖並列縮圖與互動預覽區 -->
+                        <!-- 多圖並列縮圖與拖曳排序預覽區 -->
                         <div class="md:col-span-5 flex flex-col border-2 border-dashed border-gray-300 rounded-xl p-3 bg-gray-50 min-h-[280px] relative">
-                            <div id="preview-placeholder-vid" class="my-auto text-center text-gray-400 py-12">
+                            <div class="text-xs text-gray-400 mb-1 text-center font-medium">💡 可拖曳調整順序 (手機長按移動)</div>
+                            <div id="preview-placeholder-vid" class="my-auto text-center text-gray-400 py-8">
                                 <span class="text-4xl">🎬</span>
                                 <p class="text-sm mt-2 font-medium">上傳 3~10張照片或影片</p>
                             </div>
-                            <div id="video-multi-preview-container" class="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full max-h-[360px] overflow-y-auto"></div>
+                            <div id="video-multi-preview-container" class="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full max-h-[340px] overflow-y-auto"></div>
                         </div>
                         <div class="md:col-span-7 space-y-5">
                             <div>
@@ -495,14 +478,21 @@
         </div>
     </div>
 
+    <!-- 2. Reels 圖片專屬放大燈箱彈跳視窗 (Modal) -->
+    <div id="reels-lightbox-modal" class="fixed inset-0 bg-black/85 z-50 hidden flex items-center justify-center p-3 md:p-6 backdrop-blur-md" onclick="closeReelsLightbox()">
+        <div class="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center justify-center" onclick="event.stopPropagation()">
+            <button type="button" onclick="closeReelsLightbox()" class="absolute -top-12 right-0 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg cursor-pointer flex items-center gap-1.5">
+                ❌ 關閉視窗 (<>)
+            </button>
+            <img id="reels-lightbox-img" src="" alt="完整照片" class="max-w-full max-h-[82vh] object-contain rounded-2xl shadow-2xl border border-gray-700 bg-black">
+        </div>
+    </div>
+
     <!-- 腳本邏輯區 -->
     <script>
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
-        
-        // Reels 多圖與多媒體上傳資料結構（預留未來自動合成影片與直發 API 接口）
-        let currentReelsFiles = []; // 儲存多張圖片/影片的 Base64 與元數據
-        
+        let currentReelsFiles = []; // 儲存多張圖片/影片的陣列 (支援拖曳排序、刪除與放大)
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
 
@@ -706,14 +696,10 @@
                 };
                 reader.readAsDataURL(file);
             } else if (type === 'video') {
-                // 處理 Reels 多圖/影片上傳與並列縮圖預覽
-                currentReelsFiles = [];
-                const container = document.getElementById('video-multi-preview-container');
-                const placeholder = document.getElementById('preview-placeholder-vid');
-                container.innerHTML = '';
-                placeholder.classList.add('hidden');
-
-                Array.from(files).forEach((file, index) => {
+                const fileList = Array.from(files);
+                
+                let loadedCount = 0;
+                fileList.forEach((file) => {
                     const reader = new FileReader();
                     reader.onload = e => {
                         const fileDataUrl = e.target.result;
@@ -726,49 +712,102 @@
                             url: fileDataUrl
                         });
 
-                        // 建立並列縮圖與放大/縮小互動（>< / <>）
-                        const thumbWrapper = document.createElement('div');
-                        thumbWrapper.className = 'relative group aspect-square bg-black/5 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center';
-                        
-                        if (file.type.startsWith('image/')) {
-                            thumbWrapper.innerHTML = `
-                                <img src="${fileDataUrl}" class="w-full h-full object-cover transition-transform duration-200" id="reels-thumb-${index}">
-                                <button type="button" onclick="toggleZoomReels(${index})" id="reels-zoom-btn-${index}" title="放大" class="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90">><</button>
-                            `;
-                        } else {
-                            thumbWrapper.innerHTML = `
-                                <video src="${fileDataUrl}" class="w-full h-full object-cover"></video>
-                                <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 rounded">🎬影片</span>
-                            `;
+                        loadedCount++;
+                        if (loadedCount === fileList.length) {
+                            renderReelsThumbnails();
                         }
-                        container.appendChild(thumbWrapper);
                     };
                     reader.readAsDataURL(file);
                 });
             }
         };
 
-        // Reels 縮圖放大/縮小切換互動邏輯 (>< / <>)
-        window.toggleZoomReels = function(index) {
-            const imgEl = document.getElementById(`reels-thumb-${index}`);
-            const btnEl = document.getElementById(`reels-zoom-btn-${index}`);
-            if (!imgEl || !btnEl) return;
+        // 刪除指定的 Reels 素材
+        window.removeReelsItem = function(index) {
+            currentReelsFiles.splice(index, 1);
+            renderReelsThumbnails();
+        };
 
-            const isZoomed = imgEl.dataset.zoomed === 'true';
-            if (!isZoomed) {
-                imgEl.style.transform = 'scale(2.2)';
-                imgEl.style.zIndex = '10';
-                imgEl.dataset.zoomed = 'true';
-                btnEl.innerText = '<>';
-                btnEl.title = '縮小';
-                btnEl.className = 'absolute top-1 right-1 bg-pink-600 hover:bg-pink-700 text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90 z-20';
+        // 渲染 Reels 縮圖列表並啟用「拖曳排序 (Desktop)」與「刪除 (❌)」與「放大 (><)」
+        window.renderReelsThumbnails = function() {
+            const container = document.getElementById('video-multi-preview-container');
+            const placeholder = document.getElementById('preview-placeholder-vid');
+            if (!container) return;
+
+            container.innerHTML = '';
+            if (currentReelsFiles.length > 0) {
+                placeholder.classList.add('hidden');
             } else {
-                imgEl.style.transform = 'scale(1)';
-                imgEl.style.zIndex = '1';
-                imgEl.dataset.zoomed = 'false';
-                btnEl.innerText = '><';
-                btnEl.title = '放大';
-                btnEl.className = 'absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90';
+                placeholder.classList.remove('hidden');
+                return;
+            }
+
+            currentReelsFiles.forEach((fileObj, index) => {
+                if (!fileObj) return;
+
+                const thumbWrapper = document.createElement('div');
+                thumbWrapper.className = 'reels-thumb-item relative group aspect-square bg-black/5 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center';
+                thumbWrapper.setAttribute('draggable', 'true');
+                thumbWrapper.dataset.index = index;
+
+                let mediaElementHtml = fileObj.type.startsWith('image/') 
+                    ? `<img src="${fileObj.url}" class="w-full h-full object-cover pointer-events-none">`
+                    : `<video src="${fileObj.url}" class="w-full h-full object-cover pointer-events-none"></video>`;
+
+                thumbWrapper.innerHTML = `
+                    ${mediaElementHtml}
+                    <!-- 左上角刪除按鈕 (X) -->
+                    <button type="button" onclick="removeReelsItem(${index})" title="刪除此照片" class="absolute top-1 left-1 bg-red-600/80 hover:bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold shadow cursor-pointer transition-transform active:scale-90 z-10">×</button>
+                    <!-- 左下角編號 -->
+                    <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 rounded font-bold pointer-events-none">#${index + 1}</span>
+                    <!-- 右上角放大按鈕 (><) (僅限圖片可放大) -->
+                    ${fileObj.type.startsWith('image/') ? `<button type="button" onclick="openReelsLightbox('${fileObj.url}')" title="放大完整檢視" class="absolute top-1 right-1 bg-black/70 hover:bg-black text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90 z-10">><</button>` : ''}
+                `;
+
+                // 📌 HTML5 拖曳排序事件 (滑鼠操作)
+                thumbWrapper.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', index);
+                    setTimeout(() => thumbWrapper.classList.add('dragging'), 0);
+                });
+
+                thumbWrapper.addEventListener('dragend', () => {
+                    thumbWrapper.classList.remove('dragging');
+                });
+
+                thumbWrapper.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+
+                thumbWrapper.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const draggedIndex = parseInt(e.dataTransfer.getData('text/plain'));
+                    const targetIndex = index;
+                    if (draggedIndex !== targetIndex) {
+                        const movedItem = currentReelsFiles.splice(draggedIndex, 1)[0];
+                        currentReelsFiles.splice(targetIndex, 0, movedItem);
+                        renderReelsThumbnails();
+                    }
+                });
+
+                container.appendChild(thumbWrapper);
+            });
+        };
+
+        // 開啟 Reels 燈箱彈跳視窗檢視完整照片
+        window.openReelsLightbox = function(url) {
+            const modal = document.getElementById('reels-lightbox-modal');
+            const img = document.getElementById('reels-lightbox-img');
+            if (modal && img) {
+                img.src = url;
+                modal.classList.remove('hidden');
+            }
+        };
+
+        // 關閉 Reels 燈箱彈跳視窗
+        window.closeReelsLightbox = function() {
+            const modal = document.getElementById('reels-lightbox-modal');
+            if (modal) {
+                modal.classList.add('hidden');
             }
         };
 
@@ -954,14 +993,12 @@ ${variationRequirement}
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點！】" : "";
             
-            // 抓取第一張上傳的圖片真實 Base64 送給 Gemini 進行視覺分析
-            const firstImageBase64 = currentReelsFiles[0].base64 || null;
+            const firstImageBase64 = currentReelsFiles[0] ? currentReelsFiles[0].base64 : null;
 
             const fullPrompt = `身為專業的短影音編導與韓國時尚品牌總監，請依據上傳的商品圖片與短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
             try {
-                // 將圖片真實送入後端 Gemini API 進行視覺分析
                 const resText = await window.callGeminiAPI(fullPrompt, firstImageBase64);
                 window.renderMarkdownContent('result-box-vid', resText);
             } catch (err) {
