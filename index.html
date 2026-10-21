@@ -293,16 +293,15 @@
                         <h3 class="font-bold text-gray-900 text-base md:text-lg">🎬 生成 Reels 設定</h3>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-                        <div class="md:col-span-4 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-xl p-2 bg-gray-50 h-64 md:h-72 relative overflow-hidden">
-                            <div id="preview-placeholder-vid" class="text-center text-gray-400">
+                        <!-- 多圖並列縮圖與互動預覽區 -->
+                        <div class="md:col-span-5 flex flex-col border-2 border-dashed border-gray-300 rounded-xl p-3 bg-gray-50 min-h-[280px] relative">
+                            <div id="preview-placeholder-vid" class="my-auto text-center text-gray-400 py-12">
                                 <span class="text-4xl">🎬</span>
                                 <p class="text-sm mt-2 font-medium">上傳 3~10張照片或影片</p>
                             </div>
-                            <!-- 動態預覽：圖片或影片皆可自動適配 -->
-                            <img id="video-image-preview" src="" alt="預覽圖" class="absolute inset-0 w-full h-full object-contain hidden bg-black/5">
-                            <video id="video-preview" src="" controls class="absolute inset-0 w-full h-full object-contain hidden bg-black/5"></video>
+                            <div id="video-multi-preview-container" class="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full max-h-[360px] overflow-y-auto"></div>
                         </div>
-                        <div class="md:col-span-8 space-y-5">
+                        <div class="md:col-span-7 space-y-5">
                             <div>
                                 <label class="block text-sm md:text-base font-medium text-gray-700 mb-1.5">上傳 3~10張照片或影片</label>
                                 <input type="file" id="video-file" accept="video/*,image/*" multiple onchange="previewFile(event, 'video')" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-gray-800 cursor-pointer">
@@ -324,7 +323,7 @@
                             </div>
                             <div class="pt-1">
                                 <button type="button" onclick="generateVideoText()" id="submit-btn-vid" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-xl font-medium shadow-sm text-sm md:text-base transition-colors cursor-pointer flex items-center justify-center">
-                                    ✨ 生成 Reels
+                                    ✨ 生成 Reels 腳本
                                 </button>
                             </div>
                         </div>
@@ -332,7 +331,7 @@
                 </div>
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
                     <h3 class="text-sm md:text-base font-semibold text-gray-700 flex items-center gap-2"><span>🎬</span> AI 執行結果</h3>
-                    <div id="result-box-vid" class="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-5 text-sm md:text-base text-gray-700 min-h-[240px] leading-relaxed markdown-body">尚未開始生成，請上傳影片並點擊按鈕。</div>
+                    <div id="result-box-vid" class="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-5 text-sm md:text-base text-gray-700 min-h-[240px] leading-relaxed markdown-body">尚未開始生成，請上傳照片與輸入需求並點擊按鈕。</div>
                 </div>
             </div>
 
@@ -496,154 +495,16 @@
         </div>
     </div>
 
-    <!-- 2. 多平台同步預覽與發佈彈跳視窗 -->
-    <div id="publish-modal" class="fixed inset-0 bg-black/75 z-50 hidden flex items-center justify-center p-2 md:p-4 backdrop-blur-sm">
-        <div id="publish-modal-content-box" class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[92vh] md:h-[88vh]">
-            <div class="px-4 md:px-6 py-3.5 bg-gray-900 text-white flex justify-between items-center shrink-0">
-                <div class="font-semibold text-sm md:text-lg flex items-center gap-2">🚀 多平台同步預覽與發佈</div>
-                <button type="button" onclick="closePublishModal()" class="bg-gray-800 hover:bg-gray-700 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-medium border border-gray-700 cursor-pointer shrink-0">❌ 取消</button>
-            </div>
-            <div id="publish-modal-body" class="p-3 sm:p-6 overflow-y-auto flex-1 bg-gray-50 flex flex-col">
-                
-                <!-- 三平台切換按鈕區 -->
-                <div class="flex gap-1.5 sm:gap-2 mb-4 shrink-0 w-full">
-                    <button type="button" onclick="switchPubTab('fb')" id="pub-tab-fb" class="pub-tab-btn active-fb">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
-                        <span>Facebook</span>
-                    </button>
-                    <button type="button" onclick="switchPubTab('ig')" id="pub-tab-ig" class="pub-tab-btn">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
-                        <span>Instagram</span>
-                    </button>
-                    <button type="button" onclick="switchPubTab('th')" id="pub-tab-th" class="pub-tab-btn">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Threads_%28app%29_logo.svg" alt="Threads" class="w-5 h-5 sm:w-6 sm:h-6 rounded-md object-contain shrink-0">
-                        <span>Threads</span>
-                    </button>
-                </div>
-
-                <!-- 平台發佈目標勾選區 -->
-                <div class="bg-white p-3 sm:p-4 rounded-xl border border-gray-200 flex flex-col gap-2.5 mb-4 shrink-0 w-full box-border">
-                    <span class="font-bold text-gray-800 text-xs sm:text-sm">📍 勾選欲發佈的目標平台：</span>
-                    <div class="flex items-center justify-between sm:justify-start gap-2 sm:gap-6 w-full flex-wrap">
-                        <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-blue-600 text-xs sm:text-sm">
-                            <input type="checkbox" id="pub-target-fb" checked class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/b/b9/2023_Facebook_icon.svg" alt="Facebook" class="w-5 h-5 rounded-md object-contain shrink-0">
-                        </label>
-                        <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-pink-600 text-xs sm:text-sm">
-                            <input type="checkbox" id="pub-target-ig" checked class="w-4 h-4 rounded text-pink-600 focus:ring-pink-500 cursor-pointer shrink-0">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg" alt="Instagram" class="w-5 h-5 rounded-md object-contain shrink-0">
-                        </label>
-                        <label class="inline-flex items-center gap-1.5 cursor-pointer font-bold text-gray-900 text-xs sm:text-sm">
-                            <input type="checkbox" id="pub-target-th" checked class="w-4 h-4 rounded text-gray-900 focus:ring-gray-700 cursor-pointer shrink-0">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Threads_%28app%29_logo.svg" alt="Threads" class="w-5 h-5 rounded-md object-contain shrink-0">
-                        </label>
-                    </div>
-                </div>
-
-                <div class="flex-1 flex flex-col h-full overflow-hidden">
-                    <div id="pub-panel-fb" class="pub-panel active bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1 h-full">
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-3">
-                            <h4 class="font-bold text-blue-600 flex items-center gap-1.5 text-base">📘 FB 導購長文 (含自動固定尾巴)</h4>
-                        </div>
-                        <textarea id="pub-fb-text" class="w-full h-[calc(100%-40px)] border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-blue-600 focus:outline-none resize-none"></textarea>
-                    </div>
-
-                    <div id="pub-panel-ig" class="pub-panel bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1 h-full">
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-3">
-                            <h4 class="font-bold text-pink-600 flex items-center gap-1.5 text-base">📸 IG 視覺精練</h4>
-                        </div>
-                        <textarea id="pub-ig-text" class="w-full h-[calc(100%-40px)] border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-pink-600 focus:outline-none resize-none"></textarea>
-                    </div>
-
-                    <div id="pub-panel-th" class="pub-panel bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1 h-full">
-                        <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-3">
-                            <h4 class="font-bold text-gray-800 flex items-center gap-1.5 text-base">🧵 Threads 真實互動 (暫存草稿)</h4>
-                        </div>
-                        <div class="bg-gray-100 text-gray-500 text-xs p-2 rounded-lg mb-2">
-                            ※ Threads 暫不提供自動發佈，請在此編輯後手動複製。
-                        </div>
-                        <textarea id="pub-th-text" class="w-full h-[calc(100%-70px)] border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-gray-600 focus:outline-none resize-none"></textarea>
-                    </div>
-                </div>
-
-                <div class="pt-4 shrink-0 mt-auto">
-                    <button type="button" onclick="executePublishing()" id="pub-submit-btn" class="w-full bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-95 text-white py-3.5 rounded-xl font-bold shadow-lg text-base md:text-lg transition-transform active:scale-95 cursor-pointer flex items-center justify-center gap-2">
-                        🚀 一鍵發佈
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- 腳本邏輯區 -->
     <script>
         let currentUploadedImageBase64 = null;
         let currentUploadedImageFilename = null;
-        let currentUploadedVideoBlobUrl = null;
-        let currentUploadedVideoFilename = null;
+        
+        // Reels 多圖與多媒體上傳資料結構（預留未來自動合成影片與直發 API 接口）
+        let currentReelsFiles = []; // 儲存多張圖片/影片的 Base64 與元數據
+        
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
-
-        const FB_FIXED_FOOTER = `
-👇來去逛逛👇
-🏷 https://www.lovelybykorea.com/
-
-🤖𝙇𝙄𝙉𝙀@客服
-▪️ https://lin.ee/lld53QP
-
-#業界唯一超20年韓國女裝代購經驗  
-#限時95折優惠中
-#韓國代購 #韓國製
-#時尚的盡頭是簡約
-#簡約不簡單`;
-
-        window.switchPubTab = function(platform) {
-            document.getElementById('pub-tab-fb').className = 'pub-tab-btn';
-            document.getElementById('pub-tab-ig').className = 'pub-tab-btn';
-            document.getElementById('pub-tab-th').className = 'pub-tab-btn';
-            document.getElementById('pub-panel-fb').classList.remove('active');
-            document.getElementById('pub-panel-ig').classList.remove('active');
-            document.getElementById('pub-panel-th').classList.remove('active');
-
-            if (platform === 'fb') {
-                document.getElementById('pub-tab-fb').classList.add('active-fb');
-                document.getElementById('pub-panel-fb').classList.add('active');
-            } else if (platform === 'ig') {
-                document.getElementById('pub-tab-ig').classList.add('active-ig');
-                document.getElementById('pub-panel-ig').classList.add('active');
-            } else if (platform === 'th') {
-                document.getElementById('pub-tab-th').classList.add('active-th');
-                document.getElementById('pub-panel-th').classList.add('active');
-            }
-        };
-
-        function extractPlatformContent(rawText) {
-            let fbText = "";
-            let igText = "";
-            let thText = "";
-
-            const fbMatch = rawText.match(/(?:【[^】]*Facebook[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Instagram|Threads)[^】]*】)|$)/i);
-            const igMatch = rawText.match(/(?:【[^】]*Instagram[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Facebook|Threads)[^】]*】)|$)/i);
-            const thMatch = rawText.match(/(?:【[^】]*Threads[^】]*】)([\s\S]*?)(?=(?:【[^】]*(?:Facebook|Instagram)[^】]*】)|$)/i);
-
-            const cleanText = (text) => {
-                if (!text) return "";
-                let cleaned = text;
-                cleaned = cleaned.replace(/^#{1,6}\s*/gm, ""); 
-                cleaned = cleaned.replace(/#{2,}/g, "");       
-                cleaned = cleaned.replace(/文案標題：/g, "");
-                cleaned = cleaned.replace(/內文：/g, "");
-                cleaned = cleaned.replace(/Hashtags：/g, "");
-                cleaned = cleaned.replace(/^\s*-\s*/gm, ""); 
-                return cleaned.trim();
-            };
-
-            fbText = fbMatch ? cleanText(fbMatch[1]) : "";
-            igText = igMatch ? cleanText(igMatch[1]) : "";
-            thText = thMatch ? cleanText(thMatch[1]) : "";
-
-            return { fbText, igText, thText };
-        }
 
         window.renderMarkdownContent = function(elementId, text) {
             const el = document.getElementById(elementId);
@@ -671,101 +532,6 @@
                 el.innerHTML = tempDiv.innerHTML;
             } else {
                 el.innerText = text || '';
-            }
-
-            if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
-                const blocks = text.split(/(?=(?:#+\s*)?【情境\s*[A-Z])/g);
-
-                if (blocks.length > 1) {
-                    const topAnalysisText = blocks[0].includes('【情境') ? '' : blocks[0];
-                    const scenarioBlocks = blocks.filter(b => b.includes('【情境'));
-
-                    el.innerHTML = topAnalysisText ? marked.parse(topAnalysisText) : ''; 
-
-                    scenarioBlocks.forEach((blockText) => {
-                        if (!blockText.trim()) return;
-
-                        const cardDiv = document.createElement('div');
-                        cardDiv.className = 'bg-white p-4 md:p-5 rounded-xl border border-gray-200 shadow-sm mb-4 space-y-3';
-                        
-                        marked.setOptions({ gfm: true, breaks: true });
-                        cardDiv.innerHTML = marked.parse(blockText);
-
-                        const btnDiv = document.createElement('div');
-                        btnDiv.className = 'pt-3 border-t border-gray-100 flex justify-end';
-                        
-                        const escapedBlockText = encodeURIComponent(blockText);
-                        btnDiv.innerHTML = `
-                            <button type="button" onclick="openPublishModalSingle('${escapedBlockText}')" class="bg-gradient-to-r from-blue-600 via-pink-600 to-purple-600 hover:opacity-90 text-white px-5 py-2.5 rounded-xl font-bold shadow-md text-sm transition-transform active:scale-95 cursor-pointer flex items-center gap-2">
-                                🚀 一鍵發佈
-                            </button>
-                        `;
-                        cardDiv.appendChild(btnDiv);
-                        el.appendChild(cardDiv);
-                    });
-                }
-            }
-        };
-
-        window.openPublishModalSingle = function(encodedText) {
-            const rawBlockText = decodeURIComponent(encodedText);
-            
-            const { fbText, igText, thText } = extractPlatformContent(rawBlockText);
-            const finalFbText = fbText ? (fbText + "\n\n" + FB_FIXED_FOOTER) : "";
-
-            document.getElementById('pub-fb-text').value = finalFbText;
-            document.getElementById('pub-ig-text').value = igText;
-            document.getElementById('pub-th-text').value = thText;
-            
-            switchPubTab('fb');
-            document.getElementById('publish-modal').classList.remove('hidden');
-        };
-
-        window.closePublishModal = function() {
-            document.getElementById('publish-modal').classList.add('hidden');
-        };
-
-        window.executePublishing = async function() {
-            const pubFb = document.getElementById('pub-target-fb').checked;
-            const pubIg = document.getElementById('pub-target-ig').checked;
-            const pubTh = document.getElementById('pub-target-th') ? document.getElementById('pub-target-th').checked : false;
-            const fbCaption = document.getElementById('pub-fb-text').value;
-            const igCaption = document.getElementById('pub-ig-text').value;
-            const thCaption = document.getElementById('pub-th-text').value;
-            const submitBtn = document.getElementById('pub-submit-btn');
-
-            if (!pubFb && !pubIg && !pubTh) { alert('請至少勾選一個發佈目標平台！'); return; }
-
-            submitBtn.disabled = true;
-            submitBtn.innerText = '⏳ 貼文同步發佈中，請稍候約 10-15 秒...';
-
-            try {
-                const response = await fetch('/api/publish-post', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        publishFb: pubFb,
-                        publishIg: pubIg,
-                        publishTh: pubTh,
-                        fbCaption: fbCaption,
-                        igCaption: igCaption,
-                        thCaption: thCaption,
-                        imageBase64: currentUploadedImageBase64
-                    })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    alert('🎉 貼文發佈完成！請至選取的粉專/帳號確認。\n(Threads 內容請自行複製使用)');
-                    window.closePublishModal();
-                } else {
-                    alert('發佈失敗：' + (data.error || '未知的錯誤'));
-                }
-            } catch (error) {
-                alert('連線發生錯誤：' + error.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = '🚀 一鍵發佈';
             }
         };
 
@@ -903,9 +669,9 @@
         window.previewFile = function(event, type) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
-            const file = files[0];
 
             if (type === 'image') {
+                const file = files[0];
                 currentUploadedImageFilename = file.name;
                 const reader = new FileReader();
                 reader.onload = e => {
@@ -940,26 +706,69 @@
                 };
                 reader.readAsDataURL(file);
             } else if (type === 'video') {
-                currentUploadedVideoFilename = file.name;
-                currentUploadedVideoBlobUrl = URL.createObjectURL(file);
-                
-                const imgPreview = document.getElementById('video-image-preview');
-                const vidPreview = document.getElementById('video-preview');
+                // 處理 Reels 多圖/影片上傳與並列縮圖預覽
+                currentReelsFiles = [];
+                const container = document.getElementById('video-multi-preview-container');
                 const placeholder = document.getElementById('preview-placeholder-vid');
+                container.innerHTML = '';
+                placeholder.classList.add('hidden');
 
-                if (file.type.startsWith('image/')) {
-                    // 如果上傳的是圖片（例如 Reels 多張照片）
-                    imgPreview.src = currentUploadedVideoBlobUrl;
-                    imgPreview.classList.remove('hidden');
-                    vidPreview.classList.add('hidden');
-                    placeholder.classList.add('hidden');
-                } else {
-                    // 如果上傳的是影片
-                    vidPreview.src = currentUploadedVideoBlobUrl;
-                    vidPreview.classList.remove('hidden');
-                    imgPreview.classList.add('hidden');
-                    placeholder.classList.add('hidden');
-                }
+                Array.from(files).forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const fileDataUrl = e.target.result;
+                        const base64Clean = fileDataUrl.includes(',') ? fileDataUrl.split(',')[1] : fileDataUrl;
+                        
+                        currentReelsFiles.push({
+                            name: file.name,
+                            type: file.type,
+                            base64: base64Clean,
+                            url: fileDataUrl
+                        });
+
+                        // 建立並列縮圖與放大/縮小互動（>< / <>）
+                        const thumbWrapper = document.createElement('div');
+                        thumbWrapper.className = 'relative group aspect-square bg-black/5 rounded-lg overflow-hidden border border-gray-200 flex items-center justify-center';
+                        
+                        if (file.type.startsWith('image/')) {
+                            thumbWrapper.innerHTML = `
+                                <img src="${fileDataUrl}" class="w-full h-full object-cover transition-transform duration-200" id="reels-thumb-${index}">
+                                <button type="button" onclick="toggleZoomReels(${index})" id="reels-zoom-btn-${index}" title="放大" class="absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90">><</button>
+                            `;
+                        } else {
+                            thumbWrapper.innerHTML = `
+                                <video src="${fileDataUrl}" class="w-full h-full object-cover"></video>
+                                <span class="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1 rounded">🎬影片</span>
+                            `;
+                        }
+                        container.appendChild(thumbWrapper);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+        };
+
+        // Reels 縮圖放大/縮小切換互動邏輯 (>< / <>)
+        window.toggleZoomReels = function(index) {
+            const imgEl = document.getElementById(`reels-thumb-${index}`);
+            const btnEl = document.getElementById(`reels-zoom-btn-${index}`);
+            if (!imgEl || !btnEl) return;
+
+            const isZoomed = imgEl.dataset.zoomed === 'true';
+            if (!isZoomed) {
+                imgEl.style.transform = 'scale(2.2)';
+                imgEl.style.zIndex = '10';
+                imgEl.dataset.zoomed = 'true';
+                btnEl.innerText = '<>';
+                btnEl.title = '縮小';
+                btnEl.className = 'absolute top-1 right-1 bg-pink-600 hover:bg-pink-700 text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90 z-20';
+            } else {
+                imgEl.style.transform = 'scale(1)';
+                imgEl.style.zIndex = '1';
+                imgEl.dataset.zoomed = 'false';
+                btnEl.innerText = '><';
+                btnEl.title = '放大';
+                btnEl.className = 'absolute top-1 right-1 bg-black/60 hover:bg-black/80 text-white text-xs px-1.5 py-0.5 rounded font-mono shadow cursor-pointer transition-transform active:scale-90';
             }
         };
 
@@ -987,18 +796,15 @@
                 document.getElementById('result-box-gen').innerText = '尚未開始生成，請輸入主題與風格並點擊按鈕。';
             } else if (mode === 'vid') {
                 document.getElementById('video-file').value = '';
-                document.getElementById('video-image-preview').src = '';
-                document.getElementById('video-image-preview').classList.add('hidden');
-                document.getElementById('video-preview').src = '';
-                document.getElementById('video-preview').classList.add('hidden');
+                document.getElementById('video-multi-preview-container').innerHTML = '';
                 document.getElementById('preview-placeholder-vid').classList.remove('hidden');
                 document.getElementById('preset-prompts-vid').value = '';
                 document.getElementById('prompt-text-vid').value = '';
                 document.getElementById('delete-prompt-btn-vid').classList.add('hidden');
-                document.getElementById('submit-btn-vid').innerText = '✨ 生成 Reels';
+                document.getElementById('submit-btn-vid').innerText = '✨ 生成 Reels 腳本';
                 document.getElementById('submit-btn-vid').disabled = false;
-                document.getElementById('result-box-vid').innerText = '尚未開始生成，請上傳影片並點擊按鈕。';
-                currentUploadedVideoBlobUrl = null;
+                document.getElementById('result-box-vid').innerText = '尚未開始生成，請上傳照片與輸入需求並點擊按鈕。';
+                currentReelsFiles = [];
             } else if (mode === 'trend') {
                 document.getElementById('trend-btn').innerHTML = '<span>📊</span> 點擊開始分析';
                 document.getElementById('trend-btn').disabled = false;
@@ -1045,15 +851,6 @@
             if (!select) return;
             let defaults = mode === 'img' ? ['強調材質與細節質感、適合日常搭配', '強調大容量與實用性、通勤約會皆宜', '質感高級感、韓國連線熱銷爆款'] : mode === 'vid' ? ['Reels 節奏明快、強調實物細節特寫', '30秒質感生活感短片、配音樂好搭', '高級感細節介紹、重點展示優點'] : ['質感簡約、知性小香風、減齡休閒', '微寬鬆顯瘦、日常百搭通勤風', '高級感約會搭配、溫柔氣質風'];
             select.innerHTML = `<option value="">-- 選擇常用或自訂項目 --</option>` + defaults.map(d => `<option value="${d}">${d}</option>`).join('');
-            
-            if (typeof window.loadPromptsFromCloud === 'function') {
-                let cloudSaved = await window.loadPromptsFromCloud(mode);
-                cloudSaved.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.text; opt.text = '💾 ' + item.text;
-                    select.appendChild(opt);
-                });
-            }
         };
 
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
@@ -1102,10 +899,6 @@
 1. 【嚴格品項辨識】：請先仔細看圖，這究竟是「衣服、褲子、包包、鞋子還是飾品配件」？
 2. 【禁用錯誤動詞】：如果圖片是「包包」、「鞋子」或「飾品」，絕對不可以使用「好穿、親膚、修飾身形」等形容衣服的詞彙！請根據品項改用項目正確的動詞。
 3. 【生成 3 組情境文案】：請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
-在每一個情境區塊內，都必須包含以下三個標題開頭：
-- 【📘 Facebook 專屬文案】
-- 【📸 Instagram 專屬文案】
-- 【🧵 Threads 專屬文案】
 
 補充需求：「${promptText || '無特別補充'}」。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
@@ -1113,10 +906,6 @@
             try {
                 const resText = await window.callGeminiAPI(fullPrompt, currentUploadedImageBase64);
                 window.renderMarkdownContent('result-box-img', resText);
-
-                if (typeof window.saveToHistory === 'function') {
-                    window.saveToHistory('image', (promptText || '圖片視覺文案') + (isRegen ? ' (重新生成)' : ''), resText, `data:image/jpeg;base64,${currentUploadedImageBase64}`);
-                }
             } catch (err) {
                 document.getElementById('result-box-img').innerText = `生成失敗：${err.message}。請確認 API 金鑰狀態或重新嘗試。`;
             }
@@ -1139,22 +928,12 @@
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個完全不同的切入角度、情境與表達風格，絕不與上一版重複！】" : "";
             
             const fullPrompt = `身為專業的韓國時尚品牌總監，請針對品項/主題「${topic}」以及風格訴求「${style || '簡約質感'}」，精準區分商品類別。
-請嚴格分成【情境 A】、【情境 B】、【情境 C】三個區塊。
-在每一個情境區塊內，都必須包含以下三個標題開頭：
-- 【📘 Facebook 專屬文案】
-- 【📸 Instagram 專屬文案】
-- 【🧵 Threads 專屬文案】
-
 ${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
             try {
                 const resText = await window.callGeminiAPI(fullPrompt, null);
                 window.renderMarkdownContent('result-box-gen', resText);
-
-                if (typeof window.saveToHistory === 'function') {
-                    window.saveToHistory('text', topic + (isRegen ? ' (重新生成)' : ''), resText, null);
-                }
             } catch (err) {
                 document.getElementById('result-box-gen').innerText = `生成失敗：${err.message}。請確認 API 金鑰狀態。`;
             }
@@ -1165,27 +944,26 @@ ${variationRequirement}
         };
 
         window.generateVideoText = async function() {
-            const fileInput = document.getElementById('video-file');
             const promptText = document.getElementById('prompt-text-vid').value;
             const submitBtn = document.getElementById('submit-btn-vid');
-            if (fileInput.files.length === 0 && !currentUploadedVideoBlobUrl) { alert('請先上傳影片或照片素材！'); return; }
+            if (currentReelsFiles.length === 0) { alert('請先上傳 3~10張照片或影片素材！'); return; }
 
             const isRegen = hasGeneratedMap.vid;
             submitBtn.disabled = true; 
-            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'AI 生成中...';
+            submitBtn.innerText = isRegen ? '🎲 重新構思全新分鏡...' : 'AI 視覺分析並生成 Reels 中...';
 
             let variationRequirement = isRegen ? "\n【極度重要要求：請徹底換一個全新的分鏡開場、口白風格與導購切入點！】" : "";
             
-            const fullPrompt = `身為專業的短影音編導，請針對韓國時尚 Reels 短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
+            // 抓取第一張上傳的圖片真實 Base64 送給 Gemini 進行視覺分析
+            const firstImageBase64 = currentReelsFiles[0].base64 || null;
+
+            const fullPrompt = `身為專業的短影音編導與韓國時尚品牌總監，請依據上傳的商品圖片與短影音需求「${promptText || '細節特色展示'}」，編寫一份 30 秒高流量的短影音腳本（包含分鏡秒數、視覺畫面、口白台詞與導購 Call to Action）。${variationRequirement}
 (強制更新防快取碼: ${Date.now()})`; 
 
             try {
-                const resText = await window.callGeminiAPI(fullPrompt, null);
+                // 將圖片真實送入後端 Gemini API 進行視覺分析
+                const resText = await window.callGeminiAPI(fullPrompt, firstImageBase64);
                 window.renderMarkdownContent('result-box-vid', resText);
-
-                if (typeof window.saveToHistory === 'function') {
-                    window.saveToHistory('video', (promptText || 'Reels 腳本企劃') + (isRegen ? ' (重新生成)' : ''), resText, currentUploadedVideoBlobUrl);
-                }
             } catch (err) {
                 document.getElementById('result-box-vid').innerText = `生成失敗：${err.message}。請確認 API 金鑰狀態。`;
             }
@@ -1215,9 +993,6 @@ ${variationRequirement}
 
                 if (response.ok && data.report) {
                     window.renderMarkdownContent('trend-result-box', data.report);
-                    if (typeof window.saveToHistory === 'function') {
-                        window.saveToHistory('text', '韓國女裝趨勢分析報告', data.report, null);
-                    }
                 } else {
                     resultBox.innerText = '分析失敗：' + (data.error || '無法取得資料');
                 }
@@ -1231,65 +1006,6 @@ ${variationRequirement}
             }
         };
 
-        window.renderHistory = async function() {
-            const container = document.getElementById('history-list-container');
-            if (!container) return;
-
-            container.innerHTML = '<div class="text-center text-gray-400 py-12">正在讀取雲端歷史紀錄...</div>';
-            let records = await window.loadHistoryFromCloud();
-
-            const sortOrder = document.getElementById('sort-date')?.value || 'desc';
-            const filterType = document.getElementById('filter-type')?.value || 'all';
-            const searchKeyword = document.getElementById('search-keyword')?.value.toLowerCase().trim() || '';
-
-            if (filterType !== 'all') {
-                records = records.filter(r => r.type === filterType);
-            }
-            if (searchKeyword) {
-                records = records.filter(r => (r.title && r.title.toLowerCase().includes(searchKeyword)) || (r.content && r.content.toLowerCase().includes(searchKeyword)));
-            }
-            records.sort((a, b) => sortOrder === 'asc' ? (a.timestamp - b.timestamp) : (b.timestamp - a.timestamp));
-
-            globalHistoryRecords = records;
-
-            if (records.length === 0) {
-                container.innerHTML = '<div class="bg-white p-8 rounded-2xl border border-gray-200 text-center text-gray-400">目前沒有符合條件的歷史紀錄。</div>';
-                return;
-            }
-
-            container.innerHTML = records.map((r, index) => {
-                let badge = r.type === 'image' ? '🖼️ 圖片文案' : (r.type === 'video' ? '🎬 影片腳本' : '📄 純文字');
-                let mediaThumb = '';
-                if (r.type === 'image' && r.mediaSrc) {
-                    mediaThumb = `<img src="${r.mediaSrc}" class="w-16 h-16 object-cover rounded-xl border border-gray-200 shrink-0">`;
-                } else if (r.type === 'video' && r.mediaSrc) {
-                    mediaThumb = `<div class="w-16 h-16 bg-gray-900 rounded-xl flex items-center justify-center text-white text-xl shrink-0">🎬</div>`;
-                } else {
-                    mediaThumb = `<div class="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xl shrink-0">📄</div>`;
-                }
-
-                return `
-                    <div class="bg-white p-4 md:p-5 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div class="flex items-center gap-4 flex-1 min-w-0 w-full">
-                            ${mediaThumb}
-                            <div class="space-y-1 overflow-hidden flex-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-xs bg-gray-100 text-gray-700 px-2.5 py-0.5 rounded-md font-medium">${badge}</span>
-                                    <span class="text-xs text-gray-400">${r.dateStr || ''}</span>
-                                </div>
-                                <h4 class="font-bold text-gray-800 text-base truncate">${r.title || '無標題'}</h4>
-                                <p class="text-sm text-gray-500 line-clamp-1">${r.content ? r.content.replace(/\n/g, ' ') : ''}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0 w-full md:w-auto justify-end border-t md:border-t-0 pt-3 md:pt-0 border-gray-100">
-                            <button type="button" onclick="openModal(${index})" class="bg-gray-900 hover:bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors cursor-pointer">🔍 檢視完整內容</button>
-                            <button type="button" onclick="deleteRecord('${r.id}')" class="bg-gray-100 hover:bg-red-50 text-red-600 px-3 py-2 rounded-xl text-sm font-medium border border-gray-200 hover:border-red-200 transition-colors cursor-pointer">🗑️ 刪除</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        };
-
         window.addEventListener('DOMContentLoaded', () => { 
             window.loadSavedPrompts('img'); 
             window.loadSavedPrompts('vid'); 
@@ -1298,112 +1014,6 @@ ${variationRequirement}
             const lastTab = localStorage.setItem ? (localStorage.getItem('active_tab') || 'image-copy') : 'image-copy';
             window.switchTab(lastTab, false);
         });
-    </script>
-
-    <!-- Firebase 數據庫模組 -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const app = initializeApp({
-            apiKey: "AIzaSyC3hF7AJgPZnb9RZdRGFo8UOnOBDVPTahM",
-            authDomain: "orea-apparel-ai.firebaseapp.com",
-            projectId: "orea-apparel-ai",
-            storageBucket: "orea-apparel-ai.firebasestorage.app",
-            messagingSenderId: "628052479735",
-            appId: "1:628052479735:web:e9ff155bffd211123acdf2"
-        });
-        const db = getFirestore(app);
-
-        window.saveToHistory = async function(type, title, content, mediaSrc = null) {
-            try {
-                const now = new Date();
-                await addDoc(collection(db, "ai_history_records"), {
-                    type,
-                    title,
-                    content,
-                    mediaSrc: (mediaSrc && mediaSrc.length < 500000) ? mediaSrc : null,
-                    dateStr: now.toLocaleString('zh-TW', { hour12: false }),
-                    timestamp: now.time ? now.time() : now.getTime()
-                });
-                if (typeof window.renderHistory === 'function') window.renderHistory();
-            } catch (e) {
-                console.error("雲端歷史紀錄寫入失敗: ", e);
-            }
-        };
-
-        window.loadHistoryFromCloud = async function() {
-            try {
-                const q = query(collection(db, "ai_history_records"), orderBy("timestamp", "desc"));
-                const querySnapshot = await getDocs(q);
-                let records = [];
-                let seen = new Set();
-                querySnapshot.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const key = `${data.title}_${data.timestamp}`;
-                    if (!seen.has(key)) {
-                        seen.add(key);
-                        records.push({ id: docSnap.id, ...data });
-                    }
-                });
-                return records;
-            } catch (e) {
-                console.error("雲端讀取歷史紀錄失敗: ", e);
-                return [];
-            }
-        };
-
-        window.deleteRecord = async function(id) {
-            if (confirm('確定要從雲端刪除這筆紀錄嗎？')) {
-                try {
-                    await deleteDoc(doc(db, "ai_history_records", id));
-                    if (typeof window.renderHistory === 'function') window.renderHistory();
-                } catch (e) {
-                    console.error("雲端刪除失敗: ", e);
-                }
-            }
-        };
-
-        window.savePromptToCloud = async function(mode, promptText) {
-            try {
-                await addDoc(collection(db, "ai_custom_prompts"), { mode, text: promptText, timestamp: Date.now() });
-                if (typeof window.loadSavedPrompts === 'function') window.loadSavedPrompts(mode);
-            } catch (e) {
-                console.error("提示詞寫入失敗: ", e);
-            }
-        };
-
-        window.loadPromptsFromCloud = async function(mode) {
-            try {
-                const q = query(collection(db, "ai_custom_prompts"), orderBy("timestamp", "asc"));
-                const querySnapshot = await getDocs(q);
-                let customList = [];
-                querySnapshot.forEach(docSnap => {
-                    if (docSnap.data().mode === mode) {
-                        customList.push({ id: docSnap.id, text: docSnap.data().text });
-                    }
-                });
-                return customList;
-            } catch (e) {
-                console.error("提示詞讀取失敗: ", e);
-                return [];
-            }
-        };
-
-        window.deletePromptFromCloud = async function(mode, promptText) {
-            try {
-                const q = query(collection(db, "ai_custom_prompts"), orderBy("timestamp", "asc"));
-                const querySnapshot = await getDocs(q);
-                querySnapshot.forEach(async docSnap => {
-                    if (docSnap.data().mode === mode && docSnap.data().text === promptText) {
-                        await deleteDoc(doc(db, "ai_custom_prompts", docSnap.id));
-                        if (typeof window.loadSavedPrompts === 'function') window.loadSavedPrompts(mode);
-                    }
-                });
-            } catch (e) {
-                console.error("提示詞刪除失敗: ", e);
-            }
-        };
     </script>
 </body>
 </html>
