@@ -10,56 +10,71 @@
 </head>
 <body class="bg-gray-50 font-sans text-gray-900 h-screen flex overflow-hidden">
 
-    <!-- 側邊導覽列 (Sidebar) -->
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
-        <div class="p-6 border-b border-gray-200">
-            <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <i class="fa-solid fa-robot text-indigo-600"></i> AI 營運助理
-            </h1>
-            <p class="text-xs text-gray-500 mt-1">韓國時尚智慧管理後台</p>
+    <!-- 📱 行動版側邊欄遮罩 (點擊可關閉選單) -->
+    <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
+
+    <!-- 側邊導覽列 (Sidebar - 支援手機 RWD 滑出與隱藏) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 transform -translate-x-full md:translate-x-0 md:static transition-transform duration-200 ease-in-out">
+        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+            <div>
+                <h1 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fa-solid fa-robot text-indigo-600"></i> AI 營運助理
+                </h1>
+                <p class="text-xs text-gray-500 mt-1">韓國時尚智慧管理後台</p>
+            </div>
+            <!-- 手機版關閉按鈕 -->
+            <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-gray-600 text-lg p-1">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
-        <nav class="flex-1 p-4 space-y-1">
-            <a href="#" onclick="switchTab('text')" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 font-medium text-sm transition">
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="#" onclick="switchTab('text'); toggleSidebarMobile();" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 font-medium text-sm transition">
                 <i class="fa-solid fa-pen-nib w-5"></i> 文案生成
             </a>
-            <a href="#" onclick="switchTab('image')" id="nav-image" class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 font-medium text-sm transition">
+            <a href="#" onclick="switchTab('image'); toggleSidebarMobile();" id="nav-image" class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-indigo-50 text-indigo-600 font-medium text-sm transition">
                 <i class="fa-solid fa-image w-5"></i> 圖片生成文案
             </a>
-            <!-- 📌 修改點 1：左側選單文字從「影片生成文案」改為「生成 Reels」 -->
-            <a href="#" onclick="switchTab('video')" id="nav-video" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 font-medium text-sm transition">
+            <!-- 📌 階段一：已將「影片生成文案」改為「生成 Reels」 -->
+            <a href="#" onclick="switchTab('video'); toggleSidebarMobile();" id="nav-video" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 font-medium text-sm transition">
                 <i class="fa-solid fa-video w-5"></i> 生成 Reels
             </a>
-            <a href="#" onclick="switchTab('trends')" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 font-medium text-sm transition">
+            <a href="#" onclick="switchTab('trends'); toggleSidebarMobile();" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 font-medium text-sm transition">
                 <i class="fa-solid fa-chart-line w-5"></i> 韓國東大門流行趨勢
             </a>
-            <a href="#" onclick="switchTab('pricing')" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 font-medium text-sm transition">
+            <a href="#" onclick="switchTab('pricing'); toggleSidebarMobile();" class="flex items-center gap-3 px-4 py-2.5 rounded-xl text-gray-600 hover:bg-gray-50 font-medium text-sm transition">
                 <i class="fa-solid fa-calculator w-5"></i> 價格試算器
             </a>
         </nav>
         <div class="p-4 border-t border-gray-200 text-xs text-gray-400 flex items-center justify-between">
-            <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-emerald-500 text-[8px]"></i> 歷史紀錄 (雲端同步中)</span>
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-emerald-500 text-[8px]"></i> 歷史紀錄</span>
             <span class="font-medium">v4.5</span>
         </div>
     </aside>
 
     <!-- 主畫面區域 -->
     <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <!-- 頂部 Header -->
-        <header class="bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center shadow-sm shrink-0 z-10">
-            <h2 id="page-title" class="text-lg md:text-xl font-semibold text-gray-800">圖片生成文案</h2>
+        <!-- 頂部 Header (加入手機版漢堡選單按鈕) -->
+        <header class="bg-white border-b border-gray-200 px-4 md:px-6 py-4 flex justify-between items-center shadow-sm shrink-0 z-10">
             <div class="flex items-center gap-3">
-                <div class="text-sm md:text-base text-gray-500 font-medium hidden md:block">CEO 專屬後台</div>
+                <!-- 手機版展開選單按鈕 -->
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-600 hover:text-indigo-600 text-xl p-1 focus:outline-none">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h2 id="page-title" class="text-base md:text-xl font-semibold text-gray-800 truncate">圖片生成文案</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-xs md:text-base text-gray-500 font-medium">CEO 專屬後台</div>
             </div>
         </header>
 
         <!-- 內容滾動區 -->
-        <div class="flex-1 overflow-y-auto p-6 space-y-6">
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
 
             <!-- 1. 圖片生成文案區塊 -->
             <section id="section-image" class="space-y-6">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                        <h3 class="text-sm md:text-base font-bold text-gray-800 flex items-center gap-2">
                             <i class="fa-solid fa-image text-indigo-600"></i> 圖片視覺分析與文案生成
                         </h3>
                         <button onclick="resetImageForm()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1">
@@ -69,14 +84,14 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- 左側：圖片上傳預覽 -->
-                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50 min-h-[220px] relative">
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50 min-h-[200px] md:min-h-[220px] relative">
                             <input type="file" id="image-file-input" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleImageUpload(event)">
                             <div id="image-preview-container" class="text-center space-y-2">
-                                <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto text-indigo-600 text-xl border border-gray-100">
+                                <div class="w-14 h-14 md:w-16 md:h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto text-indigo-600 text-lg md:text-xl border border-gray-100">
                                     <i class="fa-solid fa-cloud-arrow-up"></i>
                                 </div>
-                                <div class="text-sm font-medium text-gray-700">點擊或拖曳上傳商品圖片</div>
-                                <p class="text-xs text-gray-400">支援 JPG、PNG 格式 (服飾/包款/鞋款/飾品皆可)</p>
+                                <div class="text-xs md:text-sm font-medium text-gray-700">點擊或拖曳上傳商品圖片</div>
+                                <p class="text-[11px] md:text-xs text-gray-400">支援 JPG、PNG 格式</p>
                             </div>
                         </div>
 
@@ -94,17 +109,17 @@
                                 </div>
                             </div>
 
-                            <!-- 按鈕與模型選擇列 -->
+                            <!-- 按鈕與模型選擇列 (支援手機版彈性換行) -->
                             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                                 <button onclick="generateImageContent()" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-medium text-xs py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> 分析圖片並生成 3 組文案
                                 </button>
-                                <!-- 📌 修改點 2：將原本「使用模擬備用 AI」改為「選擇模型」下拉選單 -->
-                                <div class="flex items-center gap-2 bg-gray-50 border border-gray-300 px-3 py-2 rounded-xl">
-                                    <span class="text-xs font-bold text-gray-600 whitespace-nowrap"><i class="fa-solid fa-microchip text-indigo-600"></i> 選擇模型：</span>
+                                <!-- 📌 階段一：已將「模擬備用AI」改為「選擇模型」下拉選單 -->
+                                <div class="flex items-center justify-between sm:justify-start gap-2 bg-gray-50 border border-gray-300 px-3 py-2 rounded-xl">
+                                    <span class="text-xs font-bold text-gray-600 whitespace-nowrap"><i class="fa-solid fa-microchip text-indigo-600"></i> 模型：</span>
                                     <select id="model-select-image" class="bg-transparent text-xs font-bold text-gray-800 focus:outline-none cursor-pointer">
-                                        <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (推薦/高速)</option>
-                                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (經典/極速)</option>
+                                        <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (推薦)</option>
+                                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (極速)</option>
                                         <option value="gemini-1.5-pro">Gemini 1.5 Pro (高階邏輯)</option>
                                     </select>
                                 </div>
@@ -114,11 +129,11 @@
                 </div>
 
                 <!-- 生成結果展示區 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6">
+                    <h3 class="text-xs md:text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-sparkles text-amber-500"></i> AI 視覺分析與文案結果
                     </h3>
-                    <div id="image-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm text-gray-600 min-h-[140px] whitespace-pre-line">
+                    <div id="image-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-5 text-xs md:text-sm text-gray-600 min-h-[140px] whitespace-pre-line">
                         尚未開始生成，請上傳圖片並點擊按鈕。
                     </div>
                 </div>
@@ -126,9 +141,9 @@
 
             <!-- 2. 生成 Reels 區塊 -->
             <section id="section-video" class="space-y-6 hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-base font-bold text-gray-800 flex items-center gap-2">
+                        <h3 class="text-sm md:text-base font-bold text-gray-800 flex items-center gap-2">
                             <i class="fa-solid fa-video text-indigo-600"></i> 生成 Reels 設定
                         </h3>
                         <button onclick="resetVideoForm()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1">
@@ -138,15 +153,15 @@
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- 左側：多張照片或影片上傳預覽 -->
-                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50 min-h-[220px] relative">
+                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 flex flex-col items-center justify-center bg-gray-50 min-h-[200px] md:min-h-[220px] relative">
                             <input type="file" id="video-file-input" multiple accept="image/*,video/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="handleVideoUpload(event)">
                             <div id="video-preview-container" class="text-center space-y-2">
-                                <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto text-indigo-600 text-xl border border-gray-100">
-                                    <i class="fa-solid in fa-photo-film"></i>
+                                <div class="w-14 h-14 md:w-16 md:h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto text-indigo-600 text-lg md:text-xl border border-gray-100">
+                                    <i class="fa-solid fa-photo-film"></i>
                                 </div>
-                                <!-- 📌 修改點 3：上傳區塊說明文字改為「上傳 3~10張照片或影片」 -->
-                                <div class="text-sm font-medium text-gray-700">上傳 3~10張照片或影片</div>
-                                <p class="text-xs text-gray-400">支援多張商品照或短片素材進行 Reels 規劃</p>
+                                <!-- 📌 階段一：文字改為「上傳 3~10張照片或影片」 -->
+                                <div class="text-xs md:text-sm font-medium text-gray-700">上傳 3~10張照片或影片</div>
+                                <p class="text-[11px] md:text-xs text-gray-400">支援多張商品照或短片素材進行規劃</p>
                             </div>
                         </div>
 
@@ -166,16 +181,16 @@
 
                             <!-- 按鈕與模型選擇列 -->
                             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
-                                <!-- 📌 修改點 4：黑色按鈕名稱改為「✨ 生成 Reels」 -->
+                                <!-- 📌 階段一：按鈕名稱改為「✨ 生成 Reels」 -->
                                 <button onclick="generateVideoContent()" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-medium text-xs py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> 生成 Reels
                                 </button>
-                                <!-- 📌 修改點 5：將原本「使用模擬備用 AI」改為「選擇模型」下拉選單 -->
-                                <div class="flex items-center gap-2 bg-gray-50 border border-gray-300 px-3 py-2 rounded-xl">
-                                    <span class="text-xs font-bold text-gray-600 whitespace-nowrap"><i class="fa-solid fa-microchip text-indigo-600"></i> 選擇模型：</span>
+                                <!-- 📌 階段一：已將「模擬備用AI」改為「選擇模型」下拉選單 -->
+                                <div class="flex items-center justify-between sm:justify-start gap-2 bg-gray-50 border border-gray-300 px-3 py-2 rounded-xl">
+                                    <span class="text-xs font-bold text-gray-600 whitespace-nowrap"><i class="fa-solid fa-microchip text-indigo-600"></i> 模型：</span>
                                     <select id="model-select-video" class="bg-transparent text-xs font-bold text-gray-800 focus:outline-none cursor-pointer">
-                                        <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (推薦/高速)</option>
-                                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (經典/極速)</option>
+                                        <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (推薦)</option>
+                                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (極速)</option>
                                         <option value="gemini-1.5-pro">Gemini 1.5 Pro (高階邏輯)</option>
                                     </select>
                                 </div>
@@ -185,19 +200,19 @@
                 </div>
 
                 <!-- 生成結果展示區 -->
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                    <h3 class="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6">
+                    <h3 class="text-xs md:text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-sparkles text-amber-500"></i> AI 執行結果
                     </h3>
-                    <div id="video-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-5 text-sm text-gray-600 min-h-[140px] whitespace-pre-line">
+                    <div id="video-result-box" class="bg-gray-50 border border-gray-200 rounded-xl p-4 md:p-5 text-xs md:text-sm text-gray-600 min-h-[140px] whitespace-pre-line">
                         尚未開始生成，請上傳影片並點擊按鈕。
                     </div>
                 </div>
             </section>
 
-            <!-- 其他頁面預留 (文字、趨勢、試算器) -->
+            <!-- 其他頁面預留 -->
             <section id="section-text" class="space-y-6 hidden">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center text-gray-500">文案生成頁面 (請切換至圖片生成或生成 Reels 體驗最新功能)</div>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center text-gray-500">文案生成頁面</div>
             </section>
             <section id="section-trends" class="space-y-6 hidden">
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center text-gray-500">韓國東大門流行趨勢頁面</div>
@@ -213,6 +228,20 @@
     <script>
         let currentUploadedImageBase64 = null;
         let currentUploadedVideoBase64 = null;
+
+        // 手機版側邊欄開關控制
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        function toggleSidebarMobile() {
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
 
         function switchTab(tabName) {
             ['text', 'image', 'video', 'trends', 'pricing'].forEach(t => {
@@ -250,8 +279,8 @@
             reader.onload = function(e) {
                 currentUploadedImageBase64 = e.target.result.split(',')[1];
                 document.getElementById('image-preview-container').innerHTML = `
-                    <img src="${e.target.result}" class="h-32 object-contain rounded-lg mx-auto shadow-sm">
-                    <span class="text-xs text-emerald-600 font-medium"><i class="fa-solid fa-check-circle"></i> 圖片載入成功 (${file.name})</span>
+                    <img src="${e.target.result}" class="h-28 md:h-32 object-contain rounded-lg mx-auto shadow-sm">
+                    <span class="text-[11px] md:text-xs text-emerald-600 font-medium"><i class="fa-solid fa-check-circle"></i> 圖片載入成功</span>
                 `;
             };
             reader.readAsDataURL(file);
@@ -260,10 +289,10 @@
         function handleVideoUpload(event) {
             const files = event.target.files;
             if (!files || files.length === 0) return;
-            currentUploadedVideoBase64 = true; // 標記已上傳
+            currentUploadedVideoBase64 = true;
             document.getElementById('video-preview-container').innerHTML = `
-                <div class="text-indigo-600 font-bold text-sm"><i class="fa-solid fa-photo-film text-lg"></i> 已成功上傳 ${files.length} 個素材</div>
-                <span class="text-xs text-emerald-600 font-medium">檔案準備就緒，可點擊生成 Reels</span>
+                <div class="text-indigo-600 font-bold text-xs md:text-sm"><i class="fa-solid fa-photo-film text-base"></i> 已成功上傳 ${files.length} 個素材</div>
+                <span class="text-[11px] md:text-xs text-emerald-600 font-medium">檔案準備就緒，可點擊生成 Reels</span>
             `;
         }
 
@@ -278,13 +307,13 @@
         function resetImageForm() {
             currentUploadedImageBase64 = null;
             document.getElementById('image-file-input').value = '';
-            document.getElementById('custom-prompt').value = '';
+            document.getElementById('image-custom-prompt').value = '';
             document.getElementById('image-preview-container').innerHTML = `
-                <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto text-indigo-600 text-xl border border-gray-100">
+                <div class="w-14 h-14 md:w-16 md:h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto text-indigo-600 text-lg md:text-xl border border-gray-100">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
                 </div>
-                <div class="text-sm font-medium text-gray-700">點擊或拖曳上傳商品圖片</div>
-                <p class="text-xs text-gray-400">支援 JPG、PNG 格式 (服飾/包款/鞋款/飾品皆可)</p>
+                <div class="text-xs md:text-sm font-medium text-gray-700">點擊或拖曳上傳商品圖片</div>
+                <p class="text-[11px] md:text-xs text-gray-400">支援 JPG、PNG 格式</p>
             `;
             document.getElementById('image-result-box').innerText = '尚未開始生成，請上傳圖片並點擊按鈕。';
         }
@@ -294,11 +323,11 @@
             document.getElementById('video-file-input').value = '';
             document.getElementById('video-custom-prompt').value = '';
             document.getElementById('video-preview-container').innerHTML = `
-                <div class="w-16 h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto text-indigo-600 text-xl border border-gray-100">
+                <div class="w-14 h-14 md:w-16 md:h-16 bg-white rounded-full shadow-sm flex items-center justify-center mx-auto text-indigo-600 text-lg md:text-xl border border-gray-100">
                     <i class="fa-solid fa-photo-film"></i>
                 </div>
-                <div class="text-sm font-medium text-gray-700">上傳 3~10張照片或影片</div>
-                <p class="text-xs text-gray-400">支援多張商品照或短片素材進行 Reels 規劃</p>
+                <div class="text-xs md:text-sm font-medium text-gray-700">上傳 3~10張照片或影片</div>
+                <p class="text-[11px] md:text-xs text-gray-400">支援多張商品照或短片素材進行規劃</p>
             `;
             document.getElementById('video-result-box').innerText = '尚未開始生成，請上傳影片並點擊按鈕。';
         }
