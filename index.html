@@ -162,7 +162,6 @@
                 <button type="button" onclick="switchTab('video-copy')" id="desktop-nav-video-copy" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>🎬</span> 生成 Reels
                 </button>
-                <!-- 📌 修改點：左側選單改為「韓國女裝趨勢」 -->
                 <button type="button" onclick="switchTab('trend')" id="desktop-nav-trend" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-lg text-base font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left cursor-pointer">
                     <span>📊</span> 韓國女裝趨勢
                 </button>
@@ -194,7 +193,6 @@
             <!-- 1. 圖片生成文案 -->
             <div id="tab-image-copy" class="space-y-6 pt-2">
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6 relative">
-                    <!-- 📌 重置按鈕固定於右上角 -->
                     <div class="absolute top-5 right-5 md:top-8 md:right-8">
                         <button type="button" onclick="resetModule('img')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
@@ -254,7 +252,6 @@
             <!-- 2. 文案生成 -->
             <div id="tab-general-copy" class="hidden space-y-6 pt-2">
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6 relative">
-                    <!-- 📌 重置按鈕固定於右上角 -->
                     <div class="absolute top-5 right-5 md:top-8 md:right-8">
                         <button type="button" onclick="resetModule('gen')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
@@ -305,7 +302,6 @@
             <!-- 3. 生成 Reels -->
             <div id="tab-video-copy" class="hidden space-y-6 pt-2">
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-6 relative">
-                    <!-- 📌 重置按鈕固定於右上角 -->
                     <div class="absolute top-5 right-5 md:top-8 md:right-8">
                         <button type="button" onclick="resetModule('vid')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
@@ -362,10 +358,9 @@
                 </div>
             </div>
 
-            <!-- 4. 韓國女裝趨勢 (已依指示將按鈕文字改為「點擊開始分析」、對調左右位置、重置移至右上角) -->
+            <!-- 4. 韓國女裝趨勢 -->
             <div id="tab-trend" class="hidden space-y-6 pt-2">
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm relative space-y-5">
-                    <!-- 📌 重置按鈕固定於右上角 -->
                     <div class="absolute top-5 right-5 md:top-8 md:right-8">
                         <button type="button" onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-2 rounded-xl text-sm font-medium border border-gray-300 transition-colors cursor-pointer">🔄 重置</button>
                     </div>
@@ -373,7 +368,6 @@
                         <h3 class="font-bold text-gray-900 text-base md:text-lg">韓國女裝當季流行時尚趨勢分析</h3>
                         <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行實時 IG 爆款貼文爬取與熱銷單品推薦。</p>
                     </div>
-                    <!-- 📌 模型選單與分析按鈕左右對調、手機版上下垂直顯示 -->
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
                         <div class="flex items-center gap-2 bg-gray-50 border border-gray-300 px-3.5 py-3 rounded-xl shadow-sm w-full sm:w-auto">
                             <span class="text-xs md:text-sm font-bold text-gray-700 whitespace-nowrap"><i class="fa-solid fa-microchip text-indigo-600"></i> 選擇模型：</span>
@@ -507,7 +501,6 @@
             <span class="text-lg">🎬</span>
             <span class="text-xs font-medium">Reels</span>
         </button>
-        <!-- 📌 修改點：手機底部選單改為「韓國女裝趨勢」 -->
         <button type="button" onclick="switchTab('trend')" id="mobile-nav-trend" class="flex flex-col items-center gap-1 text-gray-400 py-1 px-2 rounded-xl cursor-pointer">
             <span class="text-lg">📊</span>
             <span class="text-xs font-medium">趨勢</span>
@@ -1072,17 +1065,6 @@
                 });
             }
         };
-
-        function getDynamicMockResult(type, query = '') {
-            const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
-            const fbTitle = pick(["一眼就被精緻的細節吸引！", "實物質感真的太棒了，完全超出期待。"]);
-            const fbContent = pick(["無論通勤或週末約會，都能完美點綴妳的整體造型。這款材質輕盈且版型修身，絕對是本季衣櫃必備款！", "設計簡約卻充滿高級感，細節處理得非常用心，穿上去立刻提升整體氣質，是本季不可錯過的百搭首選！"]);
-            const igContent = pick(["高級感拉滿✨ 隨手一搭就非常有型！", "氣質歐膩比備款🛒 實物質感超棒！"]);
-            const thContent = pick(["大家覺得這件拿來當上班戰袍會不會太浮誇？我一拿到手就忍不住想包色了！", "韓國連線現場真的搶翻天... 這款的材質我給 100 分！妳們喜歡哪一色？"]);
-            
-            const group = `【📘 Facebook 專屬文案】\n文案標題：${fbTitle}\n內文：${fbContent}\nHashtags：#韓國連線 #質感單品\n\n【📸 Instagram 專屬文案】\n內文：${igContent}\nHashtags：#東大門代購\n\n【🧵 Threads 專屬文案】\n內文：${thContent}`;
-            return `視覺分析與品項辨識：這是一件精緻的高質感服飾。\n\n【情境 A | 法式簡約】\n${group}\n\n【情境 B | 韓系知性】\n${group}\n\n【情境 C | 日常慵懶】\n${group}`;
-        }
 
         window.callGeminiAPI = async function(prompt, imageBase64 = null, selectedModel = 'gemini-3.8-flash') {
             try {
