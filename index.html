@@ -305,7 +305,7 @@
                                 </div>
                             </div>
 
-                            <!-- ⏱️ 新增：選擇秒數按鈕群組 (放在「重新生成」上方) -->
+                            <!-- ⏱️ 選擇秒數按鈕群組 (放在「重新生成」上方) -->
                             <div class="space-y-2">
                                 <label class="block text-sm md:text-base font-medium text-gray-700">⏱️ 選擇 Reels 目標秒數</label>
                                 <div class="grid grid-cols-3 gap-2.5">
@@ -508,7 +508,7 @@
         let globalHistoryRecords = [];
         let hasGeneratedMap = { img: false, gen: false, vid: false };
 
-        // 設定 Reels 秒數並切換按鈕樣式
+        // ⏱️ 設定 Reels 秒數
         window.setReelsDuration = function(seconds) {
             currentReelsDuration = seconds;
             [10, 15, 30].forEach(sec => {
@@ -551,12 +551,70 @@
             }
         };
 
-        window.saveToHistory = async function() {};
-        window.loadHistoryFromCloud = async function() { return []; };
-        window.deleteRecord = async function() {};
-        window.savePromptToCloud = async function() {};
-        window.loadPromptsFromCloud = async function() { return []; };
-        window.deletePromptFromCloud = async function() {};
+        // 📌 本地自訂提示詞儲存與讀取功能 (localStorage)
+        window.loadSavedPrompts = function(mode) {
+            const select = document.getElementById(`preset-prompts-${mode}`);
+            if (!select) return;
+
+            let defaultList = mode === 'img' 
+                ? ['強調材質與細節質感、適合日常搭配', '強調大容量與實用性、通勤約會皆宜', '質感高級感、韓國連線熱銷爆款'] 
+                : mode === 'vid' 
+                ? ['Reels 節奏明快、強調實物細節特寫', '30秒質感生活感短片、配音樂好搭', '高級感細節介紹、重點展示優點'] 
+                : ['質感簡約、知性小香風、減齡休閒', '微寬鬆顯瘦、日常百搭通勤風', '高級感約會搭配、溫柔氣質風'];
+
+            let customList = [];
+            try {
+                const saved = localStorage.getItem(`custom_prompts_${mode}`);
+                if (saved) customList = JSON.parse(saved);
+            } catch(e) {}
+
+            let optionsHtml = `<option value="">-- 選擇常用或自訂項目 --</option>`;
+            defaultList.forEach(d => {
+                optionsHtml += `<option value="${d}">${d}</option>`;
+            });
+            customList.forEach(c => {
+                optionsHtml += `<option value="${c}">💾 ${c}</option>`;
+            });
+
+            select.innerHTML = optionsHtml;
+        };
+
+        window.saveCustomPrompt = function(mode) {
+            const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
+            if (!input || !input.value.trim()) { alert('請先輸入想要儲存的項目！'); return; }
+            
+            const val = input.value.trim();
+            let customList = [];
+            try {
+                const saved = localStorage.getItem(`custom_prompts_${mode}`);
+                if (saved) customList = JSON.parse(saved);
+            } catch(e) {}
+
+            if (!customList.includes(val)) {
+                customList.push(val);
+                localStorage.setItem(`custom_prompts_${mode}`, JSON.stringify(customList));
+            }
+
+            window.loadSavedPrompts(mode);
+            document.getElementById(`preset-prompts-${mode}`).value = val;
+            window.selectPresetPrompt(mode);
+            alert('已成功儲存至自訂常用項目！');
+        };
+
+        window.deletePromptFromCloud = function(mode, val) {
+            try {
+                let customList = [];
+                const saved = localStorage.getItem(`custom_prompts_${mode}`);
+                if (saved) customList = JSON.parse(saved);
+
+                customList = customList.filter(item => item !== val);
+                localStorage.setItem(`custom_prompts_${mode}`, JSON.stringify(customList));
+                window.loadSavedPrompts(mode);
+                alert('已刪除此自訂項目');
+            } catch(e) {
+                console.error(e);
+            }
+        };
 
         window.switchTab = function(tab, saveState = true) {
             ['tab-image-copy', 'tab-general-copy', 'tab-video-copy', 'tab-trend', 'tab-pricing', 'tab-history'].forEach(id => {
@@ -875,7 +933,10 @@
             const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
             const deleteBtn = document.getElementById(`delete-prompt-btn-${mode}`);
             if (select && input && select.value) {
-                input.value = select.value;
+                // 如果選到的是自訂項目（帶有 💾），去除圖示後填入
+                let cleanVal = select.value.startsWith('💾 ') ? select.value.replace('💾 ', '') : select.value;
+                input.value = cleanVal;
+                
                 if (select.selectedOptions[0] && select.selectedOptions[0].text.startsWith('💾')) {
                     if(deleteBtn) deleteBtn.classList.remove('hidden');
                 } else {
@@ -886,29 +947,16 @@
             }
         };
 
-        window.saveCustomPrompt = async function(mode) {
-            const input = document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`);
-            if (!input || !input.value.trim()) { alert('請先輸入想要儲存的項目！'); return; }
-            await window.savePromptToCloud(mode, input.value.trim());
-            input.value = '';
-            alert('已成功儲存至雲端，所有裝置將同步更新！');
-        };
-
-        window.deleteSelectedPrompt = async function(mode) {
+        window.deleteSelectedPrompt = function(mode) {
             const select = document.getElementById(`preset-prompts-${mode}`);
             if (!select || !select.value) return;
-            if (confirm(`確定要從雲端刪除自訂項目「${select.value}」嗎？`)) {
-                await window.deletePromptFromCloud(mode, select.value);
+            let val = select.value.startsWith('💾 ') ? select.value.replace('💾 ', '') : select.value;
+            
+            if (confirm(`確定要刪除自訂項目「${val}」嗎？`)) {
+                window.deletePromptFromCloud(mode, val);
                 document.getElementById(mode === 'gen' ? 'gen-style' : `prompt-text-${mode}`).value = '';
                 document.getElementById(`delete-prompt-btn-${mode}`).classList.add('hidden');
             }
-        };
-
-        window.loadSavedPrompts = async function(mode) {
-            const select = document.getElementById(`preset-prompts-${mode}`);
-            if (!select) return;
-            let defaults = mode === 'img' ? ['強調材質與細節質感、適合日常搭配', '強調大容量與實用性、通勤約會皆宜', '質感高級感、韓國連線熱銷爆款'] : mode === 'vid' ? ['Reels 節奏明快、強調實物細節特寫', '30秒質感生活感短片、配音樂好搭', '高級感細節介紹、重點展示優點'] : ['質感簡約、知性小香風、減齡休閒', '微寬鬆顯瘦、日常百搭通勤風', '高級感約會搭配、溫柔氣質風'];
-            select.innerHTML = `<option value="">-- 選擇常用或自訂項目 --</option>` + defaults.map(d => `<option value="${d}">${d}</option>`).join('');
         };
 
         window.callGeminiAPI = async function(prompt, imageBase64 = null) {
@@ -1067,7 +1115,7 @@ ${variationRequirement}
             window.loadSavedPrompts('vid'); 
             window.loadSavedPrompts('gen'); 
             window.fetchBankRate();
-            const lastTab = localStorage.setItem ? (localStorage.getItem('active_tab') || 'image-copy') : 'image-copy';
+            const lastTab = localStorage.getItem ? (localStorage.getItem('active_tab') || 'image-copy') : 'image-copy';
             window.switchTab(lastTab, false);
         });
     </script>
