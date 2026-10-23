@@ -39,6 +39,10 @@ FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
 FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")
 IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
 
+# 📌 Threads 專屬設定（等您拿到 API 金鑰後只需設定環境變數即可）
+THREADS_ACCESS_TOKEN = os.environ.get("THREADS_ACCESS_TOKEN", "")
+THREADS_USER_ID = os.environ.get("THREADS_USER_ID", "")
+
 # ========================================================
 # 🔄 Instagram 權杖自動續期機制
 # ========================================================
@@ -106,7 +110,7 @@ async def generate_content(request: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📱 雙平台（FB / IG）一鍵貼文 API 接口
+# 📱 多平台（FB / IG / Threads）一鍵貼文 API 接口
 # ========================================================
 @app.post("/api/publish-post")
 async def publish_post(request: Request):
@@ -114,12 +118,14 @@ async def publish_post(request: Request):
         data = await request.json()
         publish_fb = data.get("publishFb", False)
         publish_ig = data.get("publishIg", False)
+        publish_th = data.get("publishTh", False)
         fb_caption = data.get("fbCaption", "")
         ig_caption = data.get("igCaption", "")
+        th_caption = data.get("thCaption", "")
         image_base64 = data.get("imageBase64", None)
 
-        if not publish_fb and not publish_ig:
-            return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台 (FB 或 IG)"})
+        if not publish_fb and not publish_ig and not publish_th:
+            return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台 (FB、IG 或 Threads)"})
 
         public_image_url = None
         if image_base64:
@@ -141,6 +147,7 @@ async def publish_post(request: Request):
 
         results = {}
 
+        # 1. 📸 發布至 Instagram
         if publish_ig:
             if not public_image_url:
                 results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
@@ -154,27 +161,23 @@ async def publish_post(request: Request):
                         "access_token": INSTAGRAM_ACCESS_TOKEN
                     }
                     c_res = requests.post(container_url, data=container_payload, timeout=20).json()
-                    print(f"📸 [IG Container Response]: {c_res}")
                     creation_id = c_res.get("id")
 
                     if creation_id:
-                        print("⏳ [IG Wait] 等待 3 秒讓 IG 處理圖片素材...")
                         time.sleep(3)
-
                         pub_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media_publish"
                         pub_payload = {
                             "creation_id": creation_id,
                             "access_token": INSTAGRAM_ACCESS_TOKEN
                         }
                         p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
-                        print(f"🚀 [IG Publish Response]: {p_res}")
                         results["instagram"] = {"status": "success", "data": p_res}
                     else:
                         results["instagram"] = {"status": "error", "message": c_res}
                 except Exception as ig_err:
-                    print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
+        # 2. 📘 發布至 Facebook
         if publish_fb:
             try:
                 page_access_token = FB_PAGE_ACCESS_TOKEN
@@ -185,10 +188,9 @@ async def publish_post(request: Request):
                         for page in pages_res["data"]:
                             if str(page.get("id")) == str(FB_PAGE_ID):
                                 page_access_token = page.get("access_token")
-                                print("✅ [FB Token] 成功取得粉專專屬 Access Token")
                                 break
-                except Exception as token_err:
-                    print(f"⚠️ [FB Token Notice]: {token_err}")
+                except Exception:
+                    pass
 
                 if public_image_url:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
@@ -206,16 +208,50 @@ async def publish_post(request: Request):
                 
                 fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
                 fb_res = fb_response.json()
-                print(f"📘 [FB Publish HTTP Status]: {fb_response.status_code}")
-                print(f"📘 [FB Publish Response JSON]: {fb_res}")
                 
                 if fb_response.status_code == 200 and "id" in fb_res:
                     results["facebook"] = {"status": "success", "data": fb_res}
                 else:
                     results["facebook"] = {"status": "error", "message": fb_res}
             except Exception as fb_err:
-                print(f"🔥 [FB Publish Exception Error]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
+
+        # 3. 🧵 發布至 Threads
+        if publish_th:
+            if not THREADS_ACCESS_TOKEN or not THREADS_USER_ID:
+                results["threads"] = {"status": "error", "message": "尚未設定 Threads API 憑證 (THREADS_ACCESS_TOKEN 或 THREADS_USER_ID)"}
+                print("❌ [Threads Publish Error] 缺少 Threads API 金鑰")
+            else:
+                try:
+                    # 步驟 A: 建立 Threads 媒體容器
+                    th_container_url = f"https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads"
+                    th_payload = {
+                        "media_type": "TEXT" if not public_image_url else "IMAGE",
+                        "text": th_caption,
+                        "access_token": THREADS_ACCESS_TOKEN
+                    }
+                    if public_image_url:
+                        th_payload["image_url"] = public_image_url
+
+                    th_c_res = requests.post(th_container_url, data=th_payload, timeout=20).json()
+                    th_creation_id = th_c_res.get("id")
+
+                    if th_creation_id:
+                        time.sleep(3)
+                        # 步驟 B: 發布 Threads 容器
+                        th_pub_url = f"https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads_publish"
+                        th_pub_payload = {
+                            "creation_id": th_creation_id,
+                            "access_token": THREADS_ACCESS_TOKEN
+                        }
+                        th_p_res = requests.post(th_pub_url, data=th_pub_payload, timeout=20).json()
+                        print(f"🚀 [Threads Publish Response]: {th_p_res}")
+                        results["threads"] = {"status": "success", "data": th_p_res}
+                    else:
+                        results["threads"] = {"status": "error", "message": th_c_res}
+                except Exception as th_err:
+                    print(f"⚠️ [Threads Publish Exception]: {str(th_err)}")
+                    results["threads"] = {"status": "error", "message": str(th_err)}
 
         return JSONResponse(content={"status": "complete", "results": results})
 
@@ -224,7 +260,7 @@ async def publish_post(request: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📊 韓國東大門 IG 實時爆款趨勢分析
+# 📊 韓國女裝趨勢分析
 # ========================================================
 @app.post("/api/realtime-trends")
 async def get_realtime_trends(request: Request):
