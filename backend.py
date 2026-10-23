@@ -8,8 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 
 app = FastAPI()
 
@@ -22,13 +21,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 初始化 Google Gemini 客戶端
-client = genai.Client()
+# 從 Render 環境變數抓取設定
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 # 專案統一固定使用 Google 官方標準 gemini-3.8-flash 模型
 TARGET_MODEL = "gemini-3.8-flash"
 
-# 從 Render 環境變數抓取設定
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 INSTAGRAM_ACCESS_TOKEN = os.environ.get(
     "INSTAGRAM_ACCESS_TOKEN",
@@ -80,25 +80,24 @@ async def generate_content(request: Request):
         prompt = data.get("prompt", "")
         image_base64 = data.get("imageBase64", None)
 
+        model = genai.GenerativeModel(TARGET_MODEL)
+        
         contents = [prompt]
         if image_base64:
             clean_b64 = image_base64.split(",")[-1] if "," in image_base64 else image_base64
             image_bytes = base64.b64decode(clean_b64)
-            image_part = types.Part.from_bytes(
-                data=image_bytes,
-                mime_type="image/jpeg"
-            )
-            contents.append(image_part)
+            image_part = {
+                "mime_type": "image/jpeg",
+                "data": image_bytes
+            }
+            contents = [prompt, image_part]
 
         max_retries = 3
         for attempt in range(max_retries):
             try:
                 print(f"🤖 [AI Request] 呼叫 {TARGET_MODEL} 模型 (第 {attempt+1} 次)")
-                response = client.models.generate_content(
-                    model=TARGET_MODEL,
-                    contents=contents
-                )
-                return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
+                response = model.generate_content(contents)
+                return JSONResponse(content={"text": response.text})
             except Exception as e:
                 print(f"⚠️ [Gemini API Exception] 第 {attempt+1} 次嘗試失敗: {e}")
                 if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
@@ -152,7 +151,6 @@ async def publish_post(request: Request):
         if publish_ig:
             if not public_image_url:
                 results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
-                print("❌ [IG Publish Error] 缺少圖床圖片網址")
             else:
                 try:
                     container_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media"
@@ -162,20 +160,16 @@ async def publish_post(request: Request):
                         "access_token": INSTAGRAM_ACCESS_TOKEN
                     }
                     c_res = requests.post(container_url, data=container_payload, timeout=20).json()
-                    print(f"📸 [IG Container Response]: {c_res}")
                     creation_id = c_res.get("id")
 
                     if creation_id:
-                        print("⏳ [IG Wait] 等待 3 秒讓 IG 處理圖片素材...")
                         time.sleep(3)
-
                         pub_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media_publish"
                         pub_payload = {
                             "creation_id": creation_id,
                             "access_token": INSTAGRAM_ACCESS_TOKEN
                         }
                         p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
-                        print(f"🚀 [IG Publish Response]: {p_res}")
                         if "id" in p_res:
                             results["instagram"] = {"status": "success", "data": p_res}
                         else:
@@ -185,7 +179,6 @@ async def publish_post(request: Request):
                         err_msg = c_res.get("error", {}).get("message", str(c_res))
                         results["instagram"] = {"status": "error", "message": err_msg}
                 except Exception as ig_err:
-                    print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
         # --- [2. Facebook 發布] ---
@@ -199,10 +192,9 @@ async def publish_post(request: Request):
                         for page in pages_res["data"]:
                             if str(page.get("id")) == str(FB_PAGE_ID):
                                 page_access_token = page.get("access_token")
-                                print("✅ [FB Token] 成功取得粉專專屬 Access Token")
                                 break
-                except Exception as token_err:
-                    print(f"⚠️ [FB Token Notice]: {token_err}")
+                except Exception:
+                    pass
 
                 if clean_b64:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
@@ -227,16 +219,12 @@ async def publish_post(request: Request):
                     fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
 
                 fb_res = fb_response.json()
-                print(f"📘 [FB Publish HTTP Status]: {fb_response.status_code}")
-                print(f"📘 [FB Publish Response JSON]: {fb_res}")
-                
                 if fb_response.status_code == 200 and ("id" in fb_res or "post_id" in fb_res):
                     results["facebook"] = {"status": "success", "data": fb_res}
                 else:
                     err_msg = fb_res.get("error", {}).get("message", str(fb_res))
                     results["facebook"] = {"status": "error", "message": err_msg}
             except Exception as fb_err:
-                print(f"🔥 [FB Publish Exception Error]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
 
         # --- [3. Threads 自動發布] ---
@@ -252,7 +240,6 @@ async def publish_post(request: Request):
                         "access_token": THREADS_ACCESS_TOKEN
                     }
                     c_res = requests.post(container_url, data=container_payload, timeout=20).json()
-                    print(f"🧵 [Threads Container Response]: {c_res}")
                     creation_id = c_res.get("id")
 
                     if creation_id:
@@ -263,7 +250,6 @@ async def publish_post(request: Request):
                             "access_token": THREADS_ACCESS_TOKEN
                         }
                         p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
-                        print(f"🚀 [Threads Publish Response]: {p_res}")
                         if "id" in p_res:
                             results["threads"] = {"status": "success", "data": p_res}
                         else:
@@ -273,13 +259,11 @@ async def publish_post(request: Request):
                         err_msg = c_res.get("error", {}).get("message", str(c_res))
                         results["threads"] = {"status": "error", "message": err_msg}
                 except Exception as th_err:
-                    print(f"⚠️ [Threads Exception Error]: {str(th_err)}")
                     results["threads"] = {"status": "error", "message": str(th_err)}
 
         return JSONResponse(content={"status": "complete", "results": results})
 
     except Exception as e:
-        print(f"🔥 [Publish General Error]: {str(e)}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
@@ -329,6 +313,7 @@ async def get_realtime_trends(request: Request):
             reverse=True
         )[:10]
 
+        model = genai.GenerativeModel(TARGET_MODEL)
         trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是實時抓取到的最新熱門 IG 爆款貼文數據與圖片：\n\n"
         
         image_parts = []
@@ -348,13 +333,12 @@ async def get_realtime_trends(request: Request):
                 try:
                     img_resp = requests.get(display_url, timeout=10)
                     if img_resp.status_code == 200:
-                        image_part = types.Part.from_bytes(
-                            data=img_resp.content,
-                            mime_type="image/jpeg"
-                        )
-                        image_parts.append(image_part)
-                except Exception as img_err:
-                    print(f"圖片下載失敗: {img_err}")
+                        image_parts.append({
+                            "mime_type": "image/jpeg",
+                            "data": img_resp.content
+                        })
+                except Exception:
+                    pass
 
         trend_summary_prompt += """
 請根據上述數據與圖片，產出一份結構清晰的「東大門流行趨勢與爆款 TOP 10 分析報告」。
@@ -375,10 +359,6 @@ async def get_realtime_trends(request: Request):
 
 ---
 
-(請依此類推完整的列出 No.2 至 No.10，每款下方都必須帶有其專屬連結按鈕)
-
----
-
 ### 貳、東大門當季流行趨勢總結與採購建議
 1. **整體視覺風格趨勢**：(總結這 10 款爆款的共通點與韓國女性最愛的風格)
 2. **賣家選品與行銷建議**：(提供給台灣女裝賣家的採購與粉專/IG 行銷切入點)
@@ -389,10 +369,7 @@ async def get_realtime_trends(request: Request):
         max_retries = 3
         for attempt in range(max_retries):
             try:
-                ai_response = client.models.generate_content(
-                    model=TARGET_MODEL,
-                    contents=contents
-                )
+                ai_response = model.generate_content(contents)
                 return JSONResponse(content={"report": ai_response.text})
             except Exception as e:
                 if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
@@ -401,7 +378,6 @@ async def get_realtime_trends(request: Request):
                 return JSONResponse(status_code=500, content={"error": str(e)})
 
     except Exception as e:
-        print(f"Realtime trend error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
