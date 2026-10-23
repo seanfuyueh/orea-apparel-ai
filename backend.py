@@ -50,6 +50,12 @@ class PublishRequest(BaseModel):
     imageBase64: Optional[str] = None
 
 
+# 相容 Python 3.8 的異步執行輔助函式
+async def run_async(func, *args):
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, func, *args)
+
+
 # ------------------------------------------------------------------
 # 1. AI 文案生成 API Endpoint
 # ------------------------------------------------------------------
@@ -59,7 +65,7 @@ async def generate_content(req: GenerateRequest):
         return JSONResponse(status_code=500, content={"error": "後端未設定 GEMINI_API_KEY 環境變數，請至 Render 設定"})
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
 
         if req.imageBase64:
             clean_b64 = req.imageBase64.split(",")[-1] if "," in req.imageBase64 else req.imageBase64
@@ -68,9 +74,9 @@ async def generate_content(req: GenerateRequest):
                 "mime_type": "image/jpeg",
                 "data": image_bytes
             }
-            response = await asyncio.to_thread(model.generate_content, [req.prompt, image_part])
+            response = await run_async(model.generate_content, [req.prompt, image_part])
         else:
-            response = await asyncio.to_thread(model.generate_content, req.prompt)
+            response = await run_async(model.generate_content, req.prompt)
 
         return {"text": response.text}
 
@@ -87,13 +93,13 @@ async def fetch_realtime_trends():
         return JSONResponse(status_code=500, content={"error": "後端未設定 GEMINI_API_KEY 環境變數"})
 
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-flash")
         prompt = """請以專業韓國時尚買手與市場分析師角度，針對 30-40 歲女性簡約質感風格，撰寫一份最新的「韓國女裝熱銷趨勢與爆款推薦報告」。包含：
 1. 本週韓國東大門/品牌最熱銷的 3 大風格趨勢
 2. 5 款必備爆款單品與穿搭建議
 3. 建議的社群貼文行銷切入點"""
         
-        response = await asyncio.to_thread(model.generate_content, prompt)
+        response = await run_async(model.generate_content, prompt)
         return {"report": response.text}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": f"趨勢分析失敗: {str(e)}"})
