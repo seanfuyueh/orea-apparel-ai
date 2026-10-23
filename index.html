@@ -356,7 +356,6 @@
                         <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行實時 IG 爆款貼文爬取與熱銷單品推薦。</p>
                     </div>
                     <div class="flex gap-2.5 w-full md:w-auto">
-                        <!-- 📌 按鈕文字已依圖示改為「開始分析最新趨勢」 -->
                         <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
                             📊 開始分析最新趨勢
                         </button>
@@ -569,12 +568,9 @@
                     </div>
                     <div id="pub-panel-th" class="pub-panel bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1 h-full">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-3">
-                            <h4 class="font-bold text-gray-800 flex items-center gap-1.5 text-base">🧵 Threads 真實互動 (暫存草稿)</h4>
+                            <h4 class="font-bold text-gray-800 flex items-center gap-1.5 text-base">🧵 Threads 真實互動</h4>
                         </div>
-                        <div class="bg-gray-100 text-gray-500 text-xs p-2 rounded-lg mb-2">
-                            ※ Threads 暫不提供自動發佈，請在此編輯後手動複製。
-                        </div>
-                        <textarea id="pub-th-text" class="w-full h-[calc(100%-70px)] border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-gray-600 focus:outline-none resize-none"></textarea>
+                        <textarea id="pub-th-text" class="w-full h-[calc(100%-40px)] border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-gray-600 focus:outline-none resize-none"></textarea>
                     </div>
                 </div>
 
@@ -668,7 +664,7 @@
                 if (!text) return "";
                 let cleaned = text;
                 cleaned = cleaned.replace(/^#{1,6}\s*/gm, ""); 
-                cleaned = cleaned.replace(/#{2,}/g, "");       
+                cleaned = cleaned.replace(/#{2,}/g, "");        
                 cleaned = cleaned.replace(/文案標題：/g, "");
                 cleaned = cleaned.replace(/內文：/g, "");
                 cleaned = cleaned.replace(/Hashtags：/g, "");
@@ -695,14 +691,14 @@
                 tempDiv.innerHTML = htmlContent;
 
                 const links = tempDiv.querySelectorAll('a');
-links.forEach(a => {
-    a.setAttribute('target', '_blank');
-    a.setAttribute('rel', 'noopener noreferrer');
-    if (a.href.includes('instagram.com') || a.innerText.includes('Instagram') || a.innerText.includes('查看')) {
-        a.classList.add('ig-btn-link');
-        a.innerText = '📸 查看 Instagram 貼文';
-    }
-});
+                links.forEach(a => {
+                    a.setAttribute('target', '_blank');
+                    a.setAttribute('rel', 'noopener noreferrer');
+                    if (a.href.includes('instagram.com') || a.innerText.includes('Instagram') || a.innerText.includes('查看')) {
+                        a.classList.add('ig-btn-link');
+                        a.innerText = '📸 查看 Instagram 貼文';
+                    }
+                });
 
                 el.innerHTML = tempDiv.innerHTML;
             } else {
@@ -710,18 +706,15 @@ links.forEach(a => {
             }
 
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
-                // 📌 依照【情境進行區塊分割
                 const blocks = text.split(/(?=(?:#+\s*)?【情境\s*[A-Z])/g);
 
                 if (blocks.length > 1) {
-                    // 📌 保留上方的「嚴格品項辨識與視覺解析」內容（去掉編號 1.），且不加一鍵發佈按鈕
                     let topAnalysisText = blocks[0].includes('【情境') ? '' : blocks[0];
                     topAnalysisText = topAnalysisText.replace(/^[#\s]*1[.\、]\s*/gm, ''); // 移除編號 1.
                     const scenarioBlocks = blocks.filter(b => b.includes('【情境'));
 
                     el.innerHTML = topAnalysisText ? marked.parse(topAnalysisText) : ''; 
 
-                    // 📌 僅在下方的各情境文案區塊加上專屬的一鍵發佈按鈕卡片
                     scenarioBlocks.forEach((blockText) => {
                         if (!blockText.trim()) return;
 
@@ -745,6 +738,7 @@ links.forEach(a => {
                     });
                 }
             }
+        };
 
         window.openPublishModalSingle = function(encodedText) {
             const rawBlockText = decodeURIComponent(encodedText);
@@ -795,7 +789,7 @@ links.forEach(a => {
 
                 const data = await response.json();
                 if (response.ok) {
-                    alert('🎉 貼文發佈完成！請至選取的粉專/帳號確認。\n(Threads 內容請自行複製使用)');
+                    alert('🎉 貼文發佈完成！請至選取的粉專/帳號確認。');
                     window.closePublishModal();
                 } else {
                     alert('發佈失敗：' + (data.error || '未知的錯誤'));
@@ -1370,8 +1364,8 @@ ${variationRequirement}
             const bossMultiplier = parseFloat(document.getElementById('calc-boss-multiplier').value) || 0;
             const retailMultiplier = parseFloat(document.getElementById('calc-retail-multiplier').value) || 0;
             const rateAmount = krw * rate;                  
-            const commKrw = krw * commRate;                 
-            const commTwd = commKrw * rate;                 
+            const commKrw = krw * commRate;                   
+            const commTwd = commKrw * rate;                   
             const subtotal = rateAmount + commTwd + shipping; 
             const bossCost = Math.round(subtotal * bossMultiplier); 
             const retailPrice = Math.round(bossCost * retailMultiplier); 
