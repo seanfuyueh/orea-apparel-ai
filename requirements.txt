@@ -1,5 +1,5 @@
 fastapi
 uvicorn
-pydantic
+python-multipart
 google-generativeai
-httpx
+requests
