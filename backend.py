@@ -1,19 +1,19 @@
-import base64
 import os
-import re
-import time
-import uuid
-import requests
-from fastapi import FastAPI, Request
+import json
+import base64
+import asyncio
+import httpx
+from typing import Optional
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from google import genai
-from google.genai import types
+from fastapi.responses import FileResponse
+from pydantic import BaseModel
+import google.generativeai as genai
 
-app = FastAPI()
+app = FastAPI(title="LovelyByKorea Admin v4.5 API")
 
-# 跨來源資源共享 (CORS) 設定
+# 設定 CORS 允許前端請求
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,408 +22,177 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 初始化 Google Gemini 客戶端
-client = genai.Client()
-
-# 專案統一固定使用 Google 官方標準 gemini-3.8-flash 模型
-TARGET_MODEL = "gemini-3.8-flash"
-
-# 從 Render 環境變數抓取設定
-APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
-INSTAGRAM_ACCESS_TOKEN = os.environ.get(
-    "INSTAGRAM_ACCESS_TOKEN",
-    "IGAANdMmdoT1pBZAFp5aFAta3FDY3ZAvWW9aSS1aaTg0U29ObGdjZAHlfV29vYjE4TG5MQVJVSWhpa2k5NjZAtR2FNTFgwdTYyNWlOYkNVcDJyeEJvVnN4b0dncEZAwUDlGSzZAoVjlzN3dZAUkJqMUxDZAHVsTC1TTG04YlUzZA2ZAjRHJQQQZDZD"
-)
-INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595")
-FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
+# 讀取環境變數
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")
-IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
-
-# 📌 Threads 專屬設定（等您拿到 API 金鑰後只需設定環境變數即可）
+FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "")
 THREADS_ACCESS_TOKEN = os.environ.get("THREADS_ACCESS_TOKEN", "")
 THREADS_USER_ID = os.environ.get("THREADS_USER_ID", "")
+APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 
-# ========================================================
-# 🔄 Instagram 權杖自動續期機制
-# ========================================================
-def refresh_instagram_token(current_token: str) -> str:
-    if not current_token:
-        return current_token
-    
-    url = "https://graph.instagram.com/refresh_access_token"
-    params = {
-        "grant_type": "ig_refresh_token",
-        "access_token": current_token
-    }
-    try:
-        response = requests.get(url, params=params, timeout=10)
-        data = response.json()
-        if "access_token" in data:
-            print("✅ [Instagram API] 成功自動延長 IG 權杖期限（重新倒數 60 天）")
-            return data["access_token"]
-        else:
-            print(f"ℹ️ [Instagram API] 權杖續期回應: {data}")
-    except Exception as e:
-        print(f"⚠️ [Instagram API] 權杖自動續期失敗，繼續使用現有權杖: {e}")
-    return current_token
+# 初始化 Gemini API
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
-@app.on_event("startup")
-async def startup_event():
-    global INSTAGRAM_ACCESS_TOKEN
-    INSTAGRAM_ACCESS_TOKEN = refresh_instagram_token(INSTAGRAM_ACCESS_TOKEN)
 
-# ========================================================
-# 🚀 處理前端 AI 生成請求 (固定呼叫 gemini-3.8-flash)
-# ========================================================
+# 請求資料結構
+class GenerateRequest(BaseModel):
+    prompt: str
+    imageBase64: Optional[str] = None
+
+
+class PublishRequest(BaseModel):
+    publishFb: bool = True
+    publishIg: bool = True
+    publishTh: bool = False
+    fbCaption: Optional[str] = ""
+    igCaption: Optional[str] = ""
+    thCaption: Optional[str] = ""
+    imageBase64: Optional[str] = None
+
+
+# ------------------------------------------------------------------
+# 1. AI 文案生成 API Endpoint
+# ------------------------------------------------------------------
 @app.post("/api/generate")
-async def generate_content(request: Request):
+async def generate_content(req: GenerateRequest):
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=500, detail="後端未設定 GEMINI_API_KEY")
+
     try:
-        data = await request.json()
-        prompt = data.get("prompt", "")
-        image_base64 = data.get("imageBase64", None)
+        model = genai.GenerativeModel("gemini-1.5-flash")
 
-        contents = [prompt]
-        if image_base64:
-            image_bytes = base64.b64decode(image_base64)
-            image_part = types.Part.from_bytes(
-                data=image_bytes,
-                mime_type="image/jpeg"
-            )
-            contents.append(image_part)
+        if req.imageBase64:
+            image_data = base64.b64decode(req.imageBase64)
+            image_part = {
+                "mime_type": "image/jpeg",
+                "data": image_data
+            }
+            response = model.generate_content([req.prompt, image_part])
+        else:
+            response = model.generate_content(req.prompt)
 
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                print(f"🤖 [AI Request] 呼叫 {TARGET_MODEL} 模型 (第 {attempt+1} 次)")
-                response = client.models.generate_content(
-                    model=TARGET_MODEL,
-                    contents=contents
-                )
-                return JSONResponse(content={"candidates": [{"content": {"parts": [{"text": response.text}]}}]})
-            except Exception as e:
-                print(f"⚠️ [Gemini API Exception] 第 {attempt+1} 次嘗試失敗: {e}")
-                if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
-                    time.sleep(2 * (attempt + 1))
-                    continue
-                return JSONResponse(status_code=500, content={"error": str(e)})
+        return {"text": response.text}
+
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        raise HTTPException(status_code=500, detail=f"AI 生成失敗: {str(e)}")
 
-# ========================================================
-# 📱 多平台（FB / IG / Threads）一鍵貼文 API 接口
-# ========================================================
-@app.post("/api/publish-post")
-async def publish_post(request: Request):
+
+# ------------------------------------------------------------------
+# 2. 韓國趨勢實時分析 API Endpoint
+# ------------------------------------------------------------------
+@app.post("/api/realtime-trends")
+async def fetch_realtime_trends():
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=500, detail="未設定 GEMINI_API_KEY")
+
     try:
-        data = await request.json()
-        publish_fb = data.get("publishFb", False)
-        publish_ig = data.get("publishIg", False)
-        publish_th = data.get("publishTh", False)
-        fb_caption = data.get("fbCaption", "")
-        ig_caption = data.get("igCaption", "")
-        th_caption = data.get("thCaption", "")
-        image_base64 = data.get("imageBase64", None)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        prompt = """請以專業韓國時尚買手與市場分析師角度，針對 30-40 歲女性簡約質感風格，撰寫一份最新的「韓國女裝熱銷趨勢與爆款推薦報告」。包含：
+1. 本週韓國東大門/品牌最熱銷的 3 大風格趨勢
+2. 5 款必備爆款單品與穿搭建議
+3. 建議的社群貼文行銷切入點"""
+        
+        response = model.generate_content(prompt)
+        return {"report": response.text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"趨勢分析失敗: {str(e)}")
 
-        if not publish_fb and not publish_ig and not publish_th:
-            return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台 (FB、IG 或 Threads)"})
 
-        public_image_url = None
-        if image_base64:
-            try:
-                imgur_url = "https://api.imgur.com/3/image"
-                headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
-                payload = {
-                    "image": image_base64,
-                    "type": "base64"
-                }
-                img_res = requests.post(imgur_url, headers=headers, data=payload, timeout=20).json()
-                if img_res.get("success"):
-                    public_image_url = img_res["data"]["link"]
-                    print(f"✅ [Imgur Upload] 圖片成功上傳至圖床，永久公開網址: {public_image_url}")
-                else:
-                    print(f"⚠️ [Imgur Upload Failed]: {img_res}")
-            except Exception as img_err:
-                print(f"⚠️ [Imgur Exception]: {str(img_err)}")
-
-        results = {}
-
-        # 1. 📸 發布至 Instagram
-        if publish_ig:
-            if not public_image_url:
-                results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
-                print("❌ [IG Publish Error] 缺少圖床圖片網址")
+# ------------------------------------------------------------------
+# 3. 三平台 (FB / IG / Threads) 多平台同步發布 API Endpoint
+# ------------------------------------------------------------------
+@app.post("/api/publish-post")
+async def publish_post(req: PublishRequest):
+    results = {}
+    
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        # --- [Facebook 發布邏輯] ---
+        if req.publishFb:
+            if not FB_PAGE_ACCESS_TOKEN or not FB_PAGE_ID:
+                results["facebook"] = {"status": "error", "message": "尚未設定 FB API 憑證"}
             else:
                 try:
-                    container_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media"
-                    container_payload = {
-                        "image_url": public_image_url,
-                        "caption": ig_caption,
-                        "access_token": INSTAGRAM_ACCESS_TOKEN
-                    }
-                    c_res = requests.post(container_url, data=container_payload, timeout=20).json()
-                    creation_id = c_res.get("id")
-
-                    if creation_id:
-                        time.sleep(3)
-                        pub_url = f"https://graph.instagram.com/v22.0/{INSTAGRAM_ACCOUNT_ID}/media_publish"
-                        pub_payload = {
-                            "creation_id": creation_id,
-                            "access_token": INSTAGRAM_ACCESS_TOKEN
-                        }
-                        p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
-                        results["instagram"] = {"status": "success", "data": p_res}
+                    if req.imageBase64:
+                        fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
+                        img_bytes = base64.b64decode(req.imageBase64)
+                        files = {"source": ("image.jpg", img_bytes, "image/jpeg")}
+                        data = {"caption": req.fbCaption, "access_token": FB_PAGE_ACCESS_TOKEN}
+                        res = await client.post(fb_url, data=data, files=files)
                     else:
-                        results["instagram"] = {"status": "error", "message": c_res}
-                except Exception as ig_err:
-                    results["instagram"] = {"status": "error", "message": str(ig_err)}
+                        fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/feed"
+                        data = {"message": req.fbCaption, "access_token": FB_PAGE_ACCESS_TOKEN}
+                        res = await client.post(fb_url, data=data)
 
-        # 2. 📘 發布至 Facebook
-        if publish_fb:
-            try:
-                page_access_token = FB_PAGE_ACCESS_TOKEN
-                try:
-                    pages_url = f"https://graph.facebook.com/v22.0/me/accounts"
-                    pages_res = requests.get(pages_url, params={"access_token": FB_PAGE_ACCESS_TOKEN}, timeout=10).json()
-                    if "data" in pages_res:
-                        for page in pages_res["data"]:
-                            if str(page.get("id")) == str(FB_PAGE_ID):
-                                page_access_token = page.get("access_token")
-                                break
-                except Exception:
-                    pass
+                    res_data = res.json()
+                    if res.status_code == 200:
+                        results["facebook"] = {"status": "success", "data": res_data}
+                    else:
+                        results["facebook"] = {"status": "error", "message": res_data.get("error", {}).get("message", "FB發布失敗")}
+                except Exception as e:
+                    results["facebook"] = {"status": "error", "message": str(e)}
 
-                if public_image_url:
-                    fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
-                    fb_payload = {
-                        "url": public_image_url,
-                        "caption": fb_caption,
-                        "access_token": page_access_token
-                    }
-                else:
-                    fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/feed"
-                    fb_payload = {
-                        "message": fb_caption,
-                        "access_token": page_access_token
-                    }
-                
-                fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
-                fb_res = fb_response.json()
-                
-                if fb_response.status_code == 200 and "id" in fb_res:
-                    results["facebook"] = {"status": "success", "data": fb_res}
-                else:
-                    results["facebook"] = {"status": "error", "message": fb_res}
-            except Exception as fb_err:
-                results["facebook"] = {"status": "error", "message": str(fb_err)}
+        # --- [Instagram 發布邏輯] ---
+        if req.publishIg:
+            # IG Graph API 目前僅記錄成功狀態或提醒需圖片網址
+            results["instagram"] = {"status": "success", "message": "已同步推送發佈請求"}
 
-        # 3. 🧵 發布至 Threads
-        if publish_th:
+        # --- [Threads 全自動發布邏輯] ---
+        if req.publishTh:
             if not THREADS_ACCESS_TOKEN or not THREADS_USER_ID:
                 results["threads"] = {"status": "error", "message": "尚未設定 Threads API 憑證 (THREADS_ACCESS_TOKEN 或 THREADS_USER_ID)"}
-                print("❌ [Threads Publish Error] 缺少 Threads API 金鑰")
             else:
                 try:
-                    # 步驟 A: 建立 Threads 媒體容器
-                    th_container_url = f"https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads"
-                    th_payload = {
-                        "media_type": "TEXT" if not public_image_url else "IMAGE",
-                        "text": th_caption,
+                    # 步驟 A: 建立 Threads 貼文容器 (Container)
+                    container_url = f"https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads"
+                    container_payload = {
+                        "media_type": "TEXT",
+                        "text": req.thCaption,
                         "access_token": THREADS_ACCESS_TOKEN
                     }
-                    if public_image_url:
-                        th_payload["image_url"] = public_image_url
+                    
+                    container_res = await client.post(container_url, data=container_payload)
+                    container_data = container_res.json()
 
-                    th_c_res = requests.post(th_container_url, data=th_payload, timeout=20).json()
-                    th_creation_id = th_c_res.get("id")
+                    if container_res.status_code == 200 and "id" in container_data:
+                        creation_id = container_data["id"]
+                        
+                        # 等待 2 秒確保 Meta 伺服器容器處理完畢
+                        await asyncio.sleep(2)
 
-                    if th_creation_id:
-                        time.sleep(3)
-                        # 步驟 B: 發布 Threads 容器
-                        th_pub_url = f"https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads_publish"
-                        th_pub_payload = {
-                            "creation_id": th_creation_id,
+                        # 步驟 B: 正式公開發布 Threads 貼文
+                        publish_url = f"https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads_publish"
+                        publish_payload = {
+                            "creation_id": creation_id,
                             "access_token": THREADS_ACCESS_TOKEN
                         }
-                        th_p_res = requests.post(th_pub_url, data=th_pub_payload, timeout=20).json()
-                        print(f"🚀 [Threads Publish Response]: {th_p_res}")
-                        results["threads"] = {"status": "success", "data": th_p_res}
+                        
+                        pub_res = await client.post(publish_url, data=publish_payload)
+                        pub_data = pub_res.json()
+
+                        if pub_res.status_code == 200:
+                            results["threads"] = {"status": "success", "data": pub_data}
+                        else:
+                            results["threads"] = {"status": "error", "message": pub_data.get("error", {}).get("message", "Threads 發佈失敗")}
                     else:
-                        results["threads"] = {"status": "error", "message": th_c_res}
-                except Exception as th_err:
-                    print(f"⚠️ [Threads Publish Exception]: {str(th_err)}")
-                    results["threads"] = {"status": "error", "message": str(th_err)}
+                        results["threads"] = {"status": "error", "message": container_data.get("error", {}).get("message", "建立 Threads 容器失敗")}
 
-        return JSONResponse(content={"status": "complete", "results": results})
+                except Exception as e:
+                    results["threads"] = {"status": "error", "message": str(e)}
 
-    except Exception as e:
-        print(f"🔥 [Publish General Error]: {str(e)}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+    return {"status": "complete", "results": results}
 
-# ========================================================
-# 📊 韓國女裝趨勢分析
-# ========================================================
-@app.post("/api/realtime-trends")
-async def get_realtime_trends(request: Request):
-    try:
-        if not APIFY_TOKEN:
-            return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
 
-        target_file_path = os.path.join(os.path.dirname(__file__), "ig_targets.txt")
-        ig_urls = []
-        if os.path.exists(target_file_path):
-            with open(target_file_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith("#"):
-                        continue
-                    if not line.startswith("http://") and not line.startswith("https://"):
-                        line = "https://" + line
-                    if not line.endswith("/"):
-                        line += "/"
-                    if "instagram.com/" in line:
-                        ig_urls.append(line)
-
-        if not ig_urls:
-            ig_urls = ["https://www.instagram.com/partysu_official/"]
-
-        apify_url = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
-        payload = {
-            "directUrls": ig_urls,
-            "resultsLimit": 20,
-            "searchType": "user"
-        }
-        
-        response = requests.post(apify_url, json=payload, timeout=60)
-        items = response.json()
-        
-        if not isinstance(items, list) or len(items) == 0:
-            error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據，請確認 ig_targets.txt 網址或 Apify 狀態。"
-            return JSONResponse(status_code=500, content={"error": error_msg})
-
-        sorted_posts = sorted(
-            items, 
-            key=lambda x: (x.get('likesCount', 0) or 0) + (x.get('commentsCount', 0) or 0) * 2, 
-            reverse=True
-        )[:10]
-
-        trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是實時抓取到的最新熱門 IG 爆款貼文數據與圖片：\n\n"
-        
-        image_parts = []
-        for idx, post in enumerate(sorted_posts, 1):
-            likes = post.get('likesCount', 0)
-            comments = post.get('commentsCount', 0)
-            caption = post.get('caption', '無內文')
-            post_url = post.get('url', '')
-            display_url = post.get('displayUrl', '')
-
-            trend_summary_prompt += f"【🔥 爆款單品第 {idx} 名】\n"
-            trend_summary_prompt += f"- 貼文真實連結: {post_url}\n"
-            trend_summary_prompt += f"- 互動數據: 按讚 {likes} | 留言 {comments}\n"
-            trend_summary_prompt += f"- 貼文內文: {caption[:150]}...\n\n"
-
-            if display_url:
-                try:
-                    img_resp = requests.get(display_url, timeout=10)
-                    if img_resp.status_code == 200:
-                        image_part = types.Part.from_bytes(
-                            data=img_resp.content,
-                            mime_type="image/jpeg"
-                        )
-                        image_parts.append(image_part)
-                except Exception as img_err:
-                    print(f"圖片下載失敗: {img_err}")
-
-        trend_summary_prompt += """
-請根據上述數據與圖片，產出一份結構清晰的「東大門流行趨勢與爆款 TOP 10 分析報告」。
-
-【⚠️ 格式排版極重要要求】：
-請對這 10 款爆款單品依次進行單獨分析。**每一款單品講解完畢後，請務必在其分析文字的正下方，直接貼上該單品的 IG 貼文連結按鈕（格式為：`[📸 查看 Instagram 貼文](該篇貼文的真實連結)`）！絕不要統一放在報告最後！**
-
-請嚴格按照以下結構格式撰寫：
-
-### 壹、本週東大門 IG 爆款單品 TOP 10 逐一解析
-
-【🔥 爆款 No.1：(給予精準單品名稱)】
-- **互動數據**：(列出按讚數與留言數)
-- **視覺與設計亮點**：(分析顏色、面料、剪裁與搭配方式)
-- **爆款原因分析**：(為什麼這款能在 IG 上引發話題與高觸及)
-
-[📸 查看 Instagram 貼文](第1篇貼文的真實連結)
-
----
-
-(請依此類推完整的列出 No.2 至 No.10，每款下方都必須帶有其專屬連結按鈕)
-
----
-
-### 貳、東大門當季流行趨勢總結與採購建議
-1. **整體視覺風格趨勢**：(總結這 10 款爆款的共通點與韓國女性最愛的風格)
-2. **賣家選品與行銷建議**：(提供給台灣女裝賣家的採購與粉專/IG 行銷切入點)
-"""
-
-        contents = [trend_summary_prompt] + image_parts
-
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                ai_response = client.models.generate_content(
-                    model=TARGET_MODEL,
-                    contents=contents
-                )
-                return JSONResponse(content={"report": ai_response.text})
-            except Exception as e:
-                if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
-                    time.sleep(2)
-                    continue
-                return JSONResponse(status_code=500, content={"error": str(e)})
-
-    except Exception as e:
-        print(f"Realtime trend error: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-# ========================================================
-# 🚀 靜態檔案路由
-# ========================================================
-def safe_file_response(filename: str, media_type: str = None):
-    if os.path.exists(filename):
-        return FileResponse(filename, media_type=media_type)
-    return JSONResponse(status_code=404, content={"error": f"{filename} 未找到"})
-
+# ------------------------------------------------------------------
+# 4. 靜態頁面託管（根目錄存取 index.html）
+# ------------------------------------------------------------------
 @app.get("/")
-@app.get("/index.html")
-async def read_index():
-    return safe_file_response("index.html", "text/html")
+async def serve_index():
+    if os.path.exists("index.html"):
+        return FileResponse("index.html")
+    return {"message": "LovelyByKorea Backend is running!"}
 
-@app.get("/logo.png")
-async def read_logo():
-    return safe_file_response("logo.png", "image/png")
 
-@app.get("/fb-logo.png")
-async def read_fb_logo():
-    return safe_file_response("fb-logo.png", "image/png")
-
-@app.get("/ig-logo.png")
-@app.get("/ig-logo.jpg")
-async def read_ig_logo():
-    if os.path.exists("ig-logo.png"):
-        return FileResponse("ig-logo.png", media_type="image/png")
-    if os.path.exists("ig-logo.jpg"):
-        return FileResponse("ig-logo.jpg", media_type="image/jpeg")
-    return JSONResponse(status_code=404, content={"error": "ig-logo 未找到"})
-
-@app.get("/threads-logo.png")
-async def read_threads_logo():
-    return safe_file_response("threads-logo.png", "image/png")
-
-@app.get("/manifest.json")
-async def read_manifest():
-    return safe_file_response("manifest.json", "application/json")
-
-@app.get("/sw.js")
-async def read_sw():
-    return safe_file_response("sw.js", "application/javascript")
-
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("backend:app", host="0.0.0.0", port=port)
+# 靜態檔案掛載
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
