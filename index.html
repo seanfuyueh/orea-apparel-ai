@@ -695,16 +695,14 @@
                 tempDiv.innerHTML = htmlContent;
 
                 const links = tempDiv.querySelectorAll('a');
-                links.forEach(a => {
-                    a.setAttribute('target', '_blank');
-                    a.setAttribute('rel', 'noopener noreferrer');
-                    if (a.href.includes('instagram.com') || a.innerText.includes('Instagram') || a.innerText.includes('查看')) {
-                        a.classList.add('ig-btn-link');
-                        if (!a.innerText.includes('📸')) {
-                            a.innerText = '📸 ' + a.innerText;
-                        }
-                    }
-                });
+links.forEach(a => {
+    a.setAttribute('target', '_blank');
+    a.setAttribute('rel', 'noopener noreferrer');
+    if (a.href.includes('instagram.com') || a.innerText.includes('Instagram') || a.innerText.includes('查看')) {
+        a.classList.add('ig-btn-link');
+        a.innerText = '📸 查看 Instagram 貼文';
+    }
+});
 
                 el.innerHTML = tempDiv.innerHTML;
             } else {
