@@ -37,6 +37,8 @@ INSTAGRAM_ACCESS_TOKEN = os.environ.get(
 INSTAGRAM_ACCOUNT_ID = os.environ.get("INSTAGRAM_ACCOUNT_ID", "17841405459290595")
 FB_PAGE_ID = os.environ.get("FB_PAGE_ID", "1144532311567385")
 FB_PAGE_ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN", "")
+THREADS_ACCESS_TOKEN = os.environ.get("THREADS_ACCESS_TOKEN", "")
+THREADS_USER_ID = os.environ.get("THREADS_USER_ID", "")
 IMGUR_CLIENT_ID = os.environ.get("IMGUR_CLIENT_ID", "546c25a59c58ad7")
 
 # ========================================================
@@ -80,7 +82,8 @@ async def generate_content(request: Request):
 
         contents = [prompt]
         if image_base64:
-            image_bytes = base64.b64decode(image_base64)
+            clean_b64 = image_base64.split(",")[-1] if "," in image_base64 else image_base64
+            image_bytes = base64.b64decode(clean_b64)
             image_part = types.Part.from_bytes(
                 data=image_bytes,
                 mime_type="image/jpeg"
@@ -106,7 +109,7 @@ async def generate_content(request: Request):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
-# 📱 雙平台（FB / IG）一鍵貼文 API 接口
+# 📱 三平台（FB / IG / Threads）一鍵貼文 API 接口
 # ========================================================
 @app.post("/api/publish-post")
 async def publish_post(request: Request):
@@ -114,26 +117,30 @@ async def publish_post(request: Request):
         data = await request.json()
         publish_fb = data.get("publishFb", False)
         publish_ig = data.get("publishIg", False)
+        publish_th = data.get("publishTh", False)
         fb_caption = data.get("fbCaption", "")
         ig_caption = data.get("igCaption", "")
+        th_caption = data.get("thCaption", "")
         image_base64 = data.get("imageBase64", None)
 
-        if not publish_fb and not publish_ig:
-            return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台 (FB 或 IG)"})
+        if not publish_fb and not publish_ig and not publish_th:
+            return JSONResponse(status_code=400, content={"error": "請至少選擇一個發布平台 (FB、IG 或 Threads)"})
 
         public_image_url = None
+        clean_b64 = None
         if image_base64:
+            clean_b64 = image_base64.split(",")[-1] if "," in image_base64 else image_base64
             try:
                 imgur_url = "https://api.imgur.com/3/image"
                 headers = {"Authorization": f"Client-ID {IMGUR_CLIENT_ID}"}
                 payload = {
-                    "image": image_base64,
+                    "image": clean_b64,
                     "type": "base64"
                 }
                 img_res = requests.post(imgur_url, headers=headers, data=payload, timeout=20).json()
                 if img_res.get("success"):
                     public_image_url = img_res["data"]["link"]
-                    print(f"✅ [Imgur Upload] 圖片成功上傳至圖床，永久公開網址: {public_image_url}")
+                    print(f"✅ [Imgur Upload] 圖片成功上傳至圖床，公開網址: {public_image_url}")
                 else:
                     print(f"⚠️ [Imgur Upload Failed]: {img_res}")
             except Exception as img_err:
@@ -141,6 +148,7 @@ async def publish_post(request: Request):
 
         results = {}
 
+        # --- [1. Instagram 發布] ---
         if publish_ig:
             if not public_image_url:
                 results["instagram"] = {"status": "error", "message": "Instagram 必須附帶圖片才能發布貼文"}
@@ -168,13 +176,19 @@ async def publish_post(request: Request):
                         }
                         p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
                         print(f"🚀 [IG Publish Response]: {p_res}")
-                        results["instagram"] = {"status": "success", "data": p_res}
+                        if "id" in p_res:
+                            results["instagram"] = {"status": "success", "data": p_res}
+                        else:
+                            err_msg = p_res.get("error", {}).get("message", str(p_res))
+                            results["instagram"] = {"status": "error", "message": err_msg}
                     else:
-                        results["instagram"] = {"status": "error", "message": c_res}
+                        err_msg = c_res.get("error", {}).get("message", str(c_res))
+                        results["instagram"] = {"status": "error", "message": err_msg}
                 except Exception as ig_err:
                     print(f"⚠️ [IG Publish Exception]: {str(ig_err)}")
                     results["instagram"] = {"status": "error", "message": str(ig_err)}
 
+        # --- [2. Facebook 發布] ---
         if publish_fb:
             try:
                 page_access_token = FB_PAGE_ACCESS_TOKEN
@@ -190,32 +204,77 @@ async def publish_post(request: Request):
                 except Exception as token_err:
                     print(f"⚠️ [FB Token Notice]: {token_err}")
 
-                if public_image_url:
+                if clean_b64:
+                    fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
+                    img_bytes = base64.b64decode(clean_b64)
+                    files = {"source": ("image.jpg", img_bytes, "image/jpeg")}
+                    data_payload = {"caption": fb_caption, "access_token": page_access_token}
+                    fb_response = requests.post(fb_url, data=data_payload, files=files, timeout=20)
+                elif public_image_url:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
                     fb_payload = {
                         "url": public_image_url,
                         "caption": fb_caption,
                         "access_token": page_access_token
                     }
+                    fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
                 else:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/feed"
                     fb_payload = {
                         "message": fb_caption,
                         "access_token": page_access_token
                     }
-                
-                fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
+                    fb_response = requests.post(fb_url, data=fb_payload, timeout=20)
+
                 fb_res = fb_response.json()
                 print(f"📘 [FB Publish HTTP Status]: {fb_response.status_code}")
                 print(f"📘 [FB Publish Response JSON]: {fb_res}")
                 
-                if fb_response.status_code == 200 and "id" in fb_res:
+                if fb_response.status_code == 200 and ("id" in fb_res or "post_id" in fb_res):
                     results["facebook"] = {"status": "success", "data": fb_res}
                 else:
-                    results["facebook"] = {"status": "error", "message": fb_res}
+                    err_msg = fb_res.get("error", {}).get("message", str(fb_res))
+                    results["facebook"] = {"status": "error", "message": err_msg}
             except Exception as fb_err:
                 print(f"🔥 [FB Publish Exception Error]: {str(fb_err)}")
                 results["facebook"] = {"status": "error", "message": str(fb_err)}
+
+        # --- [3. Threads 自動發布] ---
+        if publish_th:
+            if not THREADS_ACCESS_TOKEN or not THREADS_USER_ID:
+                results["threads"] = {"status": "error", "message": "後端尚未設定 THREADS_ACCESS_TOKEN 或 THREADS_USER_ID"}
+            else:
+                try:
+                    container_url = f"https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads"
+                    container_payload = {
+                        "media_type": "TEXT",
+                        "text": th_caption,
+                        "access_token": THREADS_ACCESS_TOKEN
+                    }
+                    c_res = requests.post(container_url, data=container_payload, timeout=20).json()
+                    print(f"🧵 [Threads Container Response]: {c_res}")
+                    creation_id = c_res.get("id")
+
+                    if creation_id:
+                        time.sleep(2)
+                        pub_url = f"https://graph.threads.net/v1.0/{THREADS_USER_ID}/threads_publish"
+                        pub_payload = {
+                            "creation_id": creation_id,
+                            "access_token": THREADS_ACCESS_TOKEN
+                        }
+                        p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
+                        print(f"🚀 [Threads Publish Response]: {p_res}")
+                        if "id" in p_res:
+                            results["threads"] = {"status": "success", "data": p_res}
+                        else:
+                            err_msg = p_res.get("error", {}).get("message", str(p_res))
+                            results["threads"] = {"status": "error", "message": err_msg}
+                    else:
+                        err_msg = c_res.get("error", {}).get("message", str(c_res))
+                        results["threads"] = {"status": "error", "message": err_msg}
+                except Exception as th_err:
+                    print(f"⚠️ [Threads Exception Error]: {str(th_err)}")
+                    results["threads"] = {"status": "error", "message": str(th_err)}
 
         return JSONResponse(content={"status": "complete", "results": results})
 
