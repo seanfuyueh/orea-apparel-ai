@@ -65,7 +65,7 @@ async def generate_content(req: GenerateRequest):
         return JSONResponse(status_code=500, content={"error": "後端未設定 GEMINI_API_KEY 環境變數，請至 Render 設定"})
 
     try:
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-3.8-flash")
 
         if req.imageBase64:
             clean_b64 = req.imageBase64.split(",")[-1] if "," in req.imageBase64 else req.imageBase64
@@ -93,7 +93,7 @@ async def fetch_realtime_trends():
         return JSONResponse(status_code=500, content={"error": "後端未設定 GEMINI_API_KEY 環境變數"})
 
     try:
-        model = genai.GenerativeModel("gemini-2.5-flash")
+        model = genai.GenerativeModel("gemini-3.8-flash")
         prompt = """請以專業韓國時尚買手與市場分析師角度，針對 30-40 歲女性簡約質感風格，撰寫一份最新的「韓國女裝熱銷趨勢與爆款推薦報告」。包含：
 1. 本週韓國東大門/品牌最熱銷的 3 大風格趨勢
 2. 5 款必備爆款單品與穿搭建議
