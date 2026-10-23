@@ -1439,14 +1439,9 @@ ${variationRequirement}
                 const q = query(collection(db, "ai_history_records"), orderBy("timestamp", "desc"));
                 const querySnapshot = await getDocs(q);
                 let records = [];
-                let seen = new Set();
                 querySnapshot.forEach(docSnap => {
                     const data = docSnap.data();
-                    const key = `${data.title}_${data.timestamp}`;
-                    if (!seen.has(key)) {
-                        seen.add(key);
-                        records.push({ id: docSnap.id, ...data });
-                    }
+                    records.push({ id: docSnap.id, ...data });
                 });
                 return records;
             } catch (e) {
