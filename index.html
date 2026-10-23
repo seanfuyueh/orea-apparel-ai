@@ -355,13 +355,21 @@
                         <h3 class="font-medium text-gray-900 text-base md:text-lg">韓國女裝趨勢分析</h3>
                         <p class="text-sm text-gray-500 mt-1">針對 30-40 歲女性簡約質感風格進行實時 IG 爆款貼文爬取與熱銷單品推薦。</p>
                     </div>
-                    <div class="flex gap-2.5 w-full md:w-auto">
-                        <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
-                            📊 開始分析最新趨勢
-                        </button>
-                        <button type="button" onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap cursor-pointer">
-                            🔄 重置
-                        </button>
+                    <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
+                        <!-- ⏱️ 時間篩選按鈕群組 -->
+                        <div class="flex gap-1.5 justify-center md:justify-start">
+                            <button type="button" onclick="setTrendDays(7)" id="trend-day-7" class="px-3.5 py-2.5 rounded-xl text-sm font-bold border border-gray-900 bg-gray-900 text-white transition-all cursor-pointer shadow-sm">7天</button>
+                            <button type="button" onclick="setTrendDays(14)" id="trend-day-14" class="px-3.5 py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer">14天</button>
+                            <button type="button" onclick="setTrendDays(21)" id="trend-day-21" class="px-3.5 py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer">21天</button>
+                        </div>
+                        <div class="flex gap-2.5 w-full md:w-auto">
+                            <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
+                                📊 開始分析最新趨勢
+                            </button>
+                            <button type="button" onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap cursor-pointer">
+                                🔄 重置
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="bg-white p-5 md:p-8 rounded-2xl border border-gray-200 shadow-sm space-y-3">
@@ -669,7 +677,6 @@
                 cleaned = cleaned.replace(/內文：/g, "");
                 cleaned = cleaned.replace(/Hashtags：/g, "");
                 cleaned = cleaned.replace(/^\s*-\s*/gm, ""); 
-                cleaned = cleaned.replace(/^\s*>\s*/gm, ""); // ⬅️ 新增這行：自動清除每行開頭的引言箭頭
                 return cleaned.trim();
             };
 
@@ -1172,6 +1179,7 @@ ${variationRequirement}
                 submitBtn.innerText = '重新生成';
             }
         };
+
 
         window.fetchTrend = async function() {
             const resultBox = document.getElementById('trend-result-box');
