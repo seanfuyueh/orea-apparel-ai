@@ -569,10 +569,10 @@
                     </div>
                     <div id="pub-panel-th" class="pub-panel bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex-1 h-full">
                         <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-3">
-                            <h4 class="font-bold text-gray-800 flex items-center gap-1.5 text-base">🧵 Threads 真實互動</h4>
+                            <h4 class="font-bold text-gray-800 flex items-center gap-1.5 text-base">🧵 Threads 真實互動 (暫存草稿)</h4>
                         </div>
                         <div class="bg-gray-100 text-gray-500 text-xs p-2 rounded-lg mb-2">
-                            ※ 勾選上方 Threads 即可透過 API 一鍵自動同步發布。
+                            ※ Threads 暫不提供自動發佈，請在此編輯後手動複製。
                         </div>
                         <textarea id="pub-th-text" class="w-full h-[calc(100%-70px)] border border-gray-300 rounded-xl p-3 text-sm leading-relaxed focus:ring-2 focus:ring-gray-600 focus:outline-none resize-none"></textarea>
                     </div>
@@ -764,62 +764,48 @@
         };
 
         window.executePublishing = async function() {
-    const pubFb = document.getElementById('pub-target-fb').checked;
-    const pubIg = document.getElementById('pub-target-ig').checked;
-    const pubTh = document.getElementById('pub-target-th') ? document.getElementById('pub-target-th').checked : false;
-    const fbCaption = document.getElementById('pub-fb-text').value;
-    const igCaption = document.getElementById('pub-ig-text').value;
-    const thCaption = document.getElementById('pub-th-text').value;
-    const submitBtn = document.getElementById('pub-submit-btn');
+            const pubFb = document.getElementById('pub-target-fb').checked;
+            const pubIg = document.getElementById('pub-target-ig').checked;
+            const pubTh = document.getElementById('pub-target-th') ? document.getElementById('pub-target-th').checked : false;
+            const fbCaption = document.getElementById('pub-fb-text').value;
+            const igCaption = document.getElementById('pub-ig-text').value;
+            const thCaption = document.getElementById('pub-th-text').value;
+            const submitBtn = document.getElementById('pub-submit-btn');
 
-    if (!pubFb && !pubIg && !pubTh) { alert('請至少勾選一個發佈目標平台！'); return; }
+            if (!pubFb && !pubIg && !pubTh) { alert('請至少勾選一個發佈目標平台！'); return; }
 
-    submitBtn.disabled = true;
-    submitBtn.innerText = '⏳ 貼文同步發佈中...';
+            submitBtn.disabled = true;
+            submitBtn.innerText = '⏳ 貼文同步發佈中，請稍候約 10-15 秒...';
 
-    try {
-        const response = await fetch('/api/publish-post', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                publishFb: pubFb,
-                publishIg: pubIg,
-                publishTh: pubTh,
-                fbCaption: fbCaption,
-                igCaption: igCaption,
-                thCaption: thCaption,
-                imageBase64: currentUploadedImageBase64
-            })
-        });
+            try {
+                const response = await fetch('/api/publish-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        publishFb: pubFb,
+                        publishIg: pubIg,
+                        publishTh: pubTh,
+                        fbCaption: fbCaption,
+                        igCaption: igCaption,
+                        thCaption: thCaption,
+                        imageBase64: currentUploadedImageBase64
+                    })
+                });
 
-        const data = await response.json();
-        
-        // 📌 精準顯示各平台真實執行結果
-        let reportMsg = "📢 發布結果回報：\n\n";
-        if (data.results) {
-            if (pubFb) {
-                const fbRes = data.results.facebook;
-                reportMsg += `📘 Facebook: ${fbRes.status === 'success' ? '✅ 發布成功！' : '❌ 失敗: ' + fbRes.message}\n`;
+                const data = await response.json();
+                if (response.ok) {
+                    alert('🎉 貼文發佈完成！請至選取的粉專/帳號確認。\n(Threads 內容請自行複製使用)');
+                    window.closePublishModal();
+                } else {
+                    alert('發佈失敗：' + (data.error || '未知的錯誤'));
+                }
+            } catch (error) {
+                alert('連線發生錯誤：' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = '🚀 一鍵發佈';
             }
-            if (pubTh) {
-                const thRes = data.results.threads;
-                reportMsg += `🧵 Threads: ${thRes.status === 'success' ? '✅ 發布成功！' : '❌ 失敗: ' + thRes.message}\n`;
-            }
-            if (pubIg) {
-                reportMsg += `📸 Instagram: ℹ️ 暫未串接 API\n`;
-            }
-        }
-        
-        alert(reportMsg);
-        if (response.ok) window.closePublishModal();
-
-    } catch (error) {
-        alert('連線發生錯誤：' + error.message);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = '🚀 一鍵發佈';
-    }
-};
+        };
 
         window.previewFile = function(event, type) {
             const files = event.target.files;
