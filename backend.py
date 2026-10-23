@@ -11,7 +11,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-import google.generativeai as genai
 
 app = FastAPI(title="LovelyByKorea Admin v4.5 API")
 
@@ -32,10 +31,6 @@ THREADS_ACCESS_TOKEN = os.environ.get("THREADS_ACCESS_TOKEN", "")
 THREADS_USER_ID = os.environ.get("THREADS_USER_ID", "")
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN", "")
 
-# 初始化 Gemini API
-if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-
 
 # 請求資料結構
 class GenerateRequest(BaseModel):
@@ -53,13 +48,43 @@ class PublishRequest(BaseModel):
     imageBase64: Optional[str] = None
 
 
-# --- 輔助函式：使用原生 urllib 發送 POST 請求 ---
-def http_post_form(url: str, data_dict: dict):
-    encoded_data = urllib.parse.urlencode(data_dict).encode('utf-8')
-    req = urllib.request.Request(url, data=encoded_data, headers={'Content-Type': 'application/x-www-form-urlencoded'})
+# ------------------------------------------------------------------
+# 原生 HTTP 請求工具函式 (免安裝任何第三方套件)
+# ------------------------------------------------------------------
+def http_post_json(url: str, json_data: dict):
+    payload = json.dumps(json_data).encode('utf-8')
+    req = urllib.request.Request(
+        url,
+        data=payload,
+        headers={'Content-Type': 'application/json'},
+        method='POST'
+    )
     try:
         with urllib.request.urlopen(req) as response:
-            return json.loads(response.read().decode('utf-8')), response.status
+            res_body = response.read().decode('utf-8')
+            return json.loads(res_body), response.status
+    except urllib.error.HTTPError as e:
+        body = e.read().decode('utf-8')
+        try:
+            return json.loads(body), e.code
+        except Exception:
+            return {"error": {"message": body}}, e.code
+    except Exception as e:
+        return {"error": {"message": str(e)}}, 500
+
+
+def http_post_form(url: str, data_dict: dict):
+    encoded_data = urllib.parse.urlencode(data_dict).encode('utf-8')
+    req = urllib.request.Request(
+        url,
+        data=encoded_data,
+        headers={'Content-Type': 'application/x-www-form-urlencoded'},
+        method='POST'
+    )
+    try:
+        with urllib.request.urlopen(req) as response:
+            res_body = response.read().decode('utf-8')
+            return json.loads(res_body), response.status
     except urllib.error.HTTPError as e:
         body = e.read().decode('utf-8')
         try:
@@ -86,12 +111,16 @@ def http_post_multipart(url: str, fields: dict, file_field: str, filename: str, 
     body.extend(b'\r\n')
     body.extend(f'--{boundary}--\r\n'.encode('utf-8'))
 
-    req = urllib.request.Request(url, data=bytes(body), headers={
-        'Content-Type': f'multipart/form-data; boundary={boundary}'
-    })
+    req = urllib.request.Request(
+        url,
+        data=bytes(body),
+        headers={'Content-Type': f'multipart/form-data; boundary={boundary}'},
+        method='POST'
+    )
     try:
         with urllib.request.urlopen(req) as response:
-            return json.loads(response.read().decode('utf-8')), response.status
+            res_body = response.read().decode('utf-8')
+            return json.loads(res_body), response.status
     except urllib.error.HTTPError as e:
         body_str = e.read().decode('utf-8')
         try:
@@ -103,30 +132,54 @@ def http_post_multipart(url: str, fields: dict, file_field: str, filename: str, 
 
 
 # ------------------------------------------------------------------
+# Gemini REST API 原生呼叫函式
+# ------------------------------------------------------------------
+def call_gemini_rest(prompt: str, image_base64: Optional[str] = None):
+    if not GEMINI_API_KEY:
+        raise ValueError("後端未設定 GEMINI_API_KEY")
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    
+    parts = [{"text": prompt}]
+    if image_base64:
+        clean_b64 = image_base64.split(",")[-1] if "," in image_base64 else image_base64
+        parts.append({
+            "inline_data": {
+                "mime_type": "image/jpeg",
+                "data": clean_b64
+            }
+        })
+        
+    payload = {
+        "contents": [
+            {
+                "parts": parts
+            }
+        ]
+    }
+
+    res_data, status_code = http_post_json(url, payload)
+    
+    if status_code == 200:
+        try:
+            return res_data["candidates"][0]["content"]["parts"][0]["text"]
+        except (KeyError, IndexError):
+            raise ValueError(f"Gemini API 回傳格式不符: {json.dumps(res_data)}")
+    else:
+        error_msg = res_data.get("error", {}).get("message", "Gemini API 呼叫失敗")
+        raise ValueError(f"Gemini API 錯誤 ({status_code}): {error_msg}")
+
+
+# ------------------------------------------------------------------
 # 1. AI 文案生成 API Endpoint
 # ------------------------------------------------------------------
 @app.post("/api/generate")
 async def generate_content(req: GenerateRequest):
-    if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="後端未設定 GEMINI_API_KEY")
-
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-
-        if req.imageBase64:
-            image_data = base64.b64decode(req.imageBase64)
-            image_part = {
-                "mime_type": "image/jpeg",
-                "data": image_data
-            }
-            response = await asyncio.to_thread(model.generate_content, [req.prompt, image_part])
-        else:
-            response = await asyncio.to_thread(model.generate_content, req.prompt)
-
-        return {"text": response.text}
-
+        text = await asyncio.to_thread(call_gemini_rest, req.prompt, req.imageBase64)
+        return {"text": text}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"AI 生成失敗: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ------------------------------------------------------------------
@@ -134,20 +187,15 @@ async def generate_content(req: GenerateRequest):
 # ------------------------------------------------------------------
 @app.post("/api/realtime-trends")
 async def fetch_realtime_trends():
-    if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="未設定 GEMINI_API_KEY")
-
-    try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        prompt = """請以專業韓國時尚買手與市場分析師角度，針對 30-40 歲女性簡約質感風格，撰寫一份最新的「韓國女裝熱銷趨勢與爆款推薦報告」。包含：
+    prompt = """請以專業韓國時尚買手與市場分析師角度，針對 30-40 歲女性簡約質感風格，撰寫一份最新的「韓國女裝熱銷趨勢與爆款推薦報告」。包含：
 1. 本週韓國東大門/品牌最熱銷的 3 大風格趨勢
 2. 5 款必備爆款單品與穿搭建議
 3. 建議的社群貼文行銷切入點"""
-        
-        response = await asyncio.to_thread(model.generate_content, prompt)
-        return {"report": response.text}
+    try:
+        report = await asyncio.to_thread(call_gemini_rest, prompt, None)
+        return {"report": report}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"趨勢分析失敗: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ------------------------------------------------------------------
@@ -165,7 +213,8 @@ async def publish_post(req: PublishRequest):
             try:
                 if req.imageBase64:
                     fb_url = f"https://graph.facebook.com/v22.0/{FB_PAGE_ID}/photos"
-                    img_bytes = base64.b64decode(req.imageBase64)
+                    clean_b64 = req.imageBase64.split(",")[-1] if "," in req.imageBase64 else req.imageBase64
+                    img_bytes = base64.b64decode(clean_b64)
                     res_data, status_code = await asyncio.to_thread(
                         http_post_multipart,
                         fb_url,
