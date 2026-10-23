@@ -271,6 +271,10 @@ async def publish_post(request: Request):
 @app.post("/api/realtime-trends")
 async def get_realtime_trends(request: Request):
     try:
+        # 接收前端傳過來的天數參數（預設 7 天）
+        req_data = await request.json() if hasattr(request, "json") else {}
+        target_days = req_data.get("days", 7)
+
         if not APIFY_TOKEN:
             return JSONResponse(status_code=500, content={"error": "尚未設定 APIFY_TOKEN"})
 
@@ -295,7 +299,7 @@ async def get_realtime_trends(request: Request):
         apify_url = f"https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token={APIFY_TOKEN}"
         payload = {
             "directUrls": ig_urls,
-            "resultsLimit": 20,
+            "resultsLimit": 30, # 稍微提高抓取數量，以便在時間過濾後能保留足夠的貼文
             "searchType": "user"
         }
         
@@ -306,14 +310,34 @@ async def get_realtime_trends(request: Request):
             error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據，請確認 ig_targets.txt 網址或 Apify 狀態。"
             return JSONResponse(status_code=500, content={"error": error_msg})
 
+        # ⏱️ 依照前端選擇的天數（target_days）過濾貼文時間戳記
+        import time
+        from dateutil import parser
+        current_time = time.time()
+        cutoff_time = current_time - (target_days * 86400) # 計算幾天前的秒數
+        
+        filtered_posts = []
+        for post in items:
+            post_timestamp = post.get("timestamp")
+            if post_timestamp:
+                try:
+                    parsed_time = parser.parse(post_timestamp).timestamp()
+                    if parsed_time >= cutoff_time:
+                        filtered_posts.append(post)
+                except Exception:
+                    pass # 時間解析失敗則略過，確保資料準確
+        
+        # 如果指定天數內有貼文就用過濾後的，若剛好該區間無貼文則退回取最新的前 10 篇
+        target_posts = filtered_posts if filtered_posts else items[:10]
+
         sorted_posts = sorted(
-            items, 
+            target_posts, 
             key=lambda x: (x.get('likesCount', 0) or 0) + (x.get('commentsCount', 0) or 0) * 2, 
             reverse=True
         )[:10]
 
         model = genai.GenerativeModel(TARGET_MODEL)
-        trend_summary_prompt = "你是一位韓國時尚流行趨勢分析師。以下是實時抓取到的最新熱門 IG 爆款貼文數據與圖片：\n\n"
+        trend_summary_prompt = f"你是一位韓國時尚流行趨勢分析師。以下是實時抓取到的韓國追蹤帳號中**最近 {target_days} 天內**的最新熱門 IG 爆款貼文數據與圖片：\n\n"
         
         image_parts = []
         for idx, post in enumerate(sorted_posts, 1):
@@ -322,8 +346,10 @@ async def get_realtime_trends(request: Request):
             caption = post.get('caption', '無內文')
             post_url = post.get('url', '')
             display_url = post.get('displayUrl', '')
+            post_time = post.get('timestamp', '近期')
 
             trend_summary_prompt += f"【🔥 爆款單品第 {idx} 名】\n"
+            trend_summary_prompt += f"- 貼文發布時間: {post_time}\n"
             trend_summary_prompt += f"- 貼文真實連結: {post_url}\n"
             trend_summary_prompt += f"- 互動數據: 按讚 {likes} | 留言 {comments}\n"
             trend_summary_prompt += f"- 貼文內文: {caption[:150]}...\n\n"
@@ -339,8 +365,9 @@ async def get_realtime_trends(request: Request):
                 except Exception:
                     pass
 
-        trend_summary_prompt += """
+        trend_summary_prompt += f"""
 請根據上述數據與圖片，產出一份結構清晰的「東大門流行趨勢與爆款 TOP 10 分析報告」。
+【嚴格限制】：必須嚴格聚焦在最近 {target_days} 天內的當季最新流行與熱銷單品，絕不採用過期或去年的舊貼文。
 
 【⚠️ 格式排版極重要要求】：
 請對這 10 款爆款單品依次進行單獨分析。**每一款單品講解完畢後，請務必在其分析文字的正下方，直接貼上該單品的 IG 貼文連結按鈕（格式為：`[📸 查看 Instagram 貼文](該篇貼文的真實連結)`）！絕不要統一放在報告最後！**
@@ -372,7 +399,7 @@ async def get_realtime_trends(request: Request):
                 return JSONResponse(content={"report": ai_response.text})
             except Exception as e:
                 if ("503" in str(e) or "UNAVAILABLE" in str(e)) and attempt < max_retries - 1:
-                    time.sleep(2)
+                    time.sleep(2 * (attempt + 1))
                     continue
                 return JSONResponse(status_code=500, content={"error": str(e)})
 
