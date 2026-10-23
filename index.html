@@ -669,6 +669,7 @@
                 cleaned = cleaned.replace(/內文：/g, "");
                 cleaned = cleaned.replace(/Hashtags：/g, "");
                 cleaned = cleaned.replace(/^\s*-\s*/gm, ""); 
+                cleaned = cleaned.replace(/^\s*>\s*/gm, ""); // ⬅️ 新增這行：自動清除每行開頭的引言箭頭
                 return cleaned.trim();
             };
 
