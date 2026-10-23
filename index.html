@@ -705,6 +705,7 @@
                 el.innerText = text || '';
             }
 
+            // 📌 針對結果區塊進行排版優化與一鍵發佈按鈕掛載
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
                 const blocks = text.split(/(?=(?:#+\s*)?【情境\s*[A-Z])/g);
 
@@ -713,13 +714,15 @@
                     topAnalysisText = topAnalysisText.replace(/^[#\s]*1[.\、]\s*/gm, ''); // 移除編號 1.
                     const scenarioBlocks = blocks.filter(b => b.includes('【情境'));
 
-                    el.innerHTML = topAnalysisText ? marked.parse(topAnalysisText) : ''; 
+                    let combinedHtml = topAnalysisText ? marked.parse(topAnalysisText) : '';
+
+                    el.innerHTML = combinedHtml;
 
                     scenarioBlocks.forEach((blockText) => {
                         if (!blockText.trim()) return;
 
                         const cardDiv = document.createElement('div');
-                        cardDiv.className = 'bg-white p-4 md:p-5 rounded-xl border border-gray-200 shadow-sm mb-4 space-y-3';
+                        cardDiv.className = 'bg-white p-4 md:p-5 rounded-xl border border-gray-200 shadow-sm mb-4 space-y-3 mt-4';
                         
                         marked.setOptions({ gfm: true, breaks: true });
                         cardDiv.innerHTML = marked.parse(blockText);
