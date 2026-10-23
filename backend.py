@@ -240,6 +240,7 @@ async def publish_post(request: Request):
                         "access_token": THREADS_ACCESS_TOKEN
                     }
                     c_res = requests.post(container_url, data=container_payload, timeout=20).json()
+                    print(f"🧵 [Threads Container Response]: {c_res}")
                     creation_id = c_res.get("id")
 
                     if creation_id:
@@ -250,6 +251,7 @@ async def publish_post(request: Request):
                             "access_token": THREADS_ACCESS_TOKEN
                         }
                         p_res = requests.post(pub_url, data=pub_payload, timeout=20).json()
+                        print(f"🚀 [Threads Publish Response]: {p_res}")
                         if "id" in p_res:
                             results["threads"] = {"status": "success", "data": p_res}
                         else:
@@ -259,12 +261,8 @@ async def publish_post(request: Request):
                         err_msg = c_res.get("error", {}).get("message", str(c_res))
                         results["threads"] = {"status": "error", "message": err_msg}
                 except Exception as th_err:
+                    print(f"⚠️ [Threads Exception Error]: {str(th_err)}")
                     results["threads"] = {"status": "error", "message": str(th_err)}
-
-        return JSONResponse(content={"status": "complete", "results": results})
-
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ========================================================
 # 📊 韓國東大門 IG 實時爆款趨勢分析
