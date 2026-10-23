@@ -710,14 +710,18 @@ links.forEach(a => {
             }
 
             if (elementId.startsWith('result-box-') && text && !text.includes('尚未開始生成')) {
+                // 📌 依照【情境進行區塊分割
                 const blocks = text.split(/(?=(?:#+\s*)?【情境\s*[A-Z])/g);
 
                 if (blocks.length > 1) {
-                    const topAnalysisText = blocks[0].includes('【情境') ? '' : blocks[0];
+                    // 📌 保留上方的「嚴格品項辨識與視覺解析」內容（去掉編號 1.），且不加一鍵發佈按鈕
+                    let topAnalysisText = blocks[0].includes('【情境') ? '' : blocks[0];
+                    topAnalysisText = topAnalysisText.replace(/^[#\s]*1[.\、]\s*/gm, ''); // 移除編號 1.
                     const scenarioBlocks = blocks.filter(b => b.includes('【情境'));
 
                     el.innerHTML = topAnalysisText ? marked.parse(topAnalysisText) : ''; 
 
+                    // 📌 僅在下方的各情境文案區塊加上專屬的一鍵發佈按鈕卡片
                     scenarioBlocks.forEach((blockText) => {
                         if (!blockText.trim()) return;
 
@@ -741,7 +745,6 @@ links.forEach(a => {
                     });
                 }
             }
-        };
 
         window.openPublishModalSingle = function(encodedText) {
             const rawBlockText = decodeURIComponent(encodedText);
