@@ -361,8 +361,9 @@
                             <button type="button" onclick="setTrendDays(14)" id="trend-day-14" class="w-16 py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer text-center">14天</button>
                             <button type="button" onclick="setTrendDays(21)" id="trend-day-21" class="w-16 py-2.5 rounded-xl text-sm font-bold border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 transition-all cursor-pointer text-center">21天</button>
                         </div>
+                        <!-- 🛡️ 修復重點：為 trend-btn 加上固定最小寬度、min-w-[210px]、flex-shrink-0 與 whitespace-nowrap，防止文字改變時按鈕框體跟著伸縮變形 -->
                         <div class="flex gap-2.5 w-full md:w-auto">
-                            <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer">
+                            <button type="button" onclick="fetchTrend()" id="trend-btn" class="flex-1 md:flex-none md:min-w-[210px] flex-shrink-0 whitespace-nowrap bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl font-medium text-sm md:text-base transition-colors shadow-sm cursor-pointer text-center">
                                 📊 開始分析最新趨勢
                             </button>
                             <button type="button" onclick="resetModule('trend')" class="bg-gray-100 hover:bg-gray-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium border border-gray-300 transition-colors whitespace-nowrap cursor-pointer">
