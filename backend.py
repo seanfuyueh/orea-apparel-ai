@@ -310,26 +310,25 @@ async def get_realtime_trends(request: Request):
             error_msg = items.get("error", {}).get("message", "無法取得 IG 數據") if isinstance(items, dict) else "無法取得 IG 貼文數據，請確認 ig_targets.txt 網址或 Apify 狀態。"
             return JSONResponse(status_code=500, content={"error": error_msg})
 
-        # ⏱️ 依照前端選擇的天數（target_days）過濾貼文時間戳記
-        import time
-        from dateutil import parser
-        current_time = time.time()
-        cutoff_time = current_time - (target_days * 86400) # 計算幾天前的秒數
+        # ⏱️ 依照前端選擇的天數（target_days）過濾貼文時間（改用內建 datetime，無需第三方套件）
+        from datetime import datetime, timezone, timedelta
+        
+        current_time = datetime.now(timezone.utc)
+        cutoff_time = current_time - timedelta(days=target_days)
         
         filtered_posts = []
         for post in items:
             post_timestamp = post.get("timestamp")
             if post_timestamp:
                 try:
-                    parsed_time = parser.parse(post_timestamp).timestamp()
+                    # 解析 IG 帶有的 ISO 格式時間
+                    parsed_time = datetime.fromisoformat(post_timestamp.replace("Z", "+00:00"))
                     if parsed_time >= cutoff_time:
                         filtered_posts.append(post)
                 except Exception:
-                    pass # 時間解析失敗則略過，確保資料準確
+                    pass # 若時間格式無法解析則略過，確保穩定
         
-        # 如果指定天數內有貼文就用過濾後的，若剛好該區間無貼文則退回取最新的前 10 篇
         target_posts = filtered_posts if filtered_posts else items[:10]
-
         sorted_posts = sorted(
             target_posts, 
             key=lambda x: (x.get('likesCount', 0) or 0) + (x.get('commentsCount', 0) or 0) * 2, 
